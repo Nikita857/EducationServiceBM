@@ -94,7 +94,7 @@
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="/admin/modules/create" class="nav-link" data-tab="modules-tab">
+                    <a href="/admin/modules" class="nav-link">
                         <i class="bi bi-collection"></i>
                         Модули
                     </a>

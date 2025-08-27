@@ -1,7 +1,6 @@
 package com.bm.education.services;
 
-import com.bm.education.models.Course;
-import com.bm.education.models.UserProgress;
+import com.bm.education.models.Lesson;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.models.Module;
@@ -42,5 +41,4 @@ public class ModuleService {
     }
 
     public List<Module> getAllModules() {return moduleRepository.findAll();}
-
 }

@@ -96,7 +96,7 @@
                     <p class="text-muted">Должность: ${user.jobTitle}</p>
                     <p class="text-muted">Квалификация: ${user.qualification}</p>
 
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mb-3">
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                             <i class="bi bi-lock"></i> Сменить пароль
                         </button>
@@ -224,6 +224,15 @@
                                                                     ${offer.description}
                                                                 </div>
                                                             </div>
+
+                                                            <#if offer.response?has_content>
+                                                                <div class="detail-row full-width">
+                                                                    <span class="detail-label">Описание:</span>
+                                                                    <div class="detail-value description">
+                                                                        ${offer.response}
+                                                                    </div>
+                                                                </div>
+                                                            </#if>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">

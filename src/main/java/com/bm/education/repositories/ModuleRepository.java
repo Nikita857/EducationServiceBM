@@ -1,5 +1,6 @@
 package com.bm.education.repositories;
 
+import com.bm.education.models.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.bm.education.models.Module;
 import org.springframework.data.jpa.repository.Query;
@@ -18,5 +19,8 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
     Optional<Module> findById(Integer id);
 
     List<Module> findAll();
+
+    @Query(value = "select id, title from lessons where lessons.module_id = :moduleId", nativeQuery = true)
+    List<Lesson> lessonsByModuleId(@Param("moduleId") Integer moduleId);
 
 }
