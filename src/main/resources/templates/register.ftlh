@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/register.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h3>Создайте аккаунт</h3>
+            <p>Присоединяйтесь к BM Education</p>
+        </div>
+
+        <div class="card-body">
+            <#if error??>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>${error}
+                </div>
+            </#if>
+
+            <form action="/register" method="POST" id="registrationForm">
+                <div class="input-group">
+                    <span for="firstName" class="input-group-text bg-transparent">
+                        <i class="bi bi-person mx-1"></i>Имя
+                    </span>
+                    <input type="text" class="form-control" id="firstName" name="firstName"
+                           placeholder="Введите ваше имя" required>
+                </div>
+
+                <div class="input-group">
+                    <span for="lastName" class="input-group-text bg-transparent">
+                        <i class="bi bi-person-badge mx-1"></i>Фамилия
+                    </span>
+                    <input type="text" class="form-control" id="lastName" name="lastName"
+                           placeholder="Введите вашу фамилию" required>
+                </div>
+
+                <div class="input-group">
+                    <span for="department" class="input-group-text bg-transparent">
+                        <i class="bi bi-bank mx-1"></i>Отдел
+                    </span>
+                    <input type="text" class="form-control" id="depratment" name="department"
+                           placeholder="Введите ваш отдел" required>
+                </div>
+
+                <div class="input-group">
+                    <span for="jobTitle" class="input-group-text bg-transparent">
+                        <i class="bi bi-emoji-smile mx-1"></i></i>Должность
+                    </span>
+                    <input type="text" class="form-control" id="jobTitle" name="jobTitle"
+                           placeholder="Введите ваш отдел" required>
+                </div>
+
+                <div class="d-flex flex-column mb-3">
+                    <div class="input-group mb-0">
+                        <span for="username" class="input-group-text bg-transparent">
+                            <i class="bi bi-at mx-1"></i>Логин
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="Придумайте уникальный логин" required>
+                    </div>
+                    <div class="form-text">От 5 до 50 символов, только буквы и цифры</div>
+                </div>
+
+                <div class="d-flex flex-column mb-3">
+                    <div class="input-group mb-0">
+                        <span for="password" class="input-group-text bg-transparent">
+                            <i class="bi bi-lock mx-1"></i>Пароль
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Создайте надежный пароль" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="bi bi-eye"></i>
+                        </button>
+
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                        </div>
+                    </div>
+                    <div class="password-requirements">
+                        <div class="requirement mx-1" id="reqLength">
+                            <i class="bi bi-check-circle"></i> Минимум 8 символов
+                        </div>
+                        <div class="requirement" id="reqUpperCase">
+                            <i class="bi bi-check-circle mx-1"></i> Заглавные буквы
+                        </div>
+                        <div class="requirement mx-1" id="reqNumber">
+                            <i class="bi bi-check-circle"></i> Цифры
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+
+                <button type="submit" class="btn btn-primary" id="submitButton">
+                    <i class="bi bi-person-plus me-2"></i>Создать аккаунт
+                </button>
+
+                <#if errorRegistration??>
+                    <div class="alert alert-danger">
+                        <#list errorRegistration as error>
+                            <i class="bi bi-exclamation-octagon me-2"></i>${error.defaultMessage}<br>
+                        </#list>
+                    </div>
+                </#if>
+            </form>
+
+            <div class="auth-footer">
+                <p class="mb-0">Уже есть аккаунт?
+                    <a href="/login" class="auth-link">
+                        Войти <i class="bi bi-arrow-right"></i>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/registerValidation.js"></script>
+</body>
+</html>
