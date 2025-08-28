@@ -18,7 +18,7 @@
         <h1 class="header-title">Управление модулями</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Главная</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Модули</li>
             </ol>
         </nav>
@@ -42,7 +42,8 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="courseId" class="form-label">Курс *</label>
-                                <select class="form-select" id="courseId" required>
+                                <select class="form-select text-light bg-dark" id="courseId" required>
+                                    <option value="#" selected>Выберите курс</option>
                                     <#list courses as course>
                                         <option value="${course.id}">${course.title}</option>
                                     </#list>
@@ -85,7 +86,7 @@
                             Список модулей
                         </h2>
                         <form action="/admin/modules" method="get">
-                            <select name="courseId" id="" class="form-select" onchange="this.form.submit()">
+                            <select name="courseId" id="" class="form-select text-light bg-dark" onchange="this.form.submit()">
                                 <option value="" selected>Выберите курс</option>
                                 <#list courses as course>
                                     <option value="${course.id}">${course.title}</option>
@@ -128,7 +129,7 @@
                                     <td>
                                         <div class="col-md-6 d-flex align-items-end">
                                             <button type="button" class="btn btn-primary" onclick="loadLessons(${module.id})">
-                                                <i class="fas fa-list me-2"></i>Показать уроки
+                                                Уроки
                                             </button>
                                         </div>
                                     </td>

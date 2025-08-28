@@ -1,13 +1,11 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.ModuleCreateRequest;
-import com.bm.education.models.Course;
-import com.bm.education.models.Lesson;
-import com.bm.education.models.ModuleStatus;
+import com.bm.education.models.*;
+import com.bm.education.models.Module;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
-import com.bm.education.models.Module;
 import com.bm.education.repositories.UserProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +28,7 @@ public class ModuleService {
     }
 
     public Module getModuleBySlug(String moduleSlug) {
-        return moduleRepository.getModuleBySlug(moduleSlug).orElse(null);
+        return moduleRepository.getModuleBySlugAndStatus(moduleSlug, ModuleStatus.ACTIVE).orElse(null);
     }
 
     public int totalLessons(Integer courseId) {

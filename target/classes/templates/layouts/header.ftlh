@@ -56,7 +56,7 @@
 
                     <div class="dropdown">
                         <div class="user-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="avatars/${user.avatar}" alt="Аватар" class="user-avatar">
+                            <img src="/avatars/${user.avatar}" alt="Аватар" class="user-avatar">
                             <span class="d-none d-md-inline">${user.firstName} ${user.lastName}</span>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">

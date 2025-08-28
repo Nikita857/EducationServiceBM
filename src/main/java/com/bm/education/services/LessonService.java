@@ -5,7 +5,6 @@ import com.bm.education.models.Lesson;
 import com.bm.education.repositories.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,7 +37,7 @@ public class LessonService {
     }
     public List<LessonRequestDTO> getModuleLessons(Integer moduleId) {
         List<Lesson> lessons = lessonRepository.findLessonsByModuleId(moduleId);
-
+//        Пробегаемся по листу уроков конвертируем каждый обьект lesson в ДТО и собираем кучу дтошек в лист
         return lessons.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
