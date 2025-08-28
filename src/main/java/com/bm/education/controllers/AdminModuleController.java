@@ -1,15 +1,20 @@
 package com.bm.education.controllers;
 
+import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
+import com.bm.education.models.Lesson;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
+import com.bm.education.repositories.LessonRepository;
 import com.bm.education.services.CoursesService;
+import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -19,6 +24,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -30,6 +36,7 @@ public class AdminModuleController {
     private final ModuleService moduleService;
     private final CoursesService coursesService;
     private final CoursesRepository coursesRepository;
+    private final LessonService lessonService;
 
     @GetMapping("/admin/modules")
     public String addModule(Model model, @RequestParam(value = "courseId", required = false) Integer id) {
@@ -104,5 +111,15 @@ public class AdminModuleController {
             throw new RuntimeException(String.format("Не удалось создать модуль. Ошибка: %s", e.getMessage()));
         }
         return null;
+    }
+
+    @GetMapping("/admin/modules/{id}/lessons")
+    ResponseEntity<List<LessonRequestDTO>> getModuleLessons(@PathVariable Integer id) {
+        try {
+            List<LessonRequestDTO> moduleLessons = lessonService.getModuleLessons(id);
+            return !moduleLessons.isEmpty() ? ResponseEntity.ok(moduleLessons) : ResponseEntity.notFound().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

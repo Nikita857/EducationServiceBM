@@ -2,20 +2,19 @@ package com.bm.education.services;
 
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.models.Course;
+import com.bm.education.models.Lesson;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.models.Module;
 import com.bm.education.repositories.UserProgressRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j

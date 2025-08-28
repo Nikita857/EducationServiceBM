@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Авг 21 2025 г., 15:53
+-- Время создания: Авг 28 2025 г., 13:23
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- База данных: `education_test`
+-- База данных: `db_spring`
 --
 
 -- --------------------------------------------------------
@@ -32,17 +32,20 @@ CREATE TABLE `courses` (
   `title` varchar(100) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
   `description` tinytext DEFAULT NULL,
-  `slug` varchar(100) NOT NULL
+  `slug` varchar(100) NOT NULL,
+  `status` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Дамп данных таблицы `courses`
 --
 
-INSERT INTO `courses` (`id`, `title`, `image`, `description`, `slug`) VALUES
-(1, 'Инженер-технолог БРиНТ', '193443-1.jpg', 'Курс для начинающих ', 'inzhener-texnolog-brint'),
-(2, 'Управление проектами', 'polinom.png', 'Основы управления проектами', 'project-management'),
-(3, 'Дизайн интерфейсов', '/images/ui-design.jpg', 'Создание удобных интерфейсов', 'ui-design');
+INSERT INTO `courses` (`id`, `title`, `image`, `description`, `slug`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Инженер-технолог БРиНТ', '193443-1.jpg', 'Курс для начинающих ', 'inzhener-texnolog-brint', 'ACTIVE', '2025-08-25 14:32:16', '2025-08-25 14:32:44'),
+(2, 'Управление проектами', 'polinom.png', 'Основы управления проектами', 'project-management', 'ACTIVE', '2025-08-25 14:32:16', '2025-08-25 14:32:44'),
+(10, 'Java от а до z', '08ecca1e-1997-4c9b-9f91-1b242985b4cc.png', 'Java от а до zJava от а до zJava от а до zJava от а до z', 'java-ot-a-do-z', 'INACTIVE', '2025-08-25 16:33:48', '2025-08-25 16:33:48');
 
 -- --------------------------------------------------------
 
@@ -88,9 +91,6 @@ INSERT INTO `lessons` (`id`, `module_id`, `title`, `video`, `description`, `shor
 (4, 2, 'Работа со списками', '/videos/lists.mp4', 'Списки и их методы', '', 'TEST_004'),
 (5, 3, 'Роль менеджера проектов', '/videos/pm-role.mp4', 'Обязанности менеджера', '', 'TEST_005'),
 (6, 3, 'Планирование проектов', '/videos/planning.mp4', 'Методы планирования', '', 'TEST_006'),
-(7, 4, 'Agile в деталях', '/videos/agile.mp4', 'Подробно об Agile', '', 'TEST_007'),
-(8, 5, 'UX принципы', '/videos/ux-principles.mp4', 'Основные принципы UX', '', 'TEST_008'),
-(9, 6, 'Создание прототипов', '/videos/prototyping.mp4', 'Инструменты для прототипирования', '', 'TEST_009'),
 (10, 1, 'Редактирование операций и переходов', 'file://192.168.0.5/AQServer/%D0%9E%D0%98%D0%A2/%D0%9A%D1%83%D1%80%D1%81%20%D0%92%D0%95%D0%A0%D0%A2%D0%98%D0%9A%D0%90%D0%9B%D0%AC%202018.1%20SP1/1.mp4', '<p>\r\n          <b>\r\n            ###Шаг 1 Добавление размеров в текст перехода\r\n            <br>\r\n            1. Открыть операцию:\r\n            - В дереве техпроцесса (ТП) выберите нужную операцию.\r\n            <br>\r\n            2. Перейти к переходам:\r\n            - Щёлкните по операции → откройте вкладку «Переходы» или «Содержание операции».\r\n            <br>\r\n            3. Выбрать или создать переход:\r\n            - Выберите существующий переход или добавьте новый через «Добавить переход».\r\n            <br>\r\n            4. Редактировать текст перехода:\r\n            - В поле «Описание перехода» введите текст вручную или выберите шаблон.\r\n            - Добавьте размеры (например, «Диаметр 50±0.1 мм») в текстовое описание.\r\n            <br>\r\n            5. Использовать справочник (опционально):\r\n            - Если размеры стандартизированы, выберите их из справочника размеров/допусков.\r\n            - Вставьте через «Вставить параметр» или аналогичную функцию.\r\n            <br>\r\n            6. Проверить и сохранить:\r\n            - Убедитесь, что размеры указаны корректно и соответствуют эскизу/чертежу.\r\n            - Нажмите «ОК» или «Применить» для сохранения изменений.\r\n            <br>\r\n            7. Связать с эскизом (при необходимости):\r\n            - Если эскиз привязан, проверьте соответствие размеров в эскизе и тексте перехода.\r\n          </b>\r\n        </p><p>\r\n          <b>\r\n            ###Шаг 2 Редактирование формы допуска и расположения в программе «Вертикаль»\r\n            <br>\r\n            1. Открыть параметры допуска:\r\n            - Щёлкните правой кнопкой мыши на операции → выберите «Редактировать» или «Параметры обработки».\r\n            - Перейдите во вкладку «Допуски» или «Размеры и допуски».\r\n            <br>\r\n            2. Редактировать форму допуска:\r\n            - Укажите тип допуска (например, H7, k6) в соответствующем поле.\r\n            - При необходимости выберите значение из справочника допусков (ISO, ГОСТ).\r\n            <br>\r\n            3. Настроить расположение:\r\n            - В разделе «Посадки» или «Размещение» задайте параметры (например, зазор, натяг).\r\n            - Укажите базовые поверхности или оси для привязки расположения.\r\n            <br>\r\n            4. Проверить эскиз:\r\n            - Если эскиз привязан, откройте его и уточните размеры/допуски через графический редактор.\r\n            - Подтвердите соответствие допуска и расположения чертежу.\r\n          </b>\r\n        </p>', 'В этом уроке вы научитесь редактировать операции в', '\r\n  const questions = [\r\n    {\r\n      question: \"Как открыть окно редактирования операции в программе Вертикаль 2018?\",\r\n      answers: [\r\n        { text: \"Щёлкнуть правой кнопкой на операции → Редактировать\", correct: true },\r\n        { text: \"Нажать Ctrl+E в дереве техпроцесса\", correct: false },\r\n        { text: \"Выбрать операцию и нажать Файл → Редактировать\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Где задаются параметры допуска в операции?\",\r\n      answers: [\r\n        { text: \"Во вкладке Допуски или Размеры и допуски\", correct: true },\r\n        { text: \"В разделе Режимы обработки\", correct: false },\r\n        { text: \"В справочнике оснастки\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как добавить новый переход в операцию?\",\r\n      answers: [\r\n        { text: \"Нажать Добавить переход во вкладке Переходы\", correct: true },\r\n        { text: \"Открыть справочник инструментов\", correct: false },\r\n        { text: \"Создать новый эскиз\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Что необходимо проверить перед сохранением изменений в операции?\",\r\n      answers: [\r\n        { text: \"Соответствие размеров чертежу\", correct: true },\r\n        { text: \"Время обработки\", correct: false },\r\n        { text: \"Название операции\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как связать эскиз с операцией в Вертикаль 2018?\",\r\n      answers: [\r\n        { text: \"Выбрать Связать в меню операции и указать эскиз\", correct: true },\r\n        { text: \"Перетащить эскиз в операцию\", correct: false },\r\n        { text: \"Нажать Ctrl+S в модуле Эскизы\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Где редактируется форма допуска для детали?\",\r\n      answers: [\r\n        { text: \"Во вкладке Допуски или Размеры и допуски\", correct: true },\r\n        { text: \"В модуле Эскизы\", correct: false },\r\n        { text: \"В справочнике инструментов\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Какой инструмент помогает быстро выбрать допуск?\",\r\n      answers: [\r\n        { text: \"Справочник допусков и посадок\", correct: true },\r\n        { text: \"Модуль расчета режимов\", correct: false },\r\n        { text: \"Графический редактор\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как задать расположение детали в операции?\",\r\n      answers: [\r\n        { text: \"В разделе Посадки или Размещение\", correct: true },\r\n        { text: \"В параметрах перехода\", correct: false },\r\n        { text: \"В настройках инструмента\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Что нужно сделать после редактирования переходов?\",\r\n      answers: [\r\n        { text: \"Нажать ОК или Применить и сохранить проект\", correct: true },\r\n        { text: \"Создать новый техпроцесс\", correct: false },\r\n        { text: \"Перезапустить программу\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Какой элемент нельзя добавить в операцию?\",\r\n      answers: [\r\n        { text: \"Другой техпроцесс\", correct: true },\r\n        { text: \"Переход\", correct: false },\r\n        { text: \"Режущий инструмент\", correct: false }\r\n      ]\r\n    }\r\n  ];\r\n'),
 (11, 1, 'Библиотека пользователя. Работа со справочником технолога системы ПОЛИНОМ:MDM', 'file://192.168.0.5/AQServer/%D0%9E%D0%98%D0%A2/%D0%9A%D1%83%D1%80%D1%81%20%D0%92%D0%95%D0%A0%D0%A2%D0%98%D0%9A%D0%90%D0%9B%D0%AC%202018.1%20SP1/1.mp4', '<p>\r\n                    <b>\r\n                        Библиотека пользователя в «Вертикаль 2018» используется для хранения и повторного использования настроенных элементов техпроцесса: операций, переходов, оснастки, инструментов и параметров обработки.\r\n                    </b>\r\n                </p><p>\r\n                    <b>\r\n                        ### 1. Бибилиотека предоставляет следующий функционал\r\n                        <br>\r\n                        1. Создание шаблонов: Пользователь добавляет типовые операции/переходы в библиотеку для быстрого применения в новых техпроцессах.\r\n                        <br>\r\n                        2. Доступ к данным: Библиотека открывается через справочник, элементы выбираются для вставки в операцию.\r\n                        <br>\r\n                        3. Редактирование: Можно добавлять, изменять или удалять элементы в библиотеке.\r\n                        <br>\r\n                        4. Экономия времени: Повторное использование готовых настроек ускоряет разработку техпроцессов.\r\n                        <br>\r\n                        5. Стандартизация: Обеспечивает единообразие параметров для однотипных деталей.\r\n                    </b>\r\n                </p><p>\r\n                    <b>\r\n                        ### 2. Выбор режущего инструмента с использованием фильтров\r\n                        <br>\r\n                        1. Откройте справочник инструментов (в меню операции или через вкладку «Инструменты»).\r\n                        <br>\r\n                        2. В справочнике нажмите Фильтр (значок воронки или кнопка «Настройка»).\r\n                        <br>\r\n                        3. Установите параметры фильтра:\r\n                        <br>\r\n                        - Тип инструмента (фреза, сверло, резец и т.д.).\r\n                        <br>\r\n                        - Материал обработки (сталь, алюминий, пластик и т.д.).\r\n                        <br>\r\n                        - Размеры (диаметр, длина, шаг резьбы и т.д.).\r\n                        <br>\r\n                        - Условия обработки (например, скорость, подача).\r\n                        <br>\r\n                        - Дополнительные параметры (производитель, серия, стандарт).\r\n                        <br>\r\n                        4. Примените фильтр (кнопка «ОК» или «Применить»).\r\n                        <br>\r\n                        5. В отфильтрованном списке выберите подходящий инструмент и добавьте его в операцию (кнопка «Выбрать» или двойной щелчок).\r\n                    </b>\r\n                </p>', 'Библиотека пользователя в «Вертикаль 2018». ', '\r\n    const questions = [\r\n        {\r\n            question: \"Как открыть библиотеку пользователя в Вертикаль 2018?\",\r\n            answers: [\r\n                { text: \"Через вкладку Операции → Добавить\", correct: false },\r\n                { text: \"Через меню Справочники → Библиотека пользователя\", correct: true },\r\n                { text: \"Через настройки проекта\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Что можно сохранить в библиотеку пользователя?\",\r\n            answers: [\r\n                { text: \"3D-модели деталей\", correct: false },\r\n                { text: \"Только чертежи\", correct: false },\r\n                { text: \"Операции, переходы и инструменты\", correct: true }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Как добавить элемент в библиотеку пользователя?\",\r\n            answers: [\r\n                { text: \"Выбрать элемент и нажать Сохранить в библиотеку\", correct: true },\r\n                { text: \"Экспортировать в DXF\", correct: false },\r\n                { text: \"Создать новый техпроцесс\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Где хранятся данные справочника технолога в ПОЛИНОМ:MDM?\",\r\n            answers: [\r\n\r\n                { text: \"В локальных файлах проекта\", correct: false },\r\n                { text: \"На внешнем сервере\", correct: false },\r\n                { text: \"В единой базе данных системы\", correct: true }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Какой функционал справочника технолога в ПОЛИНОМ:MDM ускоряет выбор инструмента?\",\r\n            answers: [\r\n                { text: \"Фильтры по типу, материалу и параметрам\", correct: true },\r\n                { text: \"Автоматическая генерация операций\", correct: false },\r\n                { text: \"Импорт чертежей\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Как импортировать техпроцесс из библиотеки пользователя в Вертикаль 2018?\",\r\n            answers: [\r\n                { text: \"Открыть файл через меню Файл → Импорт\", correct: false },\r\n                { text: \"Выбрать техпроцесс в справочнике и нажать Вставить\", correct: true },\r\n                { text: \"Создать новый чертеж\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Какой тип файла обычно используется для подключения 3D-модели в Вертикаль 2018?\",\r\n            answers: [\r\n                { text: \"STEP (.stp)\", correct: true },\r\n                { text: \"PDF (.pdf)\", correct: false },\r\n                { text: \"TXT (.txt)\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Как называется модуль в Вертикаль 2018 для создания техпроцесса?\",\r\n            answers: [\r\n                { text: \"Технолог\", correct: true },\r\n                { text: \"Конструктор\", correct: false },\r\n                { text: \"Архиватор\", correct: false }\r\n            ]\r\n        },\r\n        {\r\n            question: \"Что необходимо сделать для подключения чертежа в техпроцесс?\",\r\n            answers: [\r\n                { text: \"Экспортировать модель в STL\", correct: false },\r\n                { text: \"Импортировать файл в формате DWG/DXF\", correct: true },\r\n                { text: \"Создать новый проект\", correct: false },\r\n            ]\r\n        },\r\n        {\r\n            question: \"Для чего используется вкладка \'Документы\' в Вертикаль 2018?\",\r\n            answers: [\r\n                { text: \"Для редактирования 3D-модели\", correct: false },\r\n                { text: \"Для расчета стоимости\", correct: false },\r\n                { text: \"Для привязки чертежей и спецификаций к техпроцессу\", correct: true }\r\n            ]\r\n        }\r\n    ];\r\n'),
 (12, 1, 'Наполнение справочника технолога системы ПОЛИНОМ:MDM', 'file://192.168.0.5/AQServer/%D0%9E%D0%98%D0%A2/%D0%9A%D1%83%D1%80%D1%81%20%D0%92%D0%95%D0%A0%D0%A2%D0%98%D0%9A%D0%90%D0%9B%D0%AC%202018.1%20SP1/1.mp4', '<p>\r\n            <b>\r\n              ###Пункт 1. Добавление данных в справочник\r\n              <br>\r\n              1. Открытие справочника: Зайдите в ПОЛИНОМ:MDM, выберите нужный справочник (например, инструменты, материалы) через меню «Справочники».\r\n              <br>\r\n              2. Создание записи: Нажмите «Добавить» (или «+»), выберите тип данных (инструмент, операция и т.д.).\r\n              <br>\r\n              3. Заполнение полей: Введите параметры (название, характеристики, размеры, код и т.д.).\r\n              <br>\r\n              4. Применение фильтров: При необходимости настройте фильтры для классификации (тип, материал, стандарт).\r\n              <br>\r\n              5. Сохранение: Нажмите «Сохранить» для добавления записи в базу.\r\n              <br>\r\n              6. Проверка: Убедитесь, что данные появились в справочнике и доступны для использования.\r\n              <br>\r\n            </b>\r\n          </p><p>\r\n            <b>\r\n              ###Пункт 2. Добавление цехов, участков и экземпляров оборудованияв цех\r\n              <br>\r\n              1. Добавление цеха: Выберите «Цеха», нажмите «Добавить» (+), введите название и код цеха, сохраните.\r\n              <br>\r\n              2. Добавление участка: В справочнике выберите нужный цех, перейдите в «Участки», нажмите «Добавить», укажите название и код, сохраните.\r\n              <br>\r\n              3. Добавление оборудования: В разделе «Оборудование» выберите цех/участок, нажмите «Добавить», введите данные экземпляра (название, тип, инв. номер, характеристики), сохраните.\r\n            </b>\r\n          </p><p>\r\n            <b>\r\n              ###Пункт 3. Добавления режущего инструмента в справочник\r\n              <br>\r\n              1. Создание записи: Нажмите «Добавить» (+), выберите тип инструмента (например, фреза, сверло).\r\n              <br>\r\n              2. Заполнение данных: Введите параметры: название, код, размеры, материал, стандарт, производитель.\r\n              <br>\r\n              3. Настройка фильтров: Укажите категорию, тип обработки или другие параметры для классификации.\r\n\r\n              4. Сохранение: Нажмите «Сохранить» для добавления инструмента в базу.\r\n            </b>\r\n          </p>', 'В этом уроке вы научитесь наполнять справочник', '\r\n  const questions = [\r\n    {\r\n      question: \"Как открыть справочник технолога в ПОЛИНОМ:MDM?\",\r\n      answers: [\r\n        { text: \"Через меню Справочники → Технологические справочники\", correct: true },\r\n        { text: \"Через вкладку Операции → Справочники\", correct: false },\r\n        { text: \"Через настройки проекта\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Что можно добавить в справочник технолога в ПОЛИНОМ:MDM?\",\r\n      answers: [\r\n        { text: \"Инструменты, материалы, операции\", correct: true },\r\n        { text: \"Только 3D-модели\", correct: false },\r\n        { text: \"Только чертежи\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как добавить режущий инструмент в справочник?\",\r\n      answers: [\r\n        { text: \"Выбрать Режущий инструмент, нажать Добавить, заполнить параметры\", correct: true },\r\n        { text: \"Импортировать файл DXF\", correct: false },\r\n        { text: \"Создать новый техпроцесс\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Где хранятся данные справочника технолога в ПОЛИНОМ:MDM?\",\r\n      answers: [\r\n        { text: \"В единой базе данных системы\", correct: true },\r\n        { text: \"В локальных файлах на ПК\", correct: false },\r\n        { text: \"На внешнем облачном сервере\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как ускорить выбор инструмента в справочнике технолога?\",\r\n      answers: [\r\n        { text: \"Использовать фильтры по типу и параметрам\", correct: true },\r\n        { text: \"Импортировать техпроцесс\", correct: false },\r\n        { text: \"Создать новый шаблон\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как добавить цех в справочник ПОЛИНОМ:MDM?\",\r\n      answers: [\r\n        { text: \"Перейти в Структура производства, выбрать Цеха, нажать Добавить\", correct: true },\r\n        { text: \"Открыть меню Файл → Импорт\", correct: false },\r\n        { text: \"Создать техпроцесс\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как связать оборудование с участком в справочнике?\",\r\n      answers: [\r\n        { text: \"Выбрать участок, добавить экземпляр оборудования с параметрами\", correct: true },\r\n        { text: \"Экспортировать данные в CSV\", correct: false },\r\n        { text: \"Импортировать чертеж\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Какой формат данных поддерживается для импорта в справочник?\",\r\n      answers: [\r\n        { text: \"CSV, XML\", correct: true },\r\n        { text: \"PDF\", correct: false },\r\n        { text: \"JPEG\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Как проверить правильность добавления записи в справочник?\",\r\n      answers: [\r\n        { text: \"Найти запись в справочнике и проверить доступность в техпроцессе\", correct: true },\r\n        { text: \"Создать новый проект\", correct: false },\r\n        { text: \"Экспортировать справочник\", correct: false }\r\n      ]\r\n    },\r\n    {\r\n      question: \"Для чего используются шаблоны в справочнике технолога?\",\r\n      answers: [\r\n        { text: \"Для ускорения ввода однотипных данных\", correct: true },\r\n        { text: \"Для редактирования чертежей\", correct: false },\r\n        { text: \"Для расчета норм времени\", correct: false }\r\n      ]\r\n    }\r\n  ];\r\n');
@@ -105,20 +105,19 @@ CREATE TABLE `modules` (
   `id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
   `slug` varchar(50) NOT NULL,
-  `title` varchar(100) NOT NULL
+  `title` varchar(100) NOT NULL,
+  `status` enum('ACTIVE','INACTIVE') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Дамп данных таблицы `modules`
 --
 
-INSERT INTO `modules` (`id`, `course_id`, `slug`, `title`) VALUES
-(1, 1, 'vertikal-2018', 'ВЕРТИКАЛЬ 2018.1 SP1'),
-(2, 1, 'python-base', 'Основы Python'),
-(3, 2, 'project-management', 'Введение в управление проектами'),
-(4, 2, 'agile-scrum-methodology', 'Методологии Agile и Scrum'),
-(5, 3, 'ux/ui-base', 'Основы UX'),
-(6, 3, 'prototype-ui', 'Прототипирование интерфейсов');
+INSERT INTO `modules` (`id`, `course_id`, `slug`, `title`, `status`) VALUES
+(1, 1, 'vertikal-2018', 'ВЕРТИКАЛЬ 2018.1 SP1', 'ACTIVE'),
+(2, 1, 'python-base', 'Основы Python', 'ACTIVE'),
+(3, 2, 'project-management', 'Введение в управление проектами', 'ACTIVE'),
+(9, 2, 'modul-dlya-pedikov', 'модуль для педиков', 'INACTIVE');
 
 -- --------------------------------------------------------
 
@@ -129,19 +128,22 @@ INSERT INTO `modules` (`id`, `course_id`, `slug`, `title`) VALUES
 CREATE TABLE `offers` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `department` varchar(50) NOT NULL,
-  `description` varchar(2000) NOT NULL,
+  `topic` varchar(50) NOT NULL,
+  `description` text NOT NULL,
+  `response` text DEFAULT NULL,
   `status` tinytext NOT NULL DEFAULT 'В ожидании рассмотрения',
-  `created_at` varchar(255) NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Дамп данных таблицы `offers`
 --
 
-INSERT INTO `offers` (`id`, `user_id`, `department`, `description`, `status`, `created_at`) VALUES
-(11, 28, 'ОГТ', 'у меня ничего не получается блин блин блин, какой же я неудачник', 'В ожидании рассмотрения', '2025-08-21 08:23:12'),
-(12, 31, 'ОГТ', 'Мало номиналло Мало номиналлоМало номиналлоМало номиналлоМало номиналлоМало номиналлоМало номиналлоМало номиналлоМало номиналлоМало номиналло', 'В ожидании рассмотрения', '2025-08-21 08:23:12');
+INSERT INTO `offers` (`id`, `user_id`, `topic`, `description`, `response`, `status`, `created_at`, `updated_at`) VALUES
+(14, 31, 'Новая тема номер 1', 'текст темы текст темы текст темытекст темытекст темытекст темытекст темытекст темы м текст темы текст темы текст темытекст темым текст темы', 'Чепуху не пишите', 'REJECTED', '2025-08-25 08:46:54.000000', '2025-08-25 11:17:50.000000'),
+(15, 54, 'Вопрос с курсами', 'Запишите меня хотя бы на какой нибудь курс. А то нахуя я сюда зашел', 'Потому что потому', 'APPROVED', '2025-08-25 09:40:21.000000', '2025-08-25 11:49:28.000000'),
+(16, 31, 'Модули управления проектами', 'Прошу добавить еще пару модулей для лучшего изучения материала', 'Больше модулей нет, это вес курс', 'REJECTED', '2025-08-27 08:10:29.000000', '2025-08-27 08:13:29.000000');
 
 -- --------------------------------------------------------
 
@@ -172,9 +174,10 @@ CREATE TABLE `users` (
   `last_name` varchar(50) NOT NULL,
   `department` varchar(50) NOT NULL,
   `job_title` varchar(50) NOT NULL,
+  `qualification` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `avatar` varchar(200) NOT NULL DEFAULT 'avatar.png',
+  `avatar` varchar(200) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -183,11 +186,11 @@ CREATE TABLE `users` (
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`id`, `first_name`, `last_name`, `department`, `job_title`, `username`, `password`, `avatar`, `created_at`, `updated_at`) VALUES
-(28, 'Александр', 'Сморчков', 'ОТК', 'Дефектоскопист', 'smorchkov', '$2a$10$U/rQb2aGREwNjjXdr1Z2zegBkp.AG1LqxtT6wvYWI2DNe00j6tyUa', '4a9070af-8207-4b0d-9be3-228905d60565.jfif', '2025-08-19 02:38:02', '2025-08-21 08:10:25'),
-(31, 'Никита', 'Бугаков', 'ОГТ', 'Программист', 'bugakov', '$2a$10$rv.tIbRct5fSJeITlNL4F.O/WXb2KrqPQFwArta5UtTl2Fq9IX.f.', '342b3beb-bef2-4e79-a8ce-58cd81cc5a9a.jfif', '2025-08-19 08:30:03', '2025-08-21 08:09:55'),
-(32, 'Администратор', 'Администратор', 'ОГТ', 'Программист', 'admin123', '$2a$10$DF6W1QYHG7Ofzgx/RgtZuejx3DKVYEcX.ZbScmx7luR6IXbkPvVSO', 'avatar.png', '2025-08-21 05:14:42', '2025-08-21 05:14:42'),
-(54, 'Данек', 'Сморчков', 'Дом', 'Домосед', 'danek123', '$2a$10$hlwpXRf/pFpL6MRYZNChe.LSg78k3MPJxZ9oihkwj10trPK89byAC', 'avatar.png', '2025-08-21 09:46:24', '2025-08-21 09:46:24');
+INSERT INTO `users` (`id`, `first_name`, `last_name`, `department`, `job_title`, `qualification`, `username`, `password`, `avatar`, `created_at`, `updated_at`) VALUES
+(28, 'Александр', 'Сморчков', 'ОТК', 'Дефектоскопист', '1', 'smorchkov', '$2a$10$U/rQb2aGREwNjjXdr1Z2zegBkp.AG1LqxtT6wvYWI2DNe00j6tyUa', '4a9070af-8207-4b0d-9be3-228905d60565.jfif', '2025-08-19 02:38:02', '2025-08-26 05:35:52'),
+(31, 'Никита', 'Бугаков', 'ОГТ', 'Программист', '1', 'bugakov', '$2a$10$S7SULmVpW/mVdrSnjzIvB.q.8txRHyHYRLU3HmcolvYYwieZ9I/1.', '47571d78-360e-496e-98d8-2f39af343df0.jfif', '2025-08-19 08:30:03', '2025-08-26 05:35:54'),
+(32, 'Администратор', 'Администратор', 'ОГТ', 'Программист', '1', 'admin123', '$2a$10$DF6W1QYHG7Ofzgx/RgtZuejx3DKVYEcX.ZbScmx7luR6IXbkPvVSO', 'avatar.png', '2025-08-21 05:14:42', '2025-08-26 05:35:56'),
+(54, 'Данек', 'Сморчков', 'Дом', 'Домосед', '1', 'danek123', '$2a$10$hlwpXRf/pFpL6MRYZNChe.LSg78k3MPJxZ9oihkwj10trPK89byAC', 'avatar.png', '2025-08-21 09:46:24', '2025-08-26 05:35:58');
 
 -- --------------------------------------------------------
 
@@ -209,7 +212,7 @@ CREATE TABLE `user_courses` (
 INSERT INTO `user_courses` (`id`, `user_id`, `course_id`, `enrolled_at`) VALUES
 (1, 28, 1, '2025-08-19 06:08:32'),
 (2, 31, 1, '2025-08-19 13:33:48'),
-(3, 31, 3, '2025-08-19 13:33:59');
+(4, 31, 2, '2025-08-26 12:12:28');
 
 -- --------------------------------------------------------
 
@@ -346,7 +349,7 @@ ALTER TABLE `user_role`
 -- AUTO_INCREMENT для таблицы `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT для таблицы `lessons`
@@ -358,13 +361,13 @@ ALTER TABLE `lessons`
 -- AUTO_INCREMENT для таблицы `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT для таблицы `offers`
 --
 ALTER TABLE `offers`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
@@ -376,7 +379,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT для таблицы `user_courses`
 --
 ALTER TABLE `user_courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `user_progress`

@@ -126,9 +126,11 @@
                                         </button>
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary" href="/admin/module/${module.id}/lessons">
-                                            Уроки модуля
-                                        </a>
+                                        <div class="col-md-6 d-flex align-items-end">
+                                            <button type="button" class="btn btn-primary" onclick="loadLessons(${module.id})">
+                                                <i class="fas fa-list me-2"></i>Показать уроки
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </#list>
@@ -145,5 +147,6 @@
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminDeleteModule.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/getModuleLessons.js"></script>
 </body>
 </html>
