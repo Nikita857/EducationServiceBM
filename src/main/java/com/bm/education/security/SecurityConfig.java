@@ -1,6 +1,7 @@
 package com.bm.education.security;
 
 import com.bm.education.Exceptions.CustomAuthenticationFailureHandler;
+import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,7 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf

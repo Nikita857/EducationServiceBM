@@ -1,8 +1,12 @@
 package com.bm.education.repositories;
 
 import com.bm.education.models.Lesson;
+import com.bm.education.models.ModuleStatus;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.bm.education.models.Module;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,7 +24,11 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
 
     List<Module> findAll();
 
-    @Query(value = "select id, title from lessons where lessons.module_id = :moduleId", nativeQuery = true)
-    List<Lesson> lessonsByModuleId(@Param("moduleId") Integer moduleId);
+    void deleteById(Integer id);
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE modules SET status = :status WHERE id = :id", nativeQuery = true)
+    void updateStatusById(@Param("id") Integer id, @Param("status") String status);
+    Optional<Module> findBySlug(String slug);
 }

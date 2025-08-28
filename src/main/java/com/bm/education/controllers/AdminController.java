@@ -58,7 +58,7 @@ public class AdminController {
     }
 
     @GetMapping("admin/offers/{offerId}")
-    public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId) {
+    public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId, Authentication auth) {
         try {
             OfferDto offerDto = offerService.getOfferById(offerId);
             log.debug(ResponseEntity.ok(offerDto).toString());
@@ -128,7 +128,7 @@ public class AdminController {
             @Valid @ModelAttribute("course") CourseCreateRequest courseRequest,
             BindingResult bindingResult,
             @RequestParam("image") MultipartFile imageFile,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes, Authentication auth) {
 
         // Проверяем валидацию
         log.debug("Проверка валидации в контроллере");
@@ -182,7 +182,7 @@ public class AdminController {
         }
     }
     @GetMapping("/admin/modules/create")
-    public String addModule() {
+    public String addModule(Authentication auth) {
         return "admin/addModule";
     }
 }

@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" content="${_csrf.token}"/>
+    <!-- default header name is X-CSRF-TOKEN -->
+    <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <title>Управление модулями - Админ панель</title>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body>
 <div class="admin-layout">
@@ -75,22 +79,33 @@
         <section class="content-section">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">
-                        <i class="fas fa-list me-2"></i>
-                        Список модулей
-                    </h2>
+                    <div class="d-flex justify-content-between">
+                        <h2 class="card-title">
+                            <i class="fas fa-list me-2"></i>
+                            Список модулей
+                        </h2>
+                        <form action="/admin/modules" method="get">
+                            <select name="courseId" id="" class="form-select" onchange="this.form.submit()">
+                                <option value="" selected>Выберите курс</option>
+                                <#list courses as course>
+                                    <option value="${course.id}">${course.title}</option>
+                                </#list>
+                            </select>
+                        </form>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>№</th>
                                 <th>Курс</th>
                                 <th>URI</th>
                                 <th>Название</th>
                                 <th>Статус</th>
                                 <th>Действия</th>
+                                <th>Уроки модуля</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -100,21 +115,20 @@
                                     <td>${module.course.title}</td>
                                     <td>${module.slug}</td>
                                     <td>${module.title}</td>
-                                    <td><span class="badge bg-success">Активен</span></td>
+                                    <#if module.status == "ACTIVE">
+                                        <td><span class="badge bg-success" style="cursor: pointer" href="/admin/modules/updateStatus/${module.id}/setInactive" onclick="adminUpdateModuleStatus(${module.id}, 'INACTIVE')">Активен</span></td>
+                                    <#else>
+                                        <td><span class="badge bg-secondary" style="cursor: pointer" href="/admin/modules/updateStatus/${module.id}/setActive" onclick="adminUpdateModuleStatus(${module.id}, 'ACTIVE')">Неактивен</span></td>
+                                    </#if>
                                     <td>
-                                        <a class="btn btn-primary dropdown-toggle" href="/admin/module/${module.id}/lessons">
-                                            Уроки модуля
-                                        </a>
+                                        <button class="btn btn-danger" onclick="deleteModule(${module.id})">
+                                            <i class="bi bi-trash"></i> Удалить
+                                        </button>
                                     </td>
                                     <td>
-                                        <div class="action-buttons">
-                                            <button class="btn btn-sm btn-outline-light btn-icon">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger btn-icon">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
+                                        <a class="btn btn-primary" href="/admin/module/${module.id}/lessons">
+                                            Уроки модуля
+                                        </a>
                                     </td>
                                 </tr>
                             </#list>
@@ -128,40 +142,8 @@
 </div>
 
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
-<script>
-    // Обработка формы
-    document.getElementById('moduleForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const courseId = document.getElementById('courseId').value;
-        const slug = document.getElementById('slug').value;
-        const title = document.getElementById('title').value;
-
-        if (!courseId || !slug || !title) {
-            alert('Пожалуйста, заполните все обязательные поля');
-            return;
-        }
-
-        // Здесь будет логика отправки данных на сервер
-        console.log('Данные модуля:', { courseId, slug, title });
-        alert('Модуль успешно добавлен!');
-        this.reset();
-    });
-
-    // Генерация slug из названия
-    document.getElementById('title').addEventListener('input', function() {
-        const title = this.value;
-        const slugInput = document.getElementById('slug');
-
-        if (!slugInput.value) {
-            const slug = title.toLowerCase()
-                .replace(/[^a-z0-9а-яё\s]/gi, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            slugInput.value = slug;
-        }
-    });
-</script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminDeleteModule.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>
 </body>
 </html>
