@@ -12,7 +12,7 @@ async function openEditUserModal(userId) {
         if (!userData.success) throw new Error(userData.message || 'Ошибка данных пользователя');
 
         currentEditingUser = userData.user;
-        console.log(currentEditingUser)
+        console.log(currentEditingUser);
 
 
         const modalElement = document.getElementById('editUserModal');
@@ -22,11 +22,14 @@ async function openEditUserModal(userId) {
 
         // Показываем модальное окно
         const modal = new bootstrap.Modal(modalElement);
-        $('#editUserName').text(`${currentEditingUser.firstName} ${currentEditingUser.lastName}`)
-        $('#editUserUsername').text(`${currentEditingUser.username}`)
-        $('#editUserDepartment').val(`${currentEditingUser['department']}`)
-        $('#editUserJobTitle').val(`${currentEditingUser['jobTitle']}`)
-        $('#editUserQualification').val(`${currentEditingUser['qualification']}`)
+
+        $('#editUserName').text(`${currentEditingUser.firstName} ${currentEditingUser.lastName}`);
+        $('#editUserUsername').text(`${currentEditingUser.username}`);
+        $('#editUserDepartment').val(`${currentEditingUser['department']}`);
+        $('#editUserJobTitle').val(`${currentEditingUser['jobTitle']}`);
+        $('#editUserQualification').val(`${currentEditingUser['qualification']}`);
+        $('#userIdForUpdate').val(`${currentEditingUser['id']}`);
+
         modal.show();
 
     } catch (error) {
@@ -39,15 +42,16 @@ async function openEditUserModal(userId) {
 async function saveUserChanges() {
     try {
         const formData = {
-            userId: document.getElementById('editUserId').value,
+            userId: document.getElementById('userIdForUpdate').value,
             department: document.getElementById('editUserDepartment').value,
             jobTitle: document.getElementById('editUserJobTitle').value,
-            qualification: document.getElementById('editUserQualification').value
+            qualification: document.getElementById('editUserQualification').value,
+            role: document.getElementById('editUserRole').value
         };
 
-        console.log(formData)
+        console.log(formData);
 
-        const response = await fetch('/admin/users/update', {
+        const response = await fetch('/admin/user/update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,6 +61,7 @@ async function saveUserChanges() {
         });
 
         const result = await response.json();
+        console.log(result);
 
         if (response.ok && result.success) {
             alert('Данные успешно обновлены!');
@@ -69,13 +74,46 @@ async function saveUserChanges() {
             loadUsers(currentPage);
 
         } else {
-            alert(result.message || 'Ошибка при сохранении данных');
+            // Обработка ошибок валидации
+            if (result.errors) {
+                displayValidationErrors(result.errors);
+            } else {
+                alert(result.error || 'Ошибка при сохранении данных');
+            }
         }
 
     } catch (error) {
         console.error('Ошибка сохранения:', error);
         alert('Произошла ошибка при сохранении данных');
     }
+}
+
+// Функция для отображения ошибок валидации
+function displayValidationErrors(errors) {
+    let errorMessages = [];
+
+    // Проходим по всем ошибкам и собираем сообщения
+    for (const [field, message] of Object.entries(errors)) {
+        errorMessages.push(`${getFieldDisplayName(field)}: ${message}`);
+    }
+
+    // Показываем все ошибки в alert или в специальном контейнере
+    if (errorMessages.length > 0) {
+        alert('Ошибки валидации:\n' + errorMessages.join('\n'));
+    }
+}
+
+// Функция для получения читаемого имени поля
+function getFieldDisplayName(field) {
+    const fieldNames = {
+        'userId': 'ID пользователя',
+        'department': 'Отдел',
+        'jobTitle': 'Должность',
+        'qualification': 'Квалификация',
+        'role': 'Роль'
+    };
+
+    return fieldNames[field] || field;
 }
 
 // Функция для получения CSRF токена

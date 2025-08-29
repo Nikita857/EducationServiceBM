@@ -571,3 +571,272 @@ textarea.form-control {
         padding: 0.25rem;
     }
 }
+/* Стили для таблицы курсов */
+.courses-table .table-row {
+    display: grid;
+    grid-template-columns: 60px 60px minmax(150px, 1fr) minmax(200px, 2fr) 120px 100px 120px 120px 100px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+}
+
+.courses-table .table-row.header-row {
+    background: rgba(99, 102, 241, 0.05);
+    font-weight: 600;
+}
+
+.courses-table .table-row:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+/* Адаптивность для таблицы курсов */
+@media (max-width: 1600px) {
+    .courses-table .table-row {
+        grid-template-columns: 50px 50px minmax(120px, 1fr) minmax(150px, 2fr) 100px 90px 100px 100px 90px;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+@media (max-width: 1400px) {
+    .courses-table .table-row {
+        grid-template-columns: 40px 40px minmax(100px, 1fr) minmax(120px, 2fr) 90px 80px 90px 90px 80px;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+}
+
+/* Стили для обрезания длинного текста */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Стили для кода URI */
+code {
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #6366f1;
+}
+
+/* Дополнительные статусы */
+.status-archived {
+    background: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+}
+
+.status-draft {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* Стили для таблицы курсов */
+.courses-table {
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.courses-table .table-header {
+    padding: 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.courses-table .table-content {
+    width: 100%;
+    padding: 0;
+}
+
+.courses-table .table-row {
+    display: grid;
+    grid-template-columns: 60px 70px minmax(200px, 1fr) minmax(250px, 2fr) 150px 120px 140px 140px 120px;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.courses-table .table-row.header-row {
+    background: rgba(99, 102, 241, 0.08);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.courses-table .table-row:last-child {
+    border-bottom: none;
+}
+
+.courses-table .table-row:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.courses-table .table-cell {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Стили для изображений курсов */
+.course-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Стили для описания */
+.course-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+/* Стили для URI */
+.courses-table code {
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #6366f1;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    word-break: break-all;
+}
+
+/* Статус-баджи */
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.status-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.status-review {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Кнопки действий */
+.courses-table .action-buttons {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+}
+
+.courses-table .btn-icon {
+    padding: 0.4rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+/* Адаптивность */
+@media (max-width: 1920px) {
+    .courses-table .table-row {
+        grid-template-columns: 50px 60px minmax(180px, 1fr) minmax(220px, 2fr) 130px 110px 120px 120px 110px;
+        gap: 0.8rem;
+        padding: 0.9rem 1.2rem;
+    }
+}
+
+@media (max-width: 1600px) {
+    .courses-table .table-row {
+        grid-template-columns: 45px 55px minmax(160px, 1fr) minmax(200px, 2fr) 120px 100px 110px 110px 100px;
+        gap: 0.7rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .course-image {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 1400px) {
+    .courses-table .table-row {
+        grid-template-columns: 40px 50px minmax(140px, 1fr) minmax(180px, 2fr) 110px 90px 100px 100px 90px;
+        gap: 0.6rem;
+        padding: 0.7rem 0.9rem;
+    }
+
+    .course-description {
+        -webkit-line-clamp: 1;
+    }
+}
+
+@media (max-width: 1200px) {
+    .courses-table .table-row {
+        grid-template-columns: 35px 45px minmax(120px, 1fr) minmax(160px, 2fr) 100px 80px 90px 90px 80px;
+        gap: 0.5rem;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .course-image {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Для очень маленьких экранов - горизонтальный скролл */
+.courses-table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.courses-table {
+    min-width: 1000px; /* Минимальная ширина для скролла */
+}
+
+/* Заголовки столбцов */
+.courses-table .header-row .table-cell {
+    color: #6366f1;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Выравнивание содержимого */
+.courses-table .table-cell:first-child {
+    text-align: center;
+}
+
+.courses-table .table-cell:nth-child(2) {
+    text-align: center;
+}
+
+.courses-table .table-cell:last-child {
+    text-align: center;
+}

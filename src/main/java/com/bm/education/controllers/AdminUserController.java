@@ -1,12 +1,15 @@
 package com.bm.education.controllers;
 
 import com.bm.education.dto.UserResponseDTO;
+import com.bm.education.dto.UserUpdateRequestDTO;
 import com.bm.education.services.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -88,6 +91,37 @@ public class AdminUserController {
                     "success", false,
                     "error", e.getMessage()
             ));
+        }
+    }
+
+    @PostMapping("/admin/user/update")
+    public ResponseEntity<?> updateUserById(@Valid @RequestBody UserUpdateRequestDTO updateRequestDTO,
+                                            BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(fieldError -> {
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            });
+            return ResponseEntity.badRequest().body(Map.of( "errors", errors));
+        }
+
+        try {
+            if(userService.updateUserById(updateRequestDTO)) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "user", updateRequestDTO)
+                );
+            }else{
+                return ResponseEntity.internalServerError().body(Map.of(
+                        "success", false,
+                        "error", "Internal server error")
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error updating user: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", e.getMessage())
+            );
         }
     }
 }

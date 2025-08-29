@@ -1,5 +1,6 @@
 package com.bm.education.services;
 
+import com.bm.education.dto.CourseResponseDTO;
 import com.bm.education.models.Course;
 import com.bm.education.models.CourseStatus;
 import com.bm.education.models.Role;
@@ -8,6 +9,10 @@ import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +24,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -92,5 +98,24 @@ public class CoursesService {
         Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
         log.info("Файл сохранен");
         return filename;
+    }
+
+    private CourseResponseDTO convertToCourseResponseDto(Course course) {
+        return new CourseResponseDTO(
+                course.getId(),
+                course.getTitle(),
+                course.getImage(),
+                course.getDescription(),
+                course.getSlug(),
+                course.getStatus().toString(),
+                course.getCreatedAt().toString(),
+                course.getUpdatedAt().toString()
+        );
+    }
+
+    public Page<CourseResponseDTO> getCoursesForDTO(Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Course> courses = coursesRepository.findAll(pageable);
+        return courses.map(this::convertToCourseResponseDto);
     }
 }

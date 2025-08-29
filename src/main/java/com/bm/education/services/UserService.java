@@ -2,6 +2,7 @@ package com.bm.education.services;
 
 import com.bm.education.Exceptions.ApiException;
 import com.bm.education.dto.UserResponseDTO;
+import com.bm.education.dto.UserUpdateRequestDTO;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,6 +159,31 @@ public class UserService {
     }
     public UserResponseDTO getUserById(Integer userId) {
         return convertToUserDTO(userRepository.findById(userId).isPresent() ? userRepository.findById(userId).get() : new User());
+    }
+
+    @Modifying
+    @Transactional
+    public boolean updateUserById(UserUpdateRequestDTO userUpdateRequestDTO) {
+        try {
+            User user = userRepository.findById(userUpdateRequestDTO.getUserId()).orElse(null);
+
+            user.setDepartment(userUpdateRequestDTO.getDepartment());
+            user.setJobTitle(userUpdateRequestDTO.getJobTitle());
+            user.setQualification(userUpdateRequestDTO.getQualification());
+
+
+            if(userUpdateRequestDTO.getRole() != null) {
+                if (user.getRoles().toArray()[0].toString() == Role.ROLE_USER.toString()) {
+                    user.setRoles(Set.of(Role.ROLE_USER));
+                }else{
+                    user.setRoles(Set.of(Role.ROLE_ADMIN));
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return false;
+        }
     }
 
 }

@@ -90,11 +90,15 @@
 
             <div class="nav-section">
                 <h3 class="nav-title">Контент</h3>
-                <div class="nav-item">
-                    <a href="#" class="nav-link" data-tab="courses-tab">
-                        <i class="bi bi-book"></i>
-                        Курсы
-                    </a>
+
+                <div class="dropdown nav-item">
+                    <button class="border-0 w-100 text-center text-muted nav-link bg-transparent dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-card-checklist"></i> Курсы
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="nav-link" id="openAddModuleTab" data-tab="courses-add-tab" href="#">Добавление курса</a></li>
+                        <li><a class="nav-link"  data-tab="courses-edit-tab" href="#">Редактирование курсов</a></li>
+                    </ul>
                 </div>
                 <div class="nav-item">
                     <a href="/admin/modules" class="nav-link">
@@ -305,8 +309,30 @@
             </section>
         </div>
 
-        <!-- Курсы -->
-        <div class="tab-content" id="courses-tab">
+        <!-- Добавление курса -->
+        <div class="tab-content" id="courses-add-tab">
+            <section class="content-section">
+                <h2 class="section-title">Добавление курса</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <#include 'admin/addCourse.ftlh'>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <#-- Редактирование курса -->
+        <div class="tab-content" id="courses-edit-tab">
+            <section class="content-section">
+                <h2 class="section-title">Редактирование курса</h2>
+                <div class="card">
+                    <div class="card-body">
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" id="courses-add-tab">
             <div class="d-flex mb-4">
                 <button class="btn btn-outline-primary mx-2" onclick="switchToView('showEditCourseView')">
                     <i class="bi bi-plus-circle me-1"></i>Добавить курс
@@ -472,17 +498,30 @@
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Отдел:</label>
-                        <input type="text" id="editUserDepartment" class="form-control">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label class="form-label">Отдел:</label>
+                            <input type="text" id="editUserDepartment" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Должность:</label>
+                            <input type="text" id="editUserJobTitle" class="form-control">
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Должность:</label>
-                        <input type="text" id="editUserJobTitle" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Квалификация:</label>
-                        <input type="text" id="editUserQualification" class="form-control">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label class="form-label">Квалификация:</label>
+                            <input type="text" id="editUserQualification" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Роль:</label>
+                            <select id="editUserRole" class="form-select">
+                                <option value="" selected>Выберите роль</option>
+                                <option value="ROLE_ADMIN">Администратор</option>
+                                <option value="ROLE_USER">Пользователь</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="userIdForUpdate">
                     </div>
                 </div>
             </div>

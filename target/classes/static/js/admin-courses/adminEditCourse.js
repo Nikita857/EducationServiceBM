@@ -1,198 +1,259 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Выбор всех чекбоксов
-    const selectAll = document.getElementById('selectAll');
-    const courseCheckboxes = document.querySelectorAll('.course-checkbox');
+let currentPage = 1;
+let totalPages = 1;
+let totalItems = 0;
 
-    selectAll.addEventListener('change', function() {
-        courseCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
+// Количество пользователей на странице
+let coursesPerPage = 1;
 
-    // Редактирование полей в реальном времени
-    const editableFields = document.querySelectorAll('[contenteditable="true"], .category-select, .level-select, .status-select');
+async function loadCourses(page = 1) {
+    try {
+        console.log(`Загрузка курсов, страница: ${page}`);
+        const response = await fetch(`/admin/courses?page=${page}&size=${coursesPerPage}`);
 
-    editableFields.forEach(field => {
-        if (field.hasAttribute('contenteditable')) {
-            // Для contenteditable полей
-            field.addEventListener('blur', function() {
-                saveFieldChange(this);
-            });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Данные получены:', data);
 
-            field.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.blur();
-                }
-            });
-        } else {
-            // Для select полей
-            field.addEventListener('change', function() {
-                saveFieldChange(this);
-            });
-        }
-    });
+            if (data.success && data.courses) {
+                currentPage = data.currentPage || page;
+                totalPages = data.totalPages || 1;
+                totalItems = data.totalItems || data.courses.length;
 
-    // Поиск и фильтрация
-    const searchInput = document.getElementById('courseSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const statusFilter = document.getElementById('statusFilter');
+                console.log("Рендерим таблицу...");
+                renderCoursesTable(data.courses);
+                console.log("Таблица отрендерена");
 
-    [searchInput, categoryFilter, statusFilter].forEach(filter => {
-        filter.addEventListener('input', applyFilters);
-    });
-
-    // Массовые действия
-    document.getElementById('applyMassAction').addEventListener('click', function() {
-        const action = document.getElementById('massAction').value;
-        const selectedCourses = Array.from(courseCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.dataset.courseId);
-
-        if (selectedCourses.length === 0) {
-            alert('Выберите хотя бы один курс');
-            return;
-        }
-
-        if (!action) {
-            alert('Выберите действие');
-            return;
-        }
-
-        if (confirm(`Применить действие "${action}" к ${selectedCourses.length} курсам?`)) {
-            // Здесь будет AJAX запрос для массового действия
-            console.log('Массовое действие:', action, 'Курсы:', selectedCourses);
-        }
-    });
-
-    // Кнопки действий
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const courseId = this.dataset.courseId;
-            openCourseEditor(courseId);
-        });
-    });
-
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const courseId = this.dataset.courseId;
-            deleteCourse(courseId);
-        });
-    });
-});
-
-function saveFieldChange(field) {
-    const courseId = field.dataset.courseId;
-    const fieldName = field.dataset.field;
-    let value;
-
-    if (field.hasAttribute('contenteditable')) {
-        value = field.textContent.trim();
-    } else {
-        value = field.value;
-    }
-
-    // Валидация
-    if (fieldName === 'slug') {
-        value = value.replace('/courses/', '').trim();
-        if (!/^[a-z0-9-]+$/.test(value)) {
-            alert('URL может содержать только латинские буквы, цифры и дефисы');
-            field.focus();
-            return;
-        }
-    }
-
-    // AJAX запрос для сохранения
-    console.log('Сохранение:', { courseId, field: fieldName, value });
-
-    // Здесь будет fetch запрос к серверу
-    fetch('/admin/courses/update-field', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            courseId: courseId,
-            field: fieldName,
-            value: value
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Изменения сохранены', 'success');
+                console.log("Рендерим пагинацию таблицы курсов...");
+                renderPagination();
+                console.log("Пагинация курсов отрендерена");
             } else {
-                showNotification('Ошибка сохранения', 'error');
+                throw new Error("Неверный формат данных от AdminCoursesController");
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Ошибка сети', 'error');
-        });
-}
-
-function applyFilters() {
-    const searchText = document.getElementById('courseSearch').value.toLowerCase();
-    const category = document.getElementById('categoryFilter').value;
-    const status = document.getElementById('statusFilter').value;
-
-    document.querySelectorAll('.course-row').forEach(row => {
-        const title = row.querySelector('.course-title').textContent.toLowerCase();
-        const rowCategory = row.querySelector('.category-select').value;
-        const rowStatus = row.querySelector('.status-select').value;
-
-        const matchesSearch = title.includes(searchText);
-        const matchesCategory = !category || rowCategory === category;
-        const matchesStatus = !status || rowStatus === status;
-
-        row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
-    });
-}
-
-function openCourseEditor(courseId) {
-    // Открытие полной формы редактирования
-    console.log('Открытие редактора курса:', courseId);
-    // window.location.href = `/admin/courses/edit/${courseId}`;
-}
-
-function deleteCourse(courseId) {
-    if (confirm('Вы уверены, что хотите удалить этот курс?')) {
-        // AJAX запрос для удаления
-        console.log('Удаление курса:', courseId);
-
-        fetch(`/admin/courses/delete/${courseId}`, {
-            method: 'DELETE'
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Курс удален', 'success');
-                    document.querySelector(`[data-course-id="${courseId}"]`).remove();
-                } else {
-                    showNotification('Ошибка удаления', 'error');
-                }
-            });
+        } else {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки курсов:', e);
     }
 }
 
-function showNotification(message, type) {
-    // Реализация уведомлений
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-    alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+function redirectToAddCourse() {
+    document.getElementById('openAddModuleTab').click()
+}
+
+function rowsInTable(rowsCount) {
+    coursesPerPage = rowsCount;
+    loadCourses()
+}
+
+function renderCoursesTable(courses) {
+    const tableContainer = document.querySelector('#courses-edit-tab .card-body');
+
+    if (!tableContainer) {
+        console.error('Контейнер для таблицы курсов не найден');
+        return;
+    }
+
+    // Очищаем контейнер
+    tableContainer.innerHTML = '';
+
+    const tableHTML = `
+        <div class="data-table courses-table">
+    <div class="table-header d-flex justify-content-between align-items-center">
+        <h3 class="table-title">Список курсов</h3>
+        <div class="d-flex">
+            <select class="form-select form-control" onchange="rowsInTable(this.value)">
+                <option value="">Отображать строк...</option>
+                <option value="1">1</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="30">30</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="redirectToAddCourse()">
+                <i class="fas fa-plus me-1"></i> Добавить курс
+            </button>
+        </div>
+    </div>
+
+    <div class="table-content">
+        <!-- Заголовок таблицы -->
+        <div class="table-row header-row">
+            <div class="table-cell">ID</div>
+            <div class="table-cell">Изображение</div>
+            <div class="table-cell">Название</div>
+            <div class="table-cell">Описание</div>
+            <div class="table-cell">URI</div>
+            <div class="table-cell">Статус</div>
+            <div class="table-cell">Создан</div>
+            <div class="table-cell">Обновлен</div>
+            <div class="table-cell">Действия</div>
+        </div>
+
+        <!-- Строки с курсами -->
+        ${courses.length > 0 ? courses.map(course =>`
+        <div class="table-row">
+            <div class="table-cell text-muted">#${course.id || 'N/A'}</div>
+            <div class="table-cell">
+                <img src="/img/course-brand/${course.image}" alt="Курс"
+                     class="course-image">
+            </div>
+            <div class="table-cell">
+                <div class="fw-bold">${course.title || 'N/A'}</div>
+            </div>
+            <div class="table-cell">
+                        <span class="course-description">
+                            ${course.description || 'N/A'}
+                        </span>
+            </div>
+            <div class="table-cell">
+                <code>/courses/${course.slug}</code>
+            </div>
+            <div class="table-cell">
+                <span class="status-badge status-review">${course.status}</span>
+            </div>
+            <div class="table-cell text-sm text-muted">${formatCourseDate(course.createdAt)}</div>
+            <div class="table-cell text-sm text-muted">${formatCourseDate(course.updatedAt)}</div>
+            <div class="table-cell action-buttons">
+                <button class="btn btn-primary btn-icon btn-sm" title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-danger btn-icon btn-sm" title="Удалить">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('') : `
+        <div class="table-row">
+            <div colspan="11" class="text-center py-4 text-muted">
+                <i class="fas fa-users-slash me-2"></i>
+                Курсы не найдены
+            </div>
+        </div>
+    `}
+    </div>
+</div>
+
+<!-- Пагинация -->
+<div class="pagination-container-edit-course mt-3"></div>
+
+<!-- Кнопка обновления -->
+<div class="text-center mt-3">
+    <button class="btn btn-primary" onclick="loadCourses(currentPage)">
+        <i class="fas fa-sync-alt"></i> Обновить список
+    </button>
+</div>
+    `;
+
+    tableContainer.innerHTML = tableHTML;
+}
+
+function renderPagination() {
+    const paginationContainer = document.querySelector('.pagination-container-edit-course');
+
+    if (!paginationContainer) {
+        console.error('Контейнер для пагинации не найден');
+        return;
+    }
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    let paginationHTML = `
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+    `;
+
+    // Показываем ограниченное количество страниц
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Корректируем начало, если接近 концу
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Первая страница с многоточием
+    if (startPage > 1) {
+        paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+            </li>
+            ${startPage > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
         `;
-    document.body.appendChild(alert);
+    }
 
-    setTimeout(() => {
-        alert.remove();
-    }, 3000);
+    // Основные страницы
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+            </li>
+        `;
+    }
+
+    // Последняя страница с многоточием
+    if (endPage < totalPages) {
+        paginationHTML += `
+            ${endPage < totalPages - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+            </li>
+        `;
+    }
+
+    paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="pagination-info text-center mt-2">
+            <small class="text-muted">
+                Страница ${currentPage} из ${totalPages} • 
+                Всего курсов: ${totalItems}
+            </small>
+        </div>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
 }
 
-function showAddCourseForm() {
-    // Переключение на форму добавления курса
-    console.log('Показать форму добавления курса');
-    // Реализация переключения между таблицей и формой
+function changePage(page) {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    loadCourses(page);
 }
+
+function formatCourseDate(dateString) {
+    if (!dateString) return 'Не указано';
+
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем пользователей при загрузке страницы
+    const coursesTab = document.getElementById('courses-edit-tab');
+    if (coursesTab) {
+        loadCourses(1);
+    }
+});
