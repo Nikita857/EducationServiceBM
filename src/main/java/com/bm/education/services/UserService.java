@@ -1,6 +1,7 @@
 package com.bm.education.services;
 
 import com.bm.education.Exceptions.ApiException;
+import com.bm.education.dto.UserResponseDTO;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
@@ -9,6 +10,10 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,6 +37,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public boolean deleteUser(Integer userId) {
+        userRepository.deleteById(userId);
+        return userRepository.existsById(userId) ? false : true;
+    }
 
     public boolean createUser(User user) {
 
@@ -117,5 +128,34 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {return userRepository.findAll();}
+
+    private UserResponseDTO convertToUserDTO(User user) {
+        return new UserResponseDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getDepartment(),
+                user.getJobTitle(),
+                user.getQualification(),
+                user.getUsername(),
+                user.getAvatar(),
+                user.getCreatedAt(),
+                user.getRoles().toString()
+                );
+    }
+
+    public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size) {
+        // Создаем объект пагинации (Spring Data pages are 0-based)
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        // Получаем пагинированный результат
+        Page<User> usersPage = userRepository.findAll(pageable);
+
+        // Конвертируем в DTO
+        return usersPage.map(this::convertToUserDTO);
+    }
+    public UserResponseDTO getUserById(Integer userId) {
+        return convertToUserDTO(userRepository.findById(userId).isPresent() ? userRepository.findById(userId).get() : new User());
+    }
 
 }

@@ -2,31 +2,24 @@ package com.bm.education.controllers;
 
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
-import com.bm.education.models.Lesson;
 import com.bm.education.models.ModuleStatus;
-import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
-import com.bm.education.repositories.LessonRepository;
 import com.bm.education.services.CoursesService;
 import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -39,11 +32,10 @@ public class AdminModuleController {
     private final LessonService lessonService;
 
     @GetMapping("/admin/modules")
-    public String addModule(Model model, @RequestParam(value = "courseId", required = false) Integer id) {
+    public String addModule(Model model, @RequestParam(value = "courseId", required = false) String id) {
 
-
-        if(id != null){
-            model.addAttribute("modules", moduleService.getModulesByCourseId(id));
+        if(id != null && !id.equals("all")){
+            model.addAttribute("modules", moduleService.getModulesByCourseId(Integer.parseInt(id)));
         }else{
             model.addAttribute("modules", moduleService.getAllModules());
         }

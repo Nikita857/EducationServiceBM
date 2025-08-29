@@ -87,7 +87,8 @@
                         </h2>
                         <form action="/admin/modules" method="get">
                             <select name="courseId" id="" class="form-select text-light bg-dark" onchange="this.form.submit()">
-                                <option value="" selected>Выберите курс</option>
+                                <option value="#" selected>Выберите курс</option>
+                                <option value="all">Отменить сортировку</option>
                                 <#list courses as course>
                                     <option value="${course.id}">${course.title}</option>
                                 </#list>

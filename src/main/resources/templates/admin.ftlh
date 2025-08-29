@@ -5,6 +5,9 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="_csrf" content="${_csrf.token}"/>
+    <!-- default header name is X-CSRF-TOKEN -->
+    <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -100,7 +103,7 @@
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link" data-tab="users-tab">
+                    <a href="#" class="nav-link" data-tab="users-tab" onclick="loadUsers()">
                         <i class="bi bi-people"></i>
                         Пользователи
                     </a>
@@ -340,8 +343,7 @@
                 <h2 class="section-title">Управление пользователями</h2>
                 <div class="card">
                     <div class="card-body">
-                        <p>Здесь будет контент для управления пользователями...</p>
-                        <p>Список пользователей, роли, права доступа.</p>
+                    <#--Here is injects users table from admin-users/getUsers.js-->
                     </div>
                 </div>
             </section>
@@ -351,7 +353,7 @@
         <div class="tab-content" id="settings-tab">
             <section class="content-section">
                 <h2 class="section-title">Настройки системы</h2>
-                <div class="card">
+                <div class="card bg-transparent">
                     <div class="card-body">
                         <p>Здесь будут настройки системы...</p>
                         <p>Конфигурация, параметры, системные настройки.</p>
@@ -447,12 +449,59 @@
     </div>
 </div>
 
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
-<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
+<!-- Модальное окно редактирования пользователя -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Пользователь:</label>
+                        <p class="form-control-plaintext fw-bold" id="editUserName"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Логин:</label>
+                        <p class="form-control-plaintext" id="editUserUsername"></p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Отдел:</label>
+                        <input type="text" id="editUserDepartment" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Должность:</label>
+                        <input type="text" id="editUserJobTitle" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Квалификация:</label>
+                        <input type="text" id="editUserQualification" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveUserChangesBtn">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="${springMacroRequestContext.contextPath}/js/admin.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/adminOfferResponse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminAddCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-users/getUsers.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-users/editUser.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Анимация статистики

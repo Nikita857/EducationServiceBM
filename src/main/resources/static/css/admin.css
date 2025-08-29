@@ -488,3 +488,86 @@ textarea.form-control {
     display: flex;
     align-items: center;
 }
+ .data-table {
+     background: var(--card-bg);
+     border-radius: 12px;
+     border: 1px solid rgba(255, 255, 255, 0.1);
+     overflow: hidden;
+     margin-bottom: 2rem;
+ }
+
+.table-header {
+    padding: 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.table-content {
+    padding: 0;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 80px 60px 120px 120px 150px 150px 120px 120px 120px 120px 100px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-row:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-link {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.page-link:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.page-item.active .page-link {
+    background: var(--primary-gradient);
+    border-color: #6366f1;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1600px) {
+    .table-row {
+        grid-template-columns: 60px 50px 100px 100px 120px 120px 100px 100px 100px 100px 90px;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+@media (max-width: 1400px) {
+    .table-row {
+        grid-template-columns: 50px 40px 90px 90px 110px 110px 90px 90px 90px 90px 80px;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem;
+    }
+}

@@ -1,6 +1,5 @@
 package com.bm.education.repositories;
 
-import com.bm.education.models.CourseStatus;
 import com.bm.education.models.ModuleStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
