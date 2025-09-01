@@ -17,7 +17,4 @@ public class OfferDto {
     @NotBlank(message = "Описание не может быть пустым")
     @Size(min = 50, max = 2000, message = "Описание не может быть менее 50 и более 2000 символов")
     private String description;
-
-    // Не добавляйте createdAt и status в DTO -
-    // они устанавливаются автоматически на сервере
 }

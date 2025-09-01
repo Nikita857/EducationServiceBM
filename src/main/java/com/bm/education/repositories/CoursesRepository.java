@@ -2,6 +2,8 @@ package com.bm.education.repositories;
 
 import com.bm.education.models.Course;
 import com.bm.education.models.CourseStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +22,5 @@ public interface CoursesRepository extends JpaRepository<Course, Integer> {
             "(SELECT uc.course.id FROM UserCourses uc WHERE uc.user.id = :userId AND uc.course.status = :status)")
     List<Course> getAvailableUserCourses(@Param("userId") Integer userId, @Param("status") CourseStatus status);
     boolean existsBySlug(String slug);
+    Page<Course> findByStatus(CourseStatus status, Pageable pageable);
 }

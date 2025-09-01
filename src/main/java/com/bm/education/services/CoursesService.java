@@ -1,8 +1,10 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.CourseResponseDTO;
+import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Course;
 import com.bm.education.models.CourseStatus;
+import com.bm.education.models.Module;
 import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
 
@@ -34,6 +36,7 @@ public class CoursesService {
     private final CoursesRepository coursesRepository;
     private final UserRepository userRepository;
     private final Path rootLocation = Paths.get("src/main/resources/static/img/course-brand");
+    private final ModuleService moduleService;
 
     public List<Course> getAllCourses() {return coursesRepository.findAll();}
     public Course getSelectedCourseBySlug(String slug) {
@@ -117,5 +120,22 @@ public class CoursesService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Course> courses = coursesRepository.findAll(pageable);
         return courses.map(this::convertToCourseResponseDto);
+    }
+
+    public ModuleResponseDTO convertToModuleResponseDTO(Module module) {
+        return new ModuleResponseDTO(
+                module.getId(),
+                module.getCourse().getTitle(),
+                module.getSlug(),
+                module.getTitle(),
+                module.getStatus().toString()
+        );
+    }
+
+    public List<ModuleResponseDTO> getModulesOfCourse(Integer courseId) {
+        List<Module> modules = moduleService.getModulesByCourseId(courseId);
+        return modules.stream()
+                .map(this::convertToModuleResponseDTO)
+                .collect(Collectors.toList());
     }
 }

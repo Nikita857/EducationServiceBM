@@ -61,17 +61,18 @@ function renderCoursesTable(courses) {
         <div class="data-table courses-table">
     <div class="table-header d-flex justify-content-between align-items-center">
         <h3 class="table-title">Список курсов</h3>
-        <div class="d-flex">
-            <select class="form-select form-control" onchange="rowsInTable(this.value)">
-                <option value="">Отображать строк...</option>
-                <option value="1">1</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="30">30</option>
-            </select>
-            <button class="btn btn-primary btn-sm" onclick="redirectToAddCourse()">
-                <i class="fas fa-plus me-1"></i> Добавить курс
-            </button>
+        <div class="page-size-selector">
+            <div class="input-group">
+                <span class="input-group-text">
+                    Отображать в таблице
+                </span>
+                <select class="form-select" id="pageSizeSelect" onchange="rowsInTable(this.value)">
+                    <option value="5">5 строк</option>
+                    <option value="10" selected>10 строк</option>
+                    <option value="20">20 строк</option>
+                    <option value="50">50 строк</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -94,8 +95,8 @@ function renderCoursesTable(courses) {
         <div class="table-row">
             <div class="table-cell text-muted">#${course.id || 'N/A'}</div>
             <div class="table-cell">
-                <img src="/img/course-brand/${course.image}" alt="Курс"
-                     class="course-image">
+                <img src="/img/course-brand/${course.image}" alt="Просмотр изображения курса"
+                     class="course-image" onclick="openViewCourseImageModal('${course.image}')" style="cursor: pointer">
             </div>
             <div class="table-cell">
                 <div class="fw-bold">${course.title || 'N/A'}</div>
@@ -116,6 +117,9 @@ function renderCoursesTable(courses) {
             <div class="table-cell action-buttons">
                 <button class="btn btn-primary btn-icon btn-sm" title="Редактировать">
                     <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-primary btn-icon btn-sm" title="Модули" onclick="showCourseModules(${course.id}, '${course.title}')">
+                    М
                 </button>
                 <button class="btn btn-danger btn-icon btn-sm" title="Удалить">
                     <i class="bi bi-trash"></i>
@@ -249,11 +253,58 @@ function formatCourseDate(dateString) {
     }
 }
 
+function openViewCourseImageModal(img) {
+    // Убедитесь, что модальное окно существует
+    if (!document.getElementById('viewImageModal')) {
+        renderImageViewModal();
+    }
+
+    // Устанавливаем изображение
+    const modalImg = document.getElementById('modalImgCourse');
+    if (modalImg) {
+        modalImg.src = `/img/course-brand/${img}`;
+        modalImg.alt = `Изображение курса: ${img}`;
+    }
+
+    // Показываем модальное окно
+    const modalElement = document.getElementById('viewImageModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+function renderImageViewModal() {
+    // Проверяем, не добавлено ли уже модальное окно
+    if (!document.getElementById('viewImageModal')) {
+        document.getElementById('img-view-modal').innerHTML += `
+            <div class="modal fade" id="viewImageModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Изображение курса</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img id="modalImgCourse" class="img-fluid" style="max-height: 70vh; object-fit: contain;">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     // Загружаем пользователей при загрузке страницы
     const coursesTab = document.getElementById('courses-edit-tab');
     if (coursesTab) {
         loadCourses(1);
+        renderImageViewModal()
     }
 });

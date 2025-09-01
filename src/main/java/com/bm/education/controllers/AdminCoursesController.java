@@ -1,16 +1,21 @@
 package com.bm.education.controllers;
 
 import com.bm.education.dto.CourseResponseDTO;
+import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.models.CourseStatus;
 import com.bm.education.services.CoursesService;
+import com.bm.education.services.ModuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,12 +24,14 @@ import java.util.Map;
 public class AdminCoursesController {
 
     private final CoursesService coursesService;
+    private final ModuleService moduleService;
 
     @GetMapping("/admin/courses")
     public ResponseEntity<?> sendUsersJson(@RequestParam(defaultValue = "1", name = "page") int page,
                                            @RequestParam(defaultValue = "10", required = false, name = "size") int size) {
         try {
             Map<String, Object> response = new HashMap<>();
+
             Page<CourseResponseDTO> courseResponseDTOS  = coursesService.getCoursesForDTO(page, size);
 
             response.put("success", true);
@@ -39,6 +46,30 @@ public class AdminCoursesController {
             log.error("Error getting courses: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("success", false, "error", "Internal server error"));
+        }
+    }
+
+    @GetMapping("/admin/courses/{id}/modules")
+    public ResponseEntity<?> getCourseModules(@PathVariable int id) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            List<ModuleResponseDTO> modules = coursesService.getModulesOfCourse(id);
+            if(modules != null && !modules.isEmpty()) {
+                response.put("success", true);
+                response.put("modules", modules);
+                return ResponseEntity.ok(response);
+            }else{
+                response.put("success", false);
+                response.put("error", "Modules not found");
+                return ResponseEntity.ok(response);
+            }
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    Map.of(
+                            "success", false,
+                            "error", e.getMessage()
+                    )
+            );
         }
     }
 }

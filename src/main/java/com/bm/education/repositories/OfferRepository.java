@@ -1,6 +1,9 @@
 package com.bm.education.repositories;
 
 import com.bm.education.models.Offer;
+import com.bm.education.models.OfferStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,4 +34,6 @@ public interface OfferRepository extends JpaRepository<Offer, Integer> {
 
     @Query("SELECT o FROM Offer o LEFT JOIN FETCH o.user WHERE o.id = :id")
     Optional<Offer> findByIdWithUser(@Param("id") Integer id);
+
+    Page<Offer> findByStatus(OfferStatus status, Pageable pageable);
 }

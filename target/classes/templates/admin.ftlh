@@ -302,8 +302,7 @@
                 <h2 class="section-title">Управление заявками</h2>
                 <div class="card">
                     <div class="card-body">
-                        <p>Здесь будет контент для управления заявками...</p>
-                        <p>Таблицы, фильтры, статусы заявок и т.д.</p>
+
                     </div>
                 </div>
             </section>
@@ -533,14 +532,27 @@
     </div>
 </div>
 
+<#--For modal imgViewer-->
+<div id="img-view-modal"></div>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-offers/getOffers.js"></script>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-users/getUsers.js"></script>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-users/editUser.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/js/admin.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/adminOfferResponse.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminAddCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-users/getUsers.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-users/editUser.js"></script>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Анимация статистики

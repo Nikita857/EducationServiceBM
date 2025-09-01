@@ -1,6 +1,6 @@
-let currentPage = 1;
-let totalPages = 1;
-let totalItems = 0;
+let currentPageUsers = 1;
+let totalPagesUsers = 1;
+let totalItemsUsers = 0;
 
 // Количество пользователей на странице
 const usersPerPage = 2;
@@ -15,9 +15,9 @@ async function loadUsers(page = 1) {
             console.log('Данные получены:', data);
 
             if (data.success && data.users) {
-                currentPage = data.currentPage || page;
-                totalPages = data.totalPages || 1;
-                totalItems = data.totalItems || data.users.length;
+                currentPageUsers = data.currentPage || page;
+                totalPagesUsers = data.totalPages || 1;
+                totalItemsUsers = data.totalItems || data.users.length;
 
                 console.log("Рендерим таблицу...");
                 renderUsersTable(data.users);
@@ -61,7 +61,7 @@ async function deleteUsersRequest(userId) {
             if (response.success) {
                 alert(response.message);
                 // Перезагружаем список пользователей
-                await loadUsers(currentPage);
+                await loadUsers(currentPageUsers);
             } else {
                 alert(response.message);
             }
@@ -149,7 +149,7 @@ function renderUsersTable(users) {
         
         <!-- Кнопка обновления -->
         <div class="text-center mt-3">
-            <button class="btn btn-primary" onclick="loadUsers(currentPage)">
+            <button class="btn btn-primary" onclick="loadUsers(currentPageUsers)">
                 <i class="fas fa-sync-alt"></i> Обновить список
             </button>
         </div>
@@ -166,7 +166,7 @@ function renderPagination() {
         return;
     }
 
-    if (totalPages <= 1) {
+    if (totalPagesUsers <= 1) {
         paginationContainer.innerHTML = '';
         return;
     }
@@ -174,8 +174,8 @@ function renderPagination() {
     let paginationHTML = `
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;" aria-label="Previous">
+                <li class="page-item ${currentPageUsers === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPageUsers - 1}); return false;" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
@@ -183,8 +183,8 @@ function renderPagination() {
 
     // Показываем ограниченное количество страниц
     const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    let startPage = Math.max(1, currentPageUsers - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPagesUsers, startPage + maxVisiblePages - 1);
 
     // Корректируем начало, если接近 концу
     if (endPage - startPage + 1 < maxVisiblePages) {
@@ -204,25 +204,25 @@ function renderPagination() {
     // Основные страницы
     for (let i = startPage; i <= endPage; i++) {
         paginationHTML += `
-            <li class="page-item ${i === currentPage ? 'active' : ''}">
+            <li class="page-item ${i === currentPageUsers ? 'active' : ''}">
                 <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
             </li>
         `;
     }
 
     // Последняя страница с многоточием
-    if (endPage < totalPages) {
+    if (endPage < totalPagesUsers) {
         paginationHTML += `
-            ${endPage < totalPages - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+            ${endPage < totalPagesUsers - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
             <li class="page-item">
-                <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+                <a class="page-link" href="#" onclick="changePage(${totalPagesUsers}); return false;">${totalPagesUsers}</a>
             </li>
         `;
     }
 
     paginationHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;" aria-label="Next">
+                <li class="page-item ${currentPageUsers === totalPagesUsers ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPageUsers + 1}); return false;" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
@@ -231,8 +231,8 @@ function renderPagination() {
         
         <div class="pagination-info text-center mt-2">
             <small class="text-muted">
-                Страница ${currentPage} из ${totalPages} • 
-                Всего пользователей: ${totalItems}
+                Страница ${currentPageUsers} из ${totalPagesUsers} • 
+                Всего пользователей: ${totalItemsUsers}
             </small>
         </div>
     `;
@@ -241,7 +241,7 @@ function renderPagination() {
 }
 
 function changePage(page) {
-    if (page < 1 || page > totalPages || page === currentPage) return;
+    if (page < 1 || page > totalPagesUsers || page === currentPageUsers) return;
     loadUsers(page);
 }
 

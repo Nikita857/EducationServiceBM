@@ -840,3 +840,76 @@ code {
 .courses-table .table-cell:last-child {
     text-align: center;
 }
+
+/* Стили для модального окна модулей */
+#courseModulesModal .modal-content {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+#courseModulesModal .modal-header {
+    background: var(--primary-gradient);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px 12px 0 0;
+}
+
+#courseModulesModal .modal-title {
+    color: white;
+    font-weight: 600;
+}
+
+#courseModulesModal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modules-list {
+    padding: 0.5rem;
+}
+
+.module-item {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.module-item:hover {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.module-title {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.module-description {
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.module-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #courseModulesModal .modal-dialog {
+        margin: 1rem;
+    }
+
+    .module-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .module-actions {
+        margin-top: 0.5rem;
+        align-self: flex-end;
+    }
+}

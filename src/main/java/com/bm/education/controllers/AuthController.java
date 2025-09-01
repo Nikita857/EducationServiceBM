@@ -81,24 +81,6 @@ public class AuthController {
             if(authenticateUserManually(user.getUsername(), rawPassword, request)) {
                 return "redirect:/";
             }
-            /*
-            authenticateUserManually(user.getUsername(), rawPassword, request)
-            Здесь этот метод вызывается. И прикол в том что он требует 3 параметра
-            1. Имя пользователя (логин)
-            2. Пароль
-            3. http запрос с параметрами
-
-            я все это передаю, но метод авторизации
-            Authentication authentication = authenticationManager.authenticate(authToken); вот этот
-            не принимает токен, который генерится из имени пользователя, пароля, и запроса http
-            я долго тупил не знал че делать, включил логи, почитал.
-            Authentication выбрасывает исключение, говорит пароль который я в него передаю и пароль из БД
-            не совпадают. Я думаю ну как так-то нахуй. А потом придумал гениальное решение, вытягивать
-            пароль не из контекста метода, а из самого http request и все заработало. Прикол в том что пароль, попадя
-            в метод шифруется автоматом для регистрации, а в токен авторизации надо передавать "сырой" пароль
-            и все заработало ахуенно.
-            String rawPassword = request.getParameter("password").trim(); - Это все решение)
-            * */
             return null;
 
         } catch (ApiException e) {
