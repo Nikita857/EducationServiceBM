@@ -21,6 +21,14 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
     List<Lesson> findAll();
 
+    @Query("SELECT l FROM Lesson l JOIN l.module m WHERE m.course.id = :courseId")
+    List<Lesson> findAllCourseLessons(@Param("courseId") Integer courseId);
+
+    // Метод для завершенных уроков
+    @Query("SELECT l FROM Lesson l JOIN l.module m JOIN UserProgress up ON up.lesson.id = l.id " +
+            "WHERE m.course.id = :courseId AND up.user.id = :userId")
+    List<Lesson> findCompletedLessonsByCourseAndUser(@Param("courseId") Integer courseId,
+                                                     @Param("userId") Integer userId);
 
 
 }

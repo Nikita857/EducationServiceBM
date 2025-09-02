@@ -93,7 +93,7 @@ public class CoursesController {
 
         model.addAttribute("user", userService.getUserByUsername(auth.getName()));
         model.addAttribute("userOffers", offerService.getUserOffers(userId));
-        model.addAttribute("availableCourses", coursesService.getUserCourses(userId));
+        model.addAttribute("availableCourses", coursesService.getCoursesWithProgress(userId));
         model.addAttribute("offerStatus", OfferStatus.values());
         return "cabinet";
     }

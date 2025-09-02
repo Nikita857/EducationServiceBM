@@ -51,6 +51,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         }
 
         // Перенаправление по умолчанию
-        return "/home";
+        return "/";
     }
 }

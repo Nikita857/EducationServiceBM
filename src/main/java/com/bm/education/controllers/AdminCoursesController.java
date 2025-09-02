@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +67,27 @@ public class AdminCoursesController {
                             "error", e.getMessage()
                     )
             );
+        }
+    }
+
+    @DeleteMapping("/admin/courses/{id}/delete")
+    public ResponseEntity<?> deleteCourse(@PathVariable int id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            boolean success = coursesService.deleteCourseById(id);
+            if(success) {
+                response.put("success", true);
+                return ResponseEntity.ok(response);
+            }else {
+                response.put("success", false);
+                response.put("error", "Такого курса нет");
+                return ResponseEntity.ok(response);
+            }
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
         }
     }
 }

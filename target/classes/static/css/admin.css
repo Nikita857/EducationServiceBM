@@ -913,3 +913,73 @@ code {
         align-self: flex-end;
     }
 }
+#offerResponseModal .modal-content {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+#offerResponseModal .modal-header {
+    background: var(--primary-gradient);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px 12px 0 0;
+}
+
+#offerResponseModal .modal-title {
+    color: white;
+    font-weight: 600;
+}
+
+#offerResponseModal .card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#offerResponseModal .form-control:focus,
+#offerResponseModal .form-select:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+    color: #e2e8f0;
+}
+
+/* Стили для таблицы уроков */
+.lessons-table .table-row {
+    display: grid;
+    grid-template-columns: 60px 80px minmax(200px, 1fr) 120px minmax(250px, 2fr) 150px 120px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+}
+
+.lesson-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    color: #94a3b8;
+}
+
+/* Адаптивность */
+@media (max-width: 1600px) {
+    .lessons-table .table-row {
+        grid-template-columns: 50px 70px minmax(180px, 1fr) 100px minmax(200px, 2fr) 130px 100px;
+        gap: 0.8rem;
+        padding: 0.9rem 1.2rem;
+    }
+}
+
+@media (max-width: 1400px) {
+    .lessons-table .table-row {
+        grid-template-columns: 45px 60px minmax(160px, 1fr) 90px minmax(180px, 2fr) 120px 90px;
+        gap: 0.7rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .lesson-description {
+        -webkit-line-clamp: 1;
+    }
+}

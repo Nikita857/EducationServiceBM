@@ -37,6 +37,42 @@ async function loadCourses(page = 1) {
     }
 }
 
+async function deleteCourse(courseId, courseTitle) {
+    if (!confirm(`Вы уверены, что хотите удалить курс "${courseTitle}"? Это действие удалит все модули и уроки этого курса, и его нельзя будет отменить.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/courses/${courseId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            if (result.success) {
+                alert(`Курс "${courseTitle}" успешно удален!`, 'success');
+                // Обновляем список курсов
+                if (typeof loadCourses === 'function') {
+                    loadCourses(currentPage || 1);
+                }
+            } else {
+                alert(`Не удалось удалить курс ${error}`);
+            }
+        } else {
+            alert(`Ошибка сервера ${error}`);
+        }
+
+    } catch (error) {
+        console.error(`Ошибка удаления ${error}`);
+        alert(`Ошибка удаления ${error}`);
+    }
+}
+
 function redirectToAddCourse() {
     document.getElementById('openAddModuleTab').click()
 }
@@ -121,7 +157,7 @@ function renderCoursesTable(courses) {
                 <button class="btn btn-primary btn-icon btn-sm" title="Модули" onclick="showCourseModules(${course.id}, '${course.title}')">
                     М
                 </button>
-                <button class="btn btn-danger btn-icon btn-sm" title="Удалить">
+                <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteCourse(${course.id}, '${course.title}')">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>

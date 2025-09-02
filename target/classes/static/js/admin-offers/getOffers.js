@@ -170,12 +170,7 @@ function renderOffersTable(offers) {
             <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.createdAt)}</div>
             <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.updatedAt)}</div>
             <div class="table-cell action-buttons">
-                <button class="btn btn-primary btn-icon btn-sm" title="Редактировать">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-info btn-icon btn-sm" title="Ответить">
-                    <i class="bi bi-reply"></i>
-                </button>
+                ${createOfferResponseButton(offer)}
                 <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteOffer(${offer.id})">
                     <i class="bi bi-trash"></i>
                 </button>

@@ -1,11 +1,10 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.CourseResponseDTO;
+import com.bm.education.dto.CourseWithProgressDTO;
 import com.bm.education.dto.ModuleResponseDTO;
-import com.bm.education.models.Course;
-import com.bm.education.models.CourseStatus;
+import com.bm.education.models.*;
 import com.bm.education.models.Module;
-import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
 
 import com.bm.education.repositories.UserRepository;
@@ -23,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +34,7 @@ public class CoursesService {
     private final UserRepository userRepository;
     private final Path rootLocation = Paths.get("src/main/resources/static/img/course-brand");
     private final ModuleService moduleService;
+    private final LessonService lessonService;
 
     public List<Course> getAllCourses() {return coursesRepository.findAll();}
     public Course getSelectedCourseBySlug(String slug) {
@@ -137,5 +135,55 @@ public class CoursesService {
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
                 .collect(Collectors.toList());
+    }
+    public List<CourseWithProgressDTO> getCoursesWithProgress(Integer userId) {
+        try {
+            List<Course> userCourses = coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
+            return userCourses.stream()
+                    .map(course -> {
+                        CourseWithProgressDTO dto = convertToCourseWithProgressDTO(course);
+                        Integer progress = calculateCourseProgress(course.getId(), userId);
+                        dto.setProgress(progress);
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting courses with progress for user: {}", userId, e);
+            return Collections.emptyList(); // Возвращаем пустой список вместо null
+        }
+    }
+
+    private Integer calculateCourseProgress(Integer courseId, Integer userId) {
+        try {
+            Integer totalLessons = lessonService.findAllCourseLessons(courseId).size();
+            if (totalLessons == 0) {
+                return 0;
+            }
+            Integer completedLessons = lessonService.findAllCompletedLessonsOfCourseWithUser(courseId, userId).size();
+            double progressPercentage = (completedLessons.doubleValue() / totalLessons.doubleValue()) * 100;
+            return (int) Math.round(progressPercentage);
+        } catch (Exception e) {
+            log.warn("Error calculating progress for course: {} and user: {}", courseId, userId, e);
+            return 0;
+        }
+    }
+
+    public CourseWithProgressDTO convertToCourseWithProgressDTO(Course course) {
+        CourseWithProgressDTO cwp = new CourseWithProgressDTO();
+        cwp.setId(course.getId());
+        cwp.setTitle(course.getTitle());
+        cwp.setDescription(course.getDescription());
+        cwp.setSlug(course.getSlug());
+        cwp.setImage(course.getImage());
+        return cwp;
+    }
+
+    public boolean deleteCourseById(Integer courseId) {
+        if(coursesRepository.existsById(courseId)) {
+            coursesRepository.deleteById(courseId);
+            return true;
+        }else{
+            return false;
+        }
     }
 }

@@ -106,6 +106,15 @@
                         Модули
                     </a>
                 </div>
+                <div class="dropdown nav-item">
+                    <button class="border-0 w-100 text-center text-muted nav-link bg-transparent dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-card-checklist"></i> Уроки
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="nav-link" id="openAddModuleTab" data-tab="lesson-add-tab" href="#" onclick="">Добавление урока</a></li>
+                        <li><a class="nav-link"  data-tab="lessons-edit-tab" href="#" onclick="loadLessons()">Редактирование уроков</a></li>
+                    </ul>
+                </div>
                 <div class="nav-item">
                     <a href="#" class="nav-link" data-tab="users-tab" onclick="loadUsers()">
                         <i class="bi bi-people"></i>
@@ -349,16 +358,66 @@
                 </div>
             </div>
         </div>
-        <!-- Модули -->
-        <div class="tab-content" id="modules-tab">
+
+<#--        <!-- Модули &ndash;&gt;-->
+<#--        <div class="tab-content" id="modules-tab">-->
+<#--            <section class="content-section">-->
+<#--                <h2 class="section-title">Управление модулями</h2>-->
+<#--                <div class="card">-->
+<#--                    <div class="card-body">-->
+<#--                        <p>Здесь будет контент для управления модулями...</p>-->
+<#--                        <p>Создание и редактирование учебных модулей.</p>-->
+<#--                    </div>-->
+<#--                </div>-->
+<#--            </section>-->
+<#--        </div>-->
+
+        <!-- Уроки -->
+        <div class="tab-content" id="lessons-edit-tab">
             <section class="content-section">
-                <h2 class="section-title">Управление модулями</h2>
-                <div class="card">
-                    <div class="card-body">
-                        <p>Здесь будет контент для управления модулями...</p>
-                        <p>Создание и редактирование учебных модулей.</p>
+                <h2 class="section-title">Управление уроками</h2>
+
+                <div class="data-table courses-table">
+                    <div class="table-header d-flex justify-content-between align-items-center">
+                        <h3 class="table-title">Список уроков</h3>
+                        <div class="d-flex">
+                            <select class="form-select form-control text-dark" onchange="changeLessonsPerPage(this.value)">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm ms-2" onclick="openAddLessonModal()">
+                                <i class="fas fa-plus me-1"></i> Добавить урок
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-content">
+                        <!-- Заголовок таблицы -->
+                        <div class="table-row header-row">
+                            <div class="table-cell">ID</div>
+                            <div class="table-cell">Модуль</div>
+                            <div class="table-cell">Название</div>
+                            <div class="table-cell">Видео</div>
+                            <div class="table-cell">Описание</div>
+                            <div class="table-cell">Краткое описание</div>
+                            <div class="table-cell">Действия</div>
+                        </div>
+
+                        <!-- Строки с уроками будут добавляться через JavaScript -->
+                        <div id="lessonsContainer">
+                            <div class="table-row">
+                                <div colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                    Загрузка уроков...
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Пагинация -->
+                <div class="pagination-container mt-3" id="lessonsPagination"></div>
             </section>
         </div>
 
@@ -535,10 +594,67 @@
 <#--For modal imgViewer-->
 <div id="img-view-modal"></div>
 
+<!-- Модальное окно для ответа на заявки -->
+<div class="modal fade" id="offerResponseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ответ на заявку #<span id="responseOfferId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="offerId">
+
+                <!-- Описание заявки -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Описание заявки:</label>
+                    <div class="card bg-dark border-secondary">
+                        <div class="card-body">
+                            <p class="card-text" id="responseDescription">Описание отсутствует</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Форма ответа -->
+                <div class="response-form">
+                    <div class="mb-3">
+                        <label for="responseText" class="form-label fw-bold">Ответ:</label>
+                        <textarea class="form-control" id="responseText" rows="5"
+                                  placeholder="Введите ваш ответ здесь..."
+                                  style="background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12);"></textarea>
+                        <div class="form-text">Максимум 1000 символов</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="responseStatus" class="form-label fw-bold">Новый статус заявки:</label>
+                        <select class="form-select" id="responseStatus"
+                                style="background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12);">
+                            <option value="PENDING">В ожидании рассмотрения</option>
+                            <option value="APPROVED">Одобрено</option>
+                            <option value="REJECTED">Отклонено</option>
+                            <option value="COMPLETED">Завершено</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Отмена
+                </button>
+                <button type="button" class="btn btn-primary" id="submitResponseBtn">
+                    <i class="bi bi-send me-1"></i> Отправить ответ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/getLessons.js"></script>
+
+<script src="${springMacroRequestContext.contextPath}/js/admin-offers/reponseOffer.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-offers/getOffers.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/js/admin-users/getUsers.js"></script>
-
 <script src="${springMacroRequestContext.contextPath}/js/admin-users/editUser.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/js/admin.js"></script>
@@ -546,7 +662,6 @@
 
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminAddCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
-
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
