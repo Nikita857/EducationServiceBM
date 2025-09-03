@@ -2,6 +2,7 @@ package com.bm.education.controllers;
 
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
+import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.services.CoursesService;
@@ -41,6 +42,19 @@ public class AdminModuleController {
         }
         model.addAttribute("courses", coursesService.getAllCourses());
         return "adminModule";
+    }
+
+    @GetMapping("/admin/modules/json")
+    public ResponseEntity<?> sendModulesJson() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<ModuleResponseDTO> modules = moduleService.getAllModulesByDTO();
+            response.put("success", true);
+            response.put("modules", modules);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PostMapping("/admin/modules/updateStatus/{id}/{status}")

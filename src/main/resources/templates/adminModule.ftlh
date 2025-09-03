@@ -7,7 +7,7 @@
     <!-- default header name is X-CSRF-TOKEN -->
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <title>Управление модулями - Админ панель</title>
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
@@ -145,7 +145,7 @@
     </main>
 </div>
 
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminDeleteModule.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>

@@ -1,8 +1,10 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.ModuleCreateRequest;
-import com.bm.education.models.*;
+import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.models.Course;
 import com.bm.education.models.Module;
+import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
@@ -11,7 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -78,5 +81,22 @@ public class ModuleService {
         }catch (Exception e){
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private ModuleResponseDTO convertToModuleResponseDTO(Module module) {
+        return new ModuleResponseDTO(
+                module.getId(),
+                module.getCourse().getTitle(),
+                module.getTitle(),
+                module.getSlug(),
+                module.getStatus().toString()
+        );
+    }
+
+    public List<ModuleResponseDTO> getAllModulesByDTO() {
+        List<Module> modules = moduleRepository.findAll();
+        return modules.stream()
+                .map(this::convertToModuleResponseDTO)
+                .collect(Collectors.toList());
     }
 }

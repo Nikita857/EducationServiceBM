@@ -1,20 +1,25 @@
 package com.bm.education.services;
 
-import com.bm.education.dto.CourseResponseDTO;
+import com.bm.education.dto.CreateLessonDTO;
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.LessonResponseDTO;
-import com.bm.education.models.Course;
 import com.bm.education.models.Lesson;
+import com.bm.education.models.Module;
 import com.bm.education.repositories.LessonRepository;
+import com.bm.education.repositories.ModuleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +27,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LessonService {
     private final LessonRepository lessonRepository;
+    private final ModuleService moduleService;
+    private final ModuleRepository moduleRepository;
 
     public Lesson getLesson(int id, int moduleId) {
         return lessonRepository.findLessonByIdAndModuleId(id, moduleId).orElse(null);
@@ -72,5 +79,33 @@ public class LessonService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Lesson> lessons = lessonRepository.findAll(pageable);
         return lessons.map(this::convertToLessonResponseDTO);
+    }
+
+    public ResponseEntity<?> validation(BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage())
+            );
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Ошибки валидации",
+                    "errors", errors
+            ));
+        }
+        return null;
+    }
+
+    public Lesson saveLesson(CreateLessonDTO dto) {
+        Module module = moduleRepository.findById(dto.getModuleId()).orElse(null);
+        Lesson lesson = new Lesson();
+        lesson.setTitle(dto.getTitle());
+        lesson.setVideo(dto.getVideo());
+        lesson.setDescription(dto.getDescription());
+        lesson.setShortDescription(dto.getShortDescription());
+        lesson.setTestCode(dto.getTestCode());
+        lesson.setModule(module);
+
+        return lessonRepository.save(lesson);
     }
 }

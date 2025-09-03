@@ -1,19 +1,14 @@
 package com.bm.education.services;
 
-import com.bm.education.models.Course;
-import com.bm.education.models.Lesson;
-import com.bm.education.models.User;
-import com.bm.education.models.UserProgress;
 import com.bm.education.models.Module;
+import com.bm.education.models.*;
 import com.bm.education.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service

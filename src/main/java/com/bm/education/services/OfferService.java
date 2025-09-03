@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,7 +67,7 @@ public class OfferService {
     }
 
     public List<Offer> getOffersWithStatus(String status) {
-        return offerRepository.findByStatus(status).isEmpty()? null : offerRepository.findByStatus(status);
+        return offerRepository.findByStatus(status).isEmpty()? Collections.emptyList() : offerRepository.findByStatus(status);
     }
     public OfferDto getOfferById(Integer id) {
         Offer offer = offerRepository.findById(id)

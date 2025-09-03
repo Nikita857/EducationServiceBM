@@ -3,10 +3,11 @@ package com.bm.education.services;
 import com.bm.education.dto.CourseResponseDTO;
 import com.bm.education.dto.CourseWithProgressDTO;
 import com.bm.education.dto.ModuleResponseDTO;
-import com.bm.education.models.*;
+import com.bm.education.models.Course;
+import com.bm.education.models.CourseStatus;
 import com.bm.education.models.Module;
+import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
-
 import com.bm.education.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service

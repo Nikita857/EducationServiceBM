@@ -1,6 +1,5 @@
 package com.bm.education.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.Instant;

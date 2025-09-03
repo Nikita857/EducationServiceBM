@@ -136,7 +136,7 @@ function renderOffersTable(offers) {
         <!-- Заголовок таблицы -->
         <div class="table-row header-row">
             <div class="table-cell">ID</div>
-            <div class="table-cell">ID пользователя</div>
+            <div class="table-cell">Пользователь</div>
             <div class="table-cell">Тема</div>
             <div class="table-cell">Описание</div>
             <div class="table-cell">Ответ</div>
@@ -150,7 +150,7 @@ function renderOffersTable(offers) {
         ${offers.length > 0 ? offers.map(offer => `
         <div class="table-row">
             <div class="table-cell text-muted">#${offer.id || 'N/A'}</div>
-            <div class="table-cell text-muted">#${offer.userId || 'N/A'}</div>
+            <div class="table-cell text-muted">#${offer.fio || 'N/A'}</div>
             <div class="table-cell">
                 <div class="fw-bold">${offer.topic || 'N/A'}</div>
             </div>

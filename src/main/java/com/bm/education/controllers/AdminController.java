@@ -44,11 +44,12 @@ public class AdminController {
             if(userService.getUserByUsername(auth.getName()).getRoles().contains(Role.ROLE_ADMIN)) {
 
                 model.addAttribute("admin", userService.getUserByUsername(auth.getName()));
-                model.addAttribute("users", userService.getAllUsers());
-                model.addAttribute("courses", coursesService.getAllCourses());
-                model.addAttribute("modules", moduleService.getAllModules());
+                model.addAttribute("users", userService.getAllUsers().size());
+                model.addAttribute("courses", coursesService.getAllCourses().size());
+                model.addAttribute("modules", moduleService.getAllModules().size());
                 model.addAttribute("lessons", lessonService.getAllLessons());
-                model.addAttribute("offers", offerService.getAllOffers());
+                model.addAttribute("offers", !offerService.getOffersWithStatus("PENDING").isEmpty()?offerService.getOffersWithStatus("PENDING").size():0);
+                model.addAttribute("offersTotal", offerService.getAllOffers().size());
                 model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
                 return "admin";
             }

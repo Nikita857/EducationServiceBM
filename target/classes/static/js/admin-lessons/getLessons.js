@@ -78,10 +78,6 @@ function renderLessonsTable(lessons) {
                 <span class="text-muted">${truncateText(lesson.short_description || lesson.shortDescription || 'Нет описания', 50)}</span>
             </div>
             <div class="table-cell action-buttons">
-                <button class="btn btn-primary btn-icon btn-sm" title="Редактировать" 
-                        onclick="editLesson(${lesson.id})">
-                    <i class="bi bi-pencil"></i>
-                </button>
                 <button class="btn btn-danger btn-icon btn-sm" title="Удалить" 
                         onclick="deleteLesson(${lesson.id}, '${escapeHtml(lesson.title)}')">
                     <i class="bi bi-trash"></i>
@@ -239,11 +235,45 @@ function editLesson(lessonId) {
     alert(`Редактирование урока: ${lessonId}`);
 }
 
-function deleteLesson(lessonId, lessonTitle) {
-    if (confirm(`Вы уверены, что хотите удалить урок "${lessonTitle}"?`)) {
-        console.log('Удаление урока:', lessonId);
-        // Здесь будет вызов API удаления
-        alert(`Удаление урока: ${lessonTitle}`);
+async function deleteLesson(lessonId, lessonTitle) {
+    if (!confirm(`Вы уверены, что хотите удалить урок "${lessonTitle}"?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/lessons/${lessonId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        });
+
+        // Обрабатываем разные статусы ответа
+        if (response.status === 404) {
+            alert('Урок не найден');
+            return;
+        }
+
+        const result = await response.json();
+
+        if (response.ok) {
+            if (result.success) {
+                alert(`Урок ${lessonTitle} успешно удален`);
+                // Обновляем таблицу уроков
+                if (typeof loadLessons === 'function') {
+                    loadLessons(currentLessonsPage || 1);
+                }
+            } else {
+                alert(`не удалось удалить урок: ${error}`);
+            }
+        } else {
+            alert(`Ошибка сервера: ${error}`);
+        }
+
+    } catch (error) {
+        console.error('Ошибка удаления урока:', error);
+        alert(`Ошибка : ${error}`);
     }
 }
 

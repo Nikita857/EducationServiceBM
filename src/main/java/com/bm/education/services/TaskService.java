@@ -1,13 +1,11 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.ViewModuleDto;
-import com.bm.education.models.Tasks;
 import com.bm.education.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 

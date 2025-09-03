@@ -44,8 +44,7 @@ public class User implements UserDetails {
     @Column(name = "job_title", nullable = false, length = 50)
     private String jobTitle;
 
-    @NotNull
-    @Column(name = "qualification", nullable = false, length = 50)
+    @Column(name = "qualification", length = 50)
     private String qualification;
 
     @Size(min = 5, max = 50, message = "Поле логин должно быть от 5 до 50 символов")
@@ -82,7 +81,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
-
+    @PrePersist
+    protected void oncCreate() {
+        this.setQualification("1");
+    }
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles;
     }
@@ -107,3 +109,4 @@ public class User implements UserDetails {
         return true;
     }
 }
+

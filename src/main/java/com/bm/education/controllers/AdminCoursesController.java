@@ -2,7 +2,6 @@ package com.bm.education.controllers;
 
 import com.bm.education.dto.CourseResponseDTO;
 import com.bm.education.dto.ModuleResponseDTO;
-import com.bm.education.models.CourseStatus;
 import com.bm.education.services.CoursesService;
 import com.bm.education.services.ModuleService;
 import lombok.RequiredArgsConstructor;

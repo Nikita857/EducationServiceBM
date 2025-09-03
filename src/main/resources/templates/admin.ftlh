@@ -8,7 +8,7 @@
     <meta name="_csrf" content="${_csrf.token}"/>
     <!-- default header name is X-CSRF-TOKEN -->
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <title>Панель управления</title>
@@ -111,8 +111,8 @@
                         <i class="bi bi-card-checklist"></i> Уроки
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="nav-link" id="openAddModuleTab" data-tab="lesson-add-tab" href="#" onclick="">Добавление урока</a></li>
                         <li><a class="nav-link"  data-tab="lessons-edit-tab" href="#" onclick="loadLessons()">Редактирование уроков</a></li>
+                        <li><a class="nav-link"  data-tab="create-lesson-test-tab" href="#">Сформировать тест по уроку</a></li>
                     </ul>
                 </div>
                 <div class="nav-item">
@@ -155,7 +155,7 @@
                             </div>
                         </div>
                         <div class="stat-content">
-                            <h3>${offers?size}</h3>
+                                <h3>${offersTotal}</h3>
                             <p class="text-muted">Всего заявок</p>
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                             </div>
                         </div>
                         <div class="stat-content">
-                            <h3>${courses?size}</h3>
+                            <h3>${courses}</h3>
                             <p class="text-muted">Активных курсов</p>
                         </div>
                     </div>
@@ -179,7 +179,7 @@
                             </div>
                         </div>
                         <div class="stat-content">
-                            <h3>${users?size}</h3>
+                            <h3>${users}</h3>
                             <p class="text-muted">Пользователей</p>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                             </div>
                         </div>
                         <div class="stat-content">
-                            <h3>${modules?size}</h3>
+                            <h3>${modules}</h3>
                             <p class="text-muted">Модулей обучения</p>
                         </div>
                     </div>
@@ -200,55 +200,11 @@
 
             <!-- Recent Activity Section -->
             <section class="content-section">
-                <div class="section-header d-flex justify-content-between">
-                    <h2 class="section-title">Последние заявки</h2>
-                    <form action="/admin/{}">
-                    </form>
-                </div>
-
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">Нерассмотреные заявки</h3>
+                <#if offers != 0 >
+                    <div class="alert alert-info" role="alert">
+                        У вас есть не рассмотреные заявки - ${offers}
                     </div>
-                    <div class="table-content">
-                        <#if uncheckedOffers?has_content>
-                            <#list uncheckedOffers as offerItem>
-                                <div class="table-row">
-                                    <div>${offerItem_index+1}</div>
-                                    <div>Пользователь: ${offerItem.user.firstName} ${offerItem.user.lastName}</div>
-                                    <div>Отдел: ${offerItem.user.department}</div>
-                                    <div>
-                                        <span class="status-badge status-<#if offerItem.status == "PENDING">pending<#elseif offerItem.status == "REJECTED">rejected<#else>completed</#if>">
-                                            <#if offerItem.status == "PENDING">
-                                                Не рассмотрена
-                                            <#elseif offerItem.status == "REJECTED">
-                                                Отклонена
-                                            <#elseif offerItem.status == "APPROVED">
-                                                Принята
-                                            <#else>
-                                                Выполнена
-                                            </#if>
-                                        </span>
-                                    </div>
-                                    <div>${offerItem.createdAt}</div>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-primary btn-sm btn-icon" onclick="getOfferDescription(${offerItem.id})">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-primary btn-update-offer"
-                                                data-offer-id="${offerItem.id}"
-                                                data-current-status="${offerItem.status}"
-                                                data-current-response="Предварительный ответ">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </#list>
-                        <#else>
-                            <p class="text-center">Нерассмотреные заявки отсутствуют</p>
-                        </#if>
-                    </div>
-                </div>
+                </#if>
             </section>
 
             <!-- Quick Actions Section -->
@@ -359,19 +315,6 @@
             </div>
         </div>
 
-<#--        <!-- Модули &ndash;&gt;-->
-<#--        <div class="tab-content" id="modules-tab">-->
-<#--            <section class="content-section">-->
-<#--                <h2 class="section-title">Управление модулями</h2>-->
-<#--                <div class="card">-->
-<#--                    <div class="card-body">-->
-<#--                        <p>Здесь будет контент для управления модулями...</p>-->
-<#--                        <p>Создание и редактирование учебных модулей.</p>-->
-<#--                    </div>-->
-<#--                </div>-->
-<#--            </section>-->
-<#--        </div>-->
-
         <!-- Уроки -->
         <div class="tab-content" id="lessons-edit-tab">
             <section class="content-section">
@@ -380,14 +323,21 @@
                 <div class="data-table courses-table">
                     <div class="table-header d-flex justify-content-between align-items-center">
                         <h3 class="table-title">Список уроков</h3>
-                        <div class="d-flex">
-                            <select class="form-select form-control text-dark" onchange="changeLessonsPerPage(this.value)">
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                            </select>
-                            <button class="btn btn-primary btn-sm ms-2" onclick="openAddLessonModal()">
-                                <i class="fas fa-plus me-1"></i> Добавить урок
+                        <div class="page-size-selector d-flex justify-content-between">
+                            <div class="input-group mx-2">
+                                <span class="input-group-text">
+                                    Отображать в таблице
+                                </span>
+                                <select class="form-select" id="pageSizeSelect" onchange="changeLessonsPerPage(this.value)">
+                                    <option value="5">5 строк</option>
+                                    <option value="10" selected>10 строк</option>
+                                    <option value="20">20 строк</option>
+                                    <option value="50">50 строк</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" title="Добавить урок"
+                                    onclick="openCreateLessonModal()">
+                                <i class="bi bi-plus-square"></i>
                             </button>
                         </div>
                     </div>
@@ -420,6 +370,48 @@
                 <div class="pagination-container mt-3" id="lessonsPagination"></div>
             </section>
         </div>
+        <div class="tab-content" id="create-lesson-test-tab">
+            <section class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Генератор тестовых вопросов</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testGeneratorForm">
+                            <div class="mb-3">
+                                <label class="form-label">Количество вопросов:</label>
+                                <input type="number" class="form-control" id="questionCount" min="1" max="20" value="5" required>
+                            </div>
+
+                            <div id="questionsContainer">
+                                <!-- Вопросы будут добавляться динамически -->
+                            </div>
+
+                            <button type="button" class="btn btn-secondary mb-3" onclick="addQuestion()">
+                                <i class="fas fa-plus me-1"></i> Добавить вопрос
+                            </button>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-code me-1"></i> Сгенерировать код
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4" id="resultContainer" style="display: none;">
+                            <label class="form-label">Сгенерированный код:</label>
+                            <pre class="bg-dark text-light p-3 rounded" id="generatedCode"></pre>
+                            <div class="d-flex">
+                                <button class="btn btn-success mt-2" onclick="copyToClipboard()">
+                                    <i class="fas fa-copy me-1"></i> Скопировать код
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <!-- Пользователи -->
         <div class="tab-content" id="users-tab">
@@ -427,7 +419,7 @@
                 <h2 class="section-title">Управление пользователями</h2>
                 <div class="card">
                     <div class="card-body">
-                    <#--Here is injects users table from admin-users/getUsers.js-->
+                        <#--Here is injects users table from admin-users/getUsers.js-->
                     </div>
                 </div>
             </section>
@@ -649,7 +641,10 @@
     </div>
 </div>
 
+
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/getLessons.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/generateTest.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/createLesson.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/js/admin-offers/reponseOffer.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-offers/getOffers.js"></script>
@@ -664,7 +659,7 @@
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
 
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 
@@ -747,5 +742,76 @@
         }
     });
 </script>
+<!-- Форма создания урока -->
+<div class="modal fade" id="createLessonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать новый урок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createLessonForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="moduleId" class="form-label">Модуль *</label>
+                                <select class="form-select" id="moduleId" name="moduleId" required>
+                                    <option value="">Выберите модуль</option>
+                                    <!-- Модули будут загружены динамически -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="lessonTitle" class="form-label">Название урока *</label>
+                                <input type="text" class="form-control" id="lessonTitle" name="title"
+                                       placeholder="Введите название урока" required maxlength="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="videoFile" class="form-label">Видео файл *</label>
+                        <input type="file" class="form-control" id="videoFile" name="file"
+                               accept="video/*" required>
+                        <div class="form-text">Поддерживаемые форматы: MP4, AVI, MOV, MKV</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"
+                                  placeholder="Полное описание урока" maxlength="5000"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="shortDescription" class="form-label">Краткое описание *</label>
+                        <input type="text" class="form-control" id="shortDescription" name="shortDescription"
+                               placeholder="Краткое описание (до 50 символов)" required maxlength="50">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="testCode" class="form-label">Код теста</label>
+                        <textarea class="form-control" id="testCode" name="testCode" rows="6"
+                                  placeholder="const questions = [ ... ];"
+                                  style="font-family: 'Courier New', monospace;"></textarea>
+                        <div class="form-text">JavaScript код теста в формате вопрос-ответ</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Поля, помеченные *, обязательны для заполнения
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="submitLessonBtn">
+                    <i class="fas fa-plus me-1"></i> Создать урок
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

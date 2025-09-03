@@ -8,7 +8,7 @@
     <meta name="_csrf" content=""${_csrf.token}"/>
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
 
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/lessonPage.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
@@ -143,7 +143,7 @@
 
 
 <script>${lessonData.testCode?no_esc}</script>
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/modalTest.js"></script>

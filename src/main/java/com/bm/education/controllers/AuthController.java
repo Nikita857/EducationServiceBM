@@ -14,7 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;    
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -42,9 +42,8 @@ public class AuthController {
 
         if (session.getAttribute("error") != null) {
             model.addAttribute("error", session.getAttribute("error"));
-            session.removeAttribute("error"); // Очищаем после использования
+            session.removeAttribute("error");
         }
-
         return "login";
     }
 
@@ -56,8 +55,7 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(HttpSession httpSession) {
         httpSession.invalidate();
-
-        return "login?logout=true";
+        return "redirect:/login?logout=true";
     }
 
     @PostMapping("/register")
@@ -68,7 +66,9 @@ public class AuthController {
                              HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
-
+            bindingResult.getAllErrors().forEach(objectError ->{
+                    log.info("Поле "+objectError.getObjectName()+" Ошибка: "+objectError.getDefaultMessage());
+                    });
             model.addAttribute("user", user);
             model.addAttribute("errorRegistration", bindingResult.getAllErrors());
             return "register";

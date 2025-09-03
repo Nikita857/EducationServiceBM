@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет</title>
     <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/cabinet.css">
     <!-- Bootstrap Icons -->
@@ -383,7 +383,7 @@
 <script src="${springMacroRequestContext.contextPath}/js/changePassword.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/formCatcher.js"></script>
 <!-- Bootstrap 5 JS -->
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/js/bootstrap.bundle.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script>
     document.getElementById('newOffer').onclick = function () {
         $('#offerModal').modal('show');
