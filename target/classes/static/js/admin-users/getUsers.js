@@ -126,10 +126,19 @@ function renderUsersTable(users) {
                         <div class="text-sm text-muted">${formatDate(user.createdAt)}</div>
                         <div class="action-buttons">
                             <button class="btn btn-primary btn-icon btn-sm" title="Редактировать" onclick="editUser(${user.id})">
-                                <i class="bi bi-pencil"></i>Редактировать
+                                <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteUser(${user.id})">
-                                <i class="bi bi-trash3"></i>Удалить
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="btn btn-success btn-icon btn-sm" title="Записать на курс" onclick="openEnrollModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                            <button class="btn btn-success btn-icon btn-sm" title="Записать на курс" onclick="openEnrollModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                            <button class="btn btn-info btn-icon btn-sm" title="Просмотр курсов" onclick="openViewCoursesModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
+                                <i class="bi bi-card-list"></i>
                             </button>
                         </div>
                     </div>
@@ -159,7 +168,7 @@ function renderUsersTable(users) {
 }
 
 function renderPagination() {
-    const paginationContainer = document.querySelector('.pagination-container');
+    const paginationContainer = document.querySelector('#users-tab .pagination-container');
 
     if (!paginationContainer) {
         console.error('Контейнер для пагинации не найден');
@@ -303,6 +312,120 @@ function showError(message) {
 function deleteUser(userId) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         deleteUsersRequest(userId)
+    }
+}
+
+// Функция для открытия модального окна
+async function openEnrollModal(userId, userName) {
+    // 1. Устанавливаем имя и ID пользователя в модальном окне
+    document.getElementById('enrollUserName').textContent = userName;
+    document.getElementById('enrollUserId').value = userId;
+
+    const courseSelect = document.getElementById('courseSelect');
+    courseSelect.innerHTML = '<option>Загрузка курсов...</option>';
+
+    // 2. Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('enrollUserModal'));
+    modal.show();
+
+    // 3. Загружаем список курсов с бэкенда
+    try {
+        const response = await fetch('/admin/courses');
+        const data = await response.json();
+
+        if (data.success && data.courses) {
+            courseSelect.innerHTML = ''; // Очищаем
+            if (data.courses.length === 0) {
+                courseSelect.innerHTML = '<option>Нет доступных курсов</option>';
+            } else {
+                data.courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.id;
+                    option.textContent = course.title;
+                    courseSelect.appendChild(option);
+                });
+            }
+        }
+    } catch (e) {
+        courseSelect.innerHTML = '<option>Ошибка загрузки курсов</option>';
+        console.error(e);
+    }
+}
+
+// Функция для подтверждения и отправки запроса
+async function confirmEnrollment() {
+    const userId = document.getElementById('enrollUserId').value;
+    const courseId = document.getElementById('courseSelect').value;
+
+    if (!courseId || isNaN(courseId)) {
+        alert('Пожалуйста, выберите курс.');
+        return;
+    }
+
+    const requestData = {
+        userId: parseInt(userId),
+        courseId: parseInt(courseId)
+    };
+
+    console.log("enrollment data ",requestData)
+
+    try {
+        const response = await fetch('/admin/user/enroll', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert(result.message);
+            // Закрываем модальное окно
+            const modal = bootstrap.Modal.getInstance(document.getElementById('enrollUserModal'));
+            modal.hide();
+        } else {
+            alert(`Ошибка: ${result.message || 'Не удалось записать пользователя.'}`);
+        }
+    } catch (e) {
+        alert('Произошла сетевая ошибка.');
+        console.error(e);
+    }
+}
+
+async function openViewCoursesModal(userId, userName) {
+    document.getElementById('viewUserName').textContent = userName;
+    const userCoursesList = document.getElementById('userCoursesList');
+    userCoursesList.innerHTML = '<li class="list-group-item">Загрузка курсов...</li>';
+
+    const modal = new bootstrap.Modal(document.getElementById('viewUserCoursesModal'));
+    modal.show();
+
+    try{
+        const response = await fetch(`/admin/user/${userId}/courses`);
+        const data = await response.json();
+
+        if(data.success && data.courses) {
+            userCoursesList.innerHTML = '';
+            if(data.courses.length === 0) {
+                userCoursesList.innerHTML = '<li class="list-group-item">Пользователь не записан ни на один курс.</li>';
+            }else {
+                data.courses.forEach(course => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item';
+                    listItem.textContent = course.title;
+                    userCoursesList.append(listItem);
+                })
+            }
+        }else {
+            userCoursesList.innerHTML = '<li class="list-group-item text-danger">Ошибка загрузки курсов.</li>';
+            console.error('Failed to load user courses:', data.error);
+        }
+    }catch (e) {
+        userCoursesList.innerHTML = '<li class="list-group-item text-danger">Произошла сетевая ошибка.</li>';
+        console.error('Network error loading user courses:', e);
     }
 }
 

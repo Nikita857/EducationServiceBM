@@ -318,42 +318,6 @@
         <!-- Уроки -->
         <div class="tab-content" id="lessons-edit-tab">
             <section class="content-section">
-                <h2 class="section-title">Управление уроками</h2>
-
-                <div class="data-table courses-table">
-                    <div class="table-header d-flex justify-content-between align-items-center">
-                        <h3 class="table-title">Список уроков</h3>
-                        <div class="page-size-selector d-flex justify-content-between">
-                            <div class="input-group mx-2">
-                                <span class="input-group-text">
-                                    Отображать в таблице
-                                </span>
-                                <select class="form-select" id="pageSizeSelect" onchange="changeLessonsPerPage(this.value)">
-                                    <option value="5">5 строк</option>
-                                    <option value="10" selected>10 строк</option>
-                                    <option value="20">20 строк</option>
-                                    <option value="50">50 строк</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary" title="Добавить урок"
-                                    onclick="openCreateLessonModal()">
-                                <i class="bi bi-plus-square"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="table-content">
-                        <!-- Заголовок таблицы -->
-                        <div class="table-row header-row">
-                            <div class="table-cell">ID</div>
-                            <div class="table-cell">Модуль</div>
-                            <div class="table-cell">Название</div>
-                            <div class="table-cell">Видео</div>
-                            <div class="table-cell">Описание</div>
-                            <div class="table-cell">Краткое описание</div>
-                            <div class="table-cell">Действия</div>
-                        </div>
-
                         <!-- Строки с уроками будут добавляться через JavaScript -->
                         <div id="lessonsContainer">
                             <div class="table-row">
@@ -363,9 +327,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
                 <!-- Пагинация -->
                 <div class="pagination-container mt-3" id="lessonsPagination"></div>
             </section>
@@ -813,5 +774,50 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно записи на курс -->
+<div class="modal fade" id="enrollUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Запись пользователя на курс</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Пользователь: <strong id="enrollUserName"></strong></p>
+                <input type="hidden" id="enrollUserId">
+                <div class="mb-3">
+                    <label for="courseSelect" class="form-label">Выберите курс:</label>
+                    <select class="form-select" id="courseSelect">
+                        <option selected>Загрузка курсов...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="confirmEnrollment()">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра курсов пользователя -->
+<div class="modal fade" id="viewUserCoursesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Курсы пользователя: <span id="viewUserName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="userCoursesList" class="list-group"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

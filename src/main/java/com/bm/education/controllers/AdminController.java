@@ -9,10 +9,12 @@ import com.bm.education.models.OfferStatus;
 import com.bm.education.models.Role;
 import com.bm.education.services.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PrePersist;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.springframework.security.authorization.AuthorityReactiveAuthorizationManager.hasRole;
 
 @Controller
 @Slf4j

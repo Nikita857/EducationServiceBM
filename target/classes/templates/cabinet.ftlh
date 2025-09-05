@@ -227,7 +227,7 @@
 
                                                             <#if offer.response?has_content>
                                                                 <div class="detail-row full-width">
-                                                                    <span class="detail-label">Описание:</span>
+                                                                    <span class="detail-label">Ответ администратора:</span>
                                                                     <div class="detail-value description">
                                                                         ${offer.response}
                                                                     </div>

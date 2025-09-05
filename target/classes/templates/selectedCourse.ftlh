@@ -20,7 +20,7 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6">
-                <img src="${springMacroRequestContext.contextPath}/img/${selectedCourseData.image}"
+                <img src="${springMacroRequestContext.contextPath}/img/course-brand/${selectedCourseData.image}"
                      alt="${selectedCourseData.title}" class="course-image">
             </div>
             <div class="col-lg-6 mt-4 mt-lg-0">

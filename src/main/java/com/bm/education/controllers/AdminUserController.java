@@ -1,7 +1,9 @@
 package com.bm.education.controllers;
 
+import com.bm.education.dto.UserEnrollmentRequestDTO;
 import com.bm.education.dto.UserResponseDTO;
 import com.bm.education.dto.UserUpdateRequestDTO;
+import com.bm.education.services.CoursesService;
 import com.bm.education.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.Map;
 @RestController
 public class AdminUserController {
     private final UserService userService;
+    private final CoursesService coursesService;
 
     @GetMapping("/admin/users")
     ResponseEntity<?> getAllUsers(
@@ -93,6 +96,16 @@ public class AdminUserController {
         }
     }
 
+    @GetMapping("/admin/user/{id}/courses")
+    public ResponseEntity<?> getUserCourses(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(Map.of("success", true, "courses", userService.getUserCourses(id)));
+        } catch (Exception e) {
+            log.error("Error getting user courses: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/admin/user/update")
     public ResponseEntity<?> updateUserById(@Valid @RequestBody UserUpdateRequestDTO updateRequestDTO,
                                             BindingResult bindingResult) {
@@ -121,6 +134,32 @@ public class AdminUserController {
             return ResponseEntity.internalServerError().body(Map.of(
                     "error", e.getMessage())
             );
+        }
+    }
+
+    @PostMapping("/admin/user/enroll")
+    public ResponseEntity<?> enrollUserInCourse(@Valid @RequestBody UserEnrollmentRequestDTO request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, Object> errors = new HashMap<>();
+            bindingResult
+                    .getAllErrors()
+                    .forEach(error -> {
+                        errors.put(error.getObjectName(), error.getDefaultMessage());
+                    });
+            return ResponseEntity.badRequest().body(errors);
+        }
+
+        try {
+            boolean isEnrolled = userService.enrollUserInCourse(request.getUserId(), request.getCourseId());
+
+            if (isEnrolled) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "Пользователь успешно записан на курс."));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Пользователь уже записан на этот курс или произошла ошибка."));
+            }
+        } catch (Exception e) {
+            log.error("Error enrolling user: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", e.getMessage()));
         }
     }
 }

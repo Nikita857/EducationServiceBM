@@ -1,11 +1,17 @@
 package com.bm.education.services;
 
 import com.bm.education.Exceptions.ApiException;
+import com.bm.education.dto.CourseSelectionDTO;
 import com.bm.education.dto.UserResponseDTO;
 import com.bm.education.dto.UserUpdateRequestDTO;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
+import com.bm.education.models.UserCourses;
+import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.UserRepository;
+import com.bm.education.models.Course;
+import com.bm.education.repositories.UserCourseRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +31,8 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j
@@ -33,6 +41,27 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserCourseRepository userCourseRepository;
+    private final CoursesRepository coursesRepository;
+
+    @Transactional
+    public boolean enrollUserInCourse(Integer userId, Integer courseId) {
+        if (userCourseRepository.existsByUserAndCourse(userRepository.findById(userId).get(), coursesRepository.findById(courseId).get())) {
+            log.warn("User {} is already enrolled in course {}", userId, courseId);
+            return false;
+        }
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Course course = coursesRepository.findById(courseId).orElseThrow(() -> new EntityNotFoundException("Course not found"));
+
+        UserCourses enrollment = new UserCourses();
+        enrollment.setUser(user);
+        enrollment.setCourse(course);
+
+        userCourseRepository.save(enrollment);
+        log.info("Successfully enrolled user {} in course {}", userId, courseId);
+        return true;
+    }
 
     public boolean deleteUser(Integer userId) {
         userRepository.deleteById(userId);
@@ -41,20 +70,20 @@ public class UserService {
 
     public boolean createUser(User user) {
 
-    if (userRepository.existsByUsername(user.getUsername())) {
-        throw new ApiException("Username already exists", HttpStatus.CONFLICT);
-    }
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new ApiException("Username already exists", HttpStatus.CONFLICT);
+        }
 
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    user.setCreatedAt(Instant.now());
-    user.setUpdatedAt(Instant.now());
-    user.getRoles().add(Role.ROLE_USER);//Enum ролей, в будущем легко расшириить
-    user.setAvatar("avatar.png");//Дефолтная аватарка
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+        user.getRoles().add(Role.ROLE_USER);//Enum ролей, в будущем легко расшириить
+        user.setAvatar("avatar.png");//Дефолтная аватарка
 
-    log.info("Saving new User with role: {}", Role.ROLE_USER);
+        log.info("Saving new User with role: {}", Role.ROLE_USER);
 
-    userRepository.save(user);
-    return true;
+        userRepository.save(user);
+        return true;
 
     }
 
@@ -123,7 +152,9 @@ public class UserService {
         log.info("Пароль изменен для пользователя: {}", username);
     }
 
-    public List<User> getAllUsers() {return userRepository.findAll();}
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
     private UserResponseDTO convertToUserDTO(User user) {
         return new UserResponseDTO(
@@ -137,7 +168,7 @@ public class UserService {
                 user.getAvatar(),
                 user.getCreatedAt(),
                 user.getRoles().toString()
-                );
+        );
     }
 
     public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size) {
@@ -150,6 +181,7 @@ public class UserService {
         // Конвертируем в DTO
         return usersPage.map(this::convertToUserDTO);
     }
+
     public UserResponseDTO getUserById(Integer userId) {
         return convertToUserDTO(userRepository.findById(userId).isPresent() ? userRepository.findById(userId).get() : new User());
     }
@@ -165,10 +197,10 @@ public class UserService {
             user.setQualification(userUpdateRequestDTO.getQualification());
 
 
-            if(userUpdateRequestDTO.getRole() != null) {
+            if (userUpdateRequestDTO.getRole() != null) {
                 if (user.getRoles().toArray()[0].toString() == Role.ROLE_USER.toString()) {
                     user.setRoles(Set.of(Role.ROLE_USER));
-                }else{
+                } else {
                     user.setRoles(Set.of(Role.ROLE_ADMIN));
                 }
             }
@@ -179,4 +211,16 @@ public class UserService {
         }
     }
 
+    public List<CourseSelectionDTO> getUserCourses(Integer userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new EntityNotFoundException("User not found");
+        }
+            List<UserCourses> enrollments = userCourseRepository.findByUser(userRepository.findById(userId).get());
+
+            return enrollments.stream()
+                    .map(UserCourses::getCourse)
+                    .map(course -> new CourseSelectionDTO(course.getId(), course.getTitle()))
+                    .collect(Collectors.toList());
+    }
 }
+

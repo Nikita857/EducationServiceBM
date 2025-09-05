@@ -12,7 +12,7 @@ import java.time.Instant;
 @Entity
 @Data
 @Table(name="user_courses")
-public class    UserCourses {
+public class UserCourses {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,5 +35,10 @@ public class    UserCourses {
     @ColumnDefault("current_timestamp()")
     @Column(name = "enrolled_at", nullable = false)
     private Instant enrolledAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.enrolledAt = Instant.now();
+    }
 
 }

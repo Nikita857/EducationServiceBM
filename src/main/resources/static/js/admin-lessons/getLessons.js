@@ -3,7 +3,7 @@
 let currentLessonsPage = 1;
 let totalLessonsPages = 1;
 let totalLessonsItems = 0;
-let lessonsPerPage = 10;
+let lessonsPerPage = 5;
 
 // Загрузка уроков
 async function loadLessons(page = 1) {
@@ -45,48 +45,82 @@ function renderLessonsTable(lessons) {
         return;
     }
 
-    if (lessons.length === 0) {
-        container.innerHTML = `
-            <div class="table-row">
-                <div colspan="7" class="text-center py-4 text-muted">
-                    <i class="fas fa-book-open me-2"></i>
-                    Уроки не найдены
+    // Очищаем контейнер
+    container.innerHTML = '';
+
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'courses-table-container'; // Для скролла на малых экранах
+
+    const tableHTML = `
+        <div class="data-table courses-table lessons-table">
+            <div class="table-header d-flex justify-content-between align-items-center">
+                <h3 class="table-title">Список уроков</h3>
+                <div class="page-size-selector">
+                    <div class="input-group">
+                        <span class="input-group-text">Отображать</span>
+                        <select class="form-select" id="lessonsPageSizeSelect" onchange="changeLessonsPerPage(this.value)">
+                            <option value="5" ${lessonsPerPage === 5 ? 'selected' : ''}>5 строк</option>
+                            <option value="10" ${lessonsPerPage === 10 ? 'selected' : ''}>10 строк</option>
+                            <option value="20" ${lessonsPerPage === 20 ? 'selected' : ''}>20 строк</option>
+                            <option value="50" ${lessonsPerPage === 50 ? 'selected' : ''}>50 строк</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openCreateLessonModal()">Новый урок</button>
+                    </div>
                 </div>
             </div>
-        `;
-        return;
-    }
 
-    const tableHTML = lessons.map(lesson => `
-        <div class="table-row">
-            <div class="table-cell text-muted">#${lesson.id || 'N/A'}</div>
-            <div class="table-cell text-muted">#${lesson.moduleName || lesson.moduleName || 'N/A'}</div>
-            <div class="table-cell">
-                <div class="fw-bold">${escapeHtml(lesson.title || 'Без названия')}</div>
-            </div>
-            <div class="table-cell">
-                ${lesson.video ? `
-                    <a href="${lesson.video}" target="_blank" class="text-primary text-decoration-none">
-                        <i class="fas fa-video me-1"></i> Смотреть
-                    </a>
-                ` : '<span class="text-muted">Нет видео</span>'}
-            </div>
-            <div class="table-cell">
-                <span class="lesson-description">${truncateText(lesson.description || 'Нет описания', 100)}</span>
-            </div>
-            <div class="table-cell">
-                <span class="text-muted">${truncateText(lesson.short_description || lesson.shortDescription || 'Нет описания', 50)}</span>
-            </div>
-            <div class="table-cell action-buttons">
-                <button class="btn btn-danger btn-icon btn-sm" title="Удалить" 
-                        onclick="deleteLesson(${lesson.id}, '${escapeHtml(lesson.title)}')">
-                    <i class="bi bi-trash"></i>
-                </button>
+            <div class="table-content">
+                <!-- Заголовок таблицы -->
+                <div class="table-row header-row">
+                    <div class="table-cell">ID</div>
+                    <div class="table-cell">Название</div>
+                    <div class="table-cell">Модуль</div>
+                    <div class="table-cell">Описание</div>
+                    <div class="table-cell">Видео</div>
+                    <div class="table-cell">Действия</div>
+                </div>
+
+                <!-- Строки с уроками -->
+                ${lessons.length > 0 ? lessons.map(lesson => `
+                <div class="table-row">
+                    <div class="table-cell text-muted">#${lesson.id || 'N/A'}</div>
+                    <div class="table-cell">
+                        <div class="fw-bold">${escapeHtml(lesson.title || 'Без названия')}</div>
+                    </div>
+                    <div class="table-cell">
+                        <span class="text-muted">${escapeHtml(lesson.moduleName || 'N/A')}</span>
+                    </div>
+                    <div class="table-cell">
+                        <span class="lesson-description">${truncateText(lesson.description || 'Нет описания', 100)}</span>
+                    </div>
+                    <div class="table-cell">
+                        ${lesson.video ? `
+                            <a href="${lesson.video}" target="_blank" class="text-primary text-decoration-none">
+                                <i class="fas fa-video me-1"></i> Смотреть
+                            </a>
+                        ` : '<span class="text-muted">Нет видео</span>'}
+                    </div>
+                    <div class="table-cell action-buttons">
+                        <button class="btn btn-danger btn-icon btn-sm" title="Удалить"
+                                onclick="deleteLesson(${lesson.id}, '${escapeHtml(lesson.title)}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                `).join('') : `
+                <div class="table-row">
+                    <div class="table-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">
+                        <i class="fas fa-book-open me-2"></i>
+                        Уроки не найдены
+                    </div>
+                </div>
+                `}
             </div>
         </div>
-    `).join('');
+    `;
 
-    container.innerHTML = tableHTML;
+    tableWrapper.innerHTML = tableHTML;
+    container.appendChild(tableWrapper);
 }
 
 // Рендер пагинации
