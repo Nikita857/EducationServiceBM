@@ -68,9 +68,6 @@ function showLessonsModal(lessons) {
                                 ${lesson.moduleSlug ? `<br><small class="text-muted">Slug модуля: ${lesson.moduleSlug}</small>` : ''}
                             </div>
                             <div class="btn-group ms-3">
-                                <a href="/admin/lessons/${lesson.id}/edit" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-edit"></i> Редактировать
-                                </a>
                                 <button class="btn btn-outline-info btn-sm" onclick="viewLesson(${lesson.id}, '${lesson.courseSlug}', '${lesson.moduleSlug}')">
                                     <i class="fas fa-eye"></i> Просмотреть
                                 </button>

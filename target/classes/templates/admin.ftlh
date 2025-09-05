@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <title>Панель управления</title>
     <style>
         .tab-content {
@@ -333,41 +334,32 @@
         </div>
         <div class="tab-content" id="create-lesson-test-tab">
             <section class="content-section">
-                <div class="card">
+                <div class="card bg-dark border-secondary">
                     <div class="card-header">
-                        <h5 class="card-title">Генератор тестовых вопросов</h5>
+                        <h5 class="card-title mb-0">Генератор тестов</h5>
                     </div>
                     <div class="card-body">
                         <form id="testGeneratorForm">
-                            <div class="mb-3">
-                                <label class="form-label">Количество вопросов:</label>
-                                <input type="number" class="form-control" id="questionCount" min="1" max="20" value="5" required>
-                            </div>
-
-                            <div id="questionsContainer">
+                            <div id="questionsContainer" class="mb-3">
                                 <!-- Вопросы будут добавляться динамически -->
                             </div>
 
-                            <button type="button" class="btn btn-secondary mb-3" onclick="addQuestion()">
-                                <i class="fas fa-plus me-1"></i> Добавить вопрос
-                            </button>
-
-                            <div class="d-grid">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" id="addQuestionBtn">
+                                    <i class="bi bi-plus-circle me-1"></i> Добавить вопрос
+                                </button>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-code me-1"></i> Сгенерировать код
+                                    <i class="bi bi-code-square me-1"></i> Сгенерировать код
                                 </button>
                             </div>
                         </form>
 
                         <div class="mt-4" id="resultContainer" style="display: none;">
                             <label class="form-label">Сгенерированный код:</label>
-                            <pre class="bg-dark text-light p-3 rounded" id="generatedCode"></pre>
-                            <div class="d-flex">
-                                <button class="btn btn-success mt-2" onclick="copyToClipboard()">
-                                    <i class="fas fa-copy me-1"></i> Скопировать код
-                                </button>
-                            </div>
-
+                            <pre class="bg-black text-light p-3 rounded"><code id="generatedCode"></code></pre>
+                            <button class="btn btn-success mt-2" onclick="copyToClipboard()">
+                                <i class="bi bi-clipboard me-1"></i> Копировать код
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -603,9 +595,46 @@
 </div>
 
 
+    </div>
+</div>
+
+<!-- Modal for Editing Lesson -->
+<div class="modal fade" id="editLessonModal" tabindex="-1" aria-labelledby="editLessonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLessonModalLabel">Редактировать урок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLessonForm">
+                    <input type="hidden" id="editLessonId" name="lessonId">
+                    <div class="mb-3">
+                        <label for="editLessonTitle" class="form-label">Название урока</label>
+                        <input type="text" class="form-control" id="editLessonTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLessonVideoUrl" class="form-label">URL видео</label>
+                        <input type="text" class="form-control" id="editLessonVideoUrl" name="videoUrl">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLessonTextContent" class="form-label">Содержимое урока</label>
+                        <textarea id="editLessonTextContent" name="textContent" class="form-control" rows="15"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" form="editLessonForm" class="btn btn-primary">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/getLessons.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/generateTest.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/createLesson.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/admin-lesson-edit.js"></script>
 
 <script src="${springMacroRequestContext.contextPath}/js/admin-offers/reponseOffer.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-offers/getOffers.js"></script>

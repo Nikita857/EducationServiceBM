@@ -150,5 +150,40 @@
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-module/getModuleLessons.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/admin-lesson-edit.js"></script>
+
+<!-- Modal for Editing Lesson -->
+<div class="modal fade" id="editLessonModal" tabindex="-1" aria-labelledby="editLessonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLessonModalLabel">Редактировать урок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLessonForm">
+                    <input type="hidden" id="editLessonId" name="lessonId">
+                    <div class="mb-3">
+                        <label for="editLessonTitle" class="form-label">Название урока</label>
+                        <input type="text" class="form-control" id="editLessonTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLessonVideoUrl" class="form-label">URL видео</label>
+                        <input type="text" class="form-control" id="editLessonVideoUrl" name="videoUrl">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLessonTextContent" class="form-label">Содержимое урока</label>
+                        <textarea id="editLessonTextContent" name="textContent" class="form-control" rows="15"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" form="editLessonForm" class="btn btn-primary">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

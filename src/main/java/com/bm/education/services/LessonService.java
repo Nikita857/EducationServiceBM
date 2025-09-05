@@ -108,4 +108,15 @@ public class LessonService {
 
         return lessonRepository.save(lesson);
     }
+
+    public Lesson updateLesson(Integer lessonId, com.bm.education.dto.LessonDto lessonDto) {
+        Lesson lessonToUpdate = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId)); // Or a more specific exception
+
+        lessonToUpdate.setTitle(lessonDto.getTitle());
+        lessonToUpdate.setDescription(lessonDto.getTextContent());
+        lessonToUpdate.setVideo(lessonDto.getVideoUrl());
+
+        return lessonRepository.save(lessonToUpdate);
+    }
 }

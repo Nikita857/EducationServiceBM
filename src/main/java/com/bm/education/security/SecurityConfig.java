@@ -32,11 +32,11 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/offer", "/api/progress", "/admin/**")
+                        .ignoringRequestMatchers("/api/offer", "/api/progress", "/admin/**", "/api/admin/**")
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

@@ -134,9 +134,6 @@ function renderUsersTable(users) {
                             <button class="btn btn-success btn-icon btn-sm" title="Записать на курс" onclick="openEnrollModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
                                 <i class="bi bi-plus-circle"></i>
                             </button>
-                            <button class="btn btn-success btn-icon btn-sm" title="Записать на курс" onclick="openEnrollModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
-                                <i class="bi bi-plus-circle"></i>
-                            </button>
                             <button class="btn btn-info btn-icon btn-sm" title="Просмотр курсов" onclick="openViewCoursesModal(${user.id}, '${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}')">
                                 <i class="bi bi-card-list"></i>
                             </button>

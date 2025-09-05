@@ -1,6 +1,7 @@
 package com.bm.education.controllers;
 
 import com.bm.education.dto.LessonResponseDTO;
+import com.bm.education.models.Lesson;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.services.LessonService;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,39 @@ public class AdminLessonController {
             response.put("error", "lesson not found");
             return ResponseEntity.badRequest().body(response);
         }catch (Exception e){
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @GetMapping("/api/admin/lessons/{id}")
+    public ResponseEntity<?> getLessonForEdit(@PathVariable int id) {
+        try {
+            Lesson lesson = lessonRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + id));
+
+            com.bm.education.dto.LessonDto lessonDto = new com.bm.education.dto.LessonDto();
+            lessonDto.setTitle(lesson.getTitle());
+            lessonDto.setTextContent(lesson.getDescription());
+            lessonDto.setVideoUrl(lesson.getVideo());
+
+            return ResponseEntity.ok(lessonDto);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @PutMapping("/api/admin/lessons/{id}")
+    public ResponseEntity<?> updateLesson(@PathVariable int id, @RequestBody com.bm.education.dto.LessonDto lessonDto) {
+        try {
+            lessonService.updateLesson(id, lessonDto);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Lesson updated successfully"));
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("error", e.getMessage());
             return ResponseEntity.internalServerError().body(response);

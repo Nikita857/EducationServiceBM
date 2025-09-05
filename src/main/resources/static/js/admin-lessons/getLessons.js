@@ -101,6 +101,9 @@ function renderLessonsTable(lessons) {
                         ` : '<span class="text-muted">Нет видео</span>'}
                     </div>
                     <div class="table-cell action-buttons">
+                        <button class="btn btn-info btn-icon btn-sm edit-lesson-btn" title="Редактировать" data-lesson-id="${lesson.id}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
                         <button class="btn btn-danger btn-icon btn-sm" title="Удалить"
                                 onclick="deleteLesson(${lesson.id}, '${escapeHtml(lesson.title)}')">
                             <i class="bi bi-trash"></i>

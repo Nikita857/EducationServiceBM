@@ -1,144 +1,157 @@
-// Массив для хранения вопросов
-let questions = [];
+document.addEventListener('DOMContentLoaded', function () {
+    const testGeneratorTab = document.getElementById('create-lesson-test-tab');
 
-// Добавление первого вопроса при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    addQuestion();
-});
+    // Если на странице нет вкладки генератора тестов, ничего не делаем.
+    if (!testGeneratorTab) {
+        return;
+    }
 
-// Функция добавления вопроса
-function addQuestion() {
-    const questionCount = document.getElementById('questionCount').value;
-    const questionsContainer = document.getElementById('questionsContainer');
+    const questionsContainer = testGeneratorTab.querySelector('#questionsContainer');
+    const testGeneratorForm = testGeneratorTab.querySelector('#testGeneratorForm');
 
-    questionsContainer.innerHTML = '';
+    let questionCounter = 0;
 
-    for (let i = 0; i < questionCount; i++) {
-        const questionHTML = `
-            <div class="card mb-3 question-card" data-index="${i}">
-                <div class="card-header bg-dark text-light">
-                    <h6 class="mb-0">Вопрос ${i + 1}</h6>
+    function createQuestionNode(questionIndex) {
+        const questionId = `question-${questionIndex}`;
+        const node = document.createElement('div');
+        node.className = 'card bg-dark border-secondary mb-4 question-card';
+        node.id = questionId;
+
+        node.innerHTML = `
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Вопрос <span class="question-number">${questionIndex + 1}</span></h6>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-question-btn">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="${questionId}-text" class="form-label">Текст вопроса:</label>
+                    <input type="text" id="${questionId}-text" class="form-control question-text" placeholder="Введите текст вопроса" required>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Текст вопроса:</label>
-                        <input type="text" class="form-control question-text" 
-                               placeholder="Введите текст вопроса" required>
-                    </div>
-                    
-                    <div class="answers-container">
-                        <div class="answer-row mb-2">
-                            <div class="input-group">
-                                <input type="text" class="form-control answer-text" 
-                                       placeholder="Вариант ответа 1" required>
-                                <div class="input-group-text">
-                                    <input type="radio" class="form-check-input correct-answer" 
-                                           name="correctAnswer${i}" value="0" required>
-                                </div>
+                <div class="answers-container">
+                    <label class="form-label">Варианты ответов (отметьте правильный):</label>
+                    ${[0, 1, 2].map(answerIndex => `
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control answer-text" placeholder="Вариант ответа ${answerIndex + 1}" required>
+                            <div class="input-group-text">
+                                <input class="form-check-input correct-answer-radio" type="radio" name="${questionId}-correct" value="${answerIndex}" required>
                             </div>
                         </div>
-                        <div class="answer-row mb-2">
-                            <div class="input-group">
-                                <input type="text" class="form-control answer-text" 
-                                       placeholder="Вариант ответа 2" required>
-                                <div class="input-group-text">
-                                    <input type="radio" class="form-check-input correct-answer" 
-                                           name="correctAnswer${i}" value="1" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="answer-row mb-2">
-                            <div class="input-group">
-                                <input type="text" class="form-control answer-text" 
-                                       placeholder="Вариант ответа 3" required>
-                                <div class="input-group-text">
-                                    <input type="radio" class="form-check-input correct-answer" 
-                                           name="correctAnswer${i}" value="2" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="button" class="btn btn-outline-danger btn-sm mt-2" 
-                            onclick="removeQuestion(${i})">
-                        <i class="fas fa-trash me-1"></i> Удалить вопрос
-                    </button>
+                    `).join('')}
                 </div>
             </div>
         `;
 
-        questionsContainer.innerHTML += questionHTML;
+        node.querySelector('.remove-question-btn').addEventListener('click', function() {
+            node.remove();
+            updateQuestionNumbers();
+        });
+
+        return node;
     }
-}
 
-// Удаление вопроса
-function removeQuestion(index) {
-    const questionCount = document.getElementById('questionCount').value;
-    document.getElementById('questionCount').value = Math.max(1, questionCount - 1);
-    addQuestion();
-}
+    function updateQuestionNumbers() {
+        const allQuestions = questionsContainer.querySelectorAll('.question-card');
+        allQuestions.forEach((question, index) => {
+            question.querySelector('.question-number').textContent = index + 1;
+        });
+    }
 
-// Обработка отправки формы
-document.getElementById('testGeneratorForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    generateTestCode();
-});
+    function addNewQuestion() {
+        const newNode = createQuestionNode(questionCounter);
+        questionsContainer.appendChild(newNode);
+        questionCounter++;
+        updateQuestionNumbers();
+    }
 
-// Генерация кода теста
-function generateTestCode() {
-    const questionCards = document.querySelectorAll('.question-card');
-    const generatedQuestions = [];
+    // --- ИСПРАВЛЕНИЕ: Используем делегирование событий ---
+    testGeneratorTab.addEventListener('click', function(event) {
+        // Проверяем, был ли клик по кнопке "Добавить вопрос"
+        if (event.target && event.target.id === 'addQuestionBtn') {
+            addNewQuestion();
+        }
+    });
 
-    questionCards.forEach((card, index) => {
-        const questionText = card.querySelector('.question-text').value;
-        const answerInputs = card.querySelectorAll('.answer-text');
-        const correctAnswerIndex = parseInt(card.querySelector('.correct-answer:checked').value);
+    if (testGeneratorForm) {
+        testGeneratorForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateTestCode();
+        });
+    }
 
-        const answers = [];
-        answerInputs.forEach((input, answerIndex) => {
-            answers.push({
-                text: input.value,
-                correct: answerIndex === correctAnswerIndex
+    function generateTestCode() {
+        const questionCards = questionsContainer.querySelectorAll('.question-card');
+        const generatedQuestions = [];
+        let isValid = true;
+
+        if (questionCards.length === 0) {
+            alert('Пожалуйста, добавьте хотя бы один вопрос.');
+            return;
+        }
+
+        questionCards.forEach((card) => {
+            const questionText = card.querySelector('.question-text').value;
+            const answerInputs = card.querySelectorAll('.answer-text');
+            const correctAnswerRadio = card.querySelector('.correct-answer-radio:checked');
+
+            if (!questionText || !correctAnswerRadio) {
+                isValid = false;
+            }
+
+            const answers = [];
+            answerInputs.forEach((input, answerIndex) => {
+                if (!input.value) {
+                    isValid = false;
+                }
+                answers.push({
+                    text: input.value,
+                    correct: answerIndex === parseInt(correctAnswerRadio.value)
+                });
+            });
+
+            generatedQuestions.push({
+                question: questionText,
+                answers: answers
             });
         });
 
-        generatedQuestions.push({
-            question: questionText,
-            answers: answers
+        if (!isValid) {
+            alert('Пожалуйста, заполните все текстовые поля и выберите правильный ответ для каждого вопроса.');
+            return;
+        }
+
+        const code = `const questions = [\n${generatedQuestions.map(q => 
+`    {\n        question: "${q.question.replace(/"/g, '\\"')}",\n        answers: [\n${q.answers.map(a => 
+`            { text: "${a.text.replace(/"/g, '\\"')}", correct: ${a.correct} }`).join(',\n')}\n        ]\n    }`
+).join(',\n')}\n];`;
+
+        document.getElementById('generatedCode').textContent = code;
+        document.getElementById('resultContainer').style.display = 'block';
+        window.generatedCodeForCopy = code;
+    }
+
+    // Добавляем первый вопрос только один раз, когда вкладка становится видимой
+    const tabObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.attributeName === 'class' && testGeneratorTab.classList.contains('active')) {
+                // Если контейнер пуст, добавляем первый вопрос
+                if (questionsContainer.children.length === 0) {
+                    addNewQuestion();
+                }
+            }
         });
     });
 
-    // Форматирование кода
-    const code = `const questions = [
-${generatedQuestions.map((q, i) => `    {
-        question: "${q.question.replace(/"/g, '\\"')}",
-        answers: [
-${q.answers.map((a, ai) => `            { text: "${a.text.replace(/"/g, '\\"')}", correct: ${a.correct} }`).join(',\n')}
-        ]
-    }`).join(',\n')}
-];`;
+    tabObserver.observe(testGeneratorTab, { attributes: true });
+});
 
-    // Отображение результата
-    document.getElementById('generatedCode').textContent = code;
-    document.getElementById('resultContainer').style.display = 'block';
-
-    // Сохранение для копирования
-    window.generatedCode = code;
-}
-
-// Копирование в буфер обмена
 function copyToClipboard() {
-    if (!window.generatedCode) return;
-
-    navigator.clipboard.writeText(window.generatedCode).then(() => {
+    if (!window.generatedCodeForCopy) return;
+    navigator.clipboard.writeText(window.generatedCodeForCopy).then(() => {
         alert('Код скопирован в буфер обмена!');
     }).catch(err => {
         console.error('Ошибка копирования:', err);
         alert('Не удалось скопировать код');
     });
 }
-
-
-
-// Обновление количества вопросов
-document.getElementById('questionCount').addEventListener('change', addQuestion);
