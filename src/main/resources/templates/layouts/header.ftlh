@@ -44,11 +44,10 @@
                     <button class="btn btn-sm text-white position-relative" type="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-bell fs-5"></i>
-                        <span class="badge-notification">1</span>
+                        <span class="badge-notification" style="display: none;"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><h6 class="dropdown-header text-dark">Уведомления</h6></li>
-                        <li><a class="dropdown-item text-dark" href="#"><small>Новый курс доступен</small></a></li>
                     </ul>
                 </div>
 
@@ -76,3 +75,4 @@
         </div>
     </div>
 </nav>
+<script src="/js/notification.js"></script>

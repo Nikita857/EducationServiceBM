@@ -3,7 +3,10 @@ package com.bm.education.controllers;
 import com.bm.education.dto.UserEnrollmentRequestDTO;
 import com.bm.education.dto.UserResponseDTO;
 import com.bm.education.dto.UserUpdateRequestDTO;
+import com.bm.education.models.Course;
+import com.bm.education.models.Notification;
 import com.bm.education.services.CoursesService;
+import com.bm.education.services.NotificationService;
 import com.bm.education.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import java.util.Map;
 @RestController
 public class AdminUserController {
     private final UserService userService;
+    private final NotificationService notificationService;
     private final CoursesService coursesService;
 
     @GetMapping("/admin/users")
@@ -153,6 +157,12 @@ public class AdminUserController {
             boolean isEnrolled = userService.enrollUserInCourse(request.getUserId(), request.getCourseId());
 
             if (isEnrolled) {
+                Course userEnrolledCourse = coursesService.findCourseById(request.getCourseId());
+                notificationService.createNotification(
+                        userService.findById(request.getUserId()),
+                        String.format("Вас записали на курс %s", userEnrolledCourse.getTitle()),
+                        String.format("/courses/%s", userEnrolledCourse.getSlug())
+                );
                 return ResponseEntity.ok(Map.of("success", true, "message", "Пользователь успешно записан на курс."));
             } else {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Пользователь уже записан на этот курс или произошла ошибка."));

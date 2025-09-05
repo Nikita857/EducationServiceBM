@@ -105,6 +105,10 @@ public class CoursesService {
         return filename;
     }
 
+    public Course findCourseById(Integer courseId) {
+        return coursesRepository.findById(courseId).orElseThrow(IllegalArgumentException::new);
+    }
+
     private CourseResponseDTO convertToCourseResponseDto(Course course) {
         return new CourseResponseDTO(
                 course.getId(),

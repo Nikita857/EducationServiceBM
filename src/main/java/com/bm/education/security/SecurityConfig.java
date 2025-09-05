@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/offer", "/api/progress", "/admin/**", "/api/admin/**")
+                        .ignoringRequestMatchers( "/admin/**", "/api/**")
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

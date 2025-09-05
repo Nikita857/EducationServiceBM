@@ -63,6 +63,11 @@ public class UserService {
         return true;
     }
 
+    @Transactional
+    public User findById(Integer userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
     public boolean deleteUser(Integer userId) {
         userRepository.deleteById(userId);
         return userRepository.existsById(userId) ? false : true;
