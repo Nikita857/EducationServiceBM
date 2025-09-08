@@ -122,5 +122,6 @@
 </div>
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/registerValidation.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 </body>
 </html>

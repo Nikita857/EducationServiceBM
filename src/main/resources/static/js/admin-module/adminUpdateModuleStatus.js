@@ -5,6 +5,12 @@ function adminUpdateModuleStatus(moduleID, status) {
         return; // Если пользователь отменил, прерываем выполнение
     }
 
+    if(status === 'ACTIVE') {
+        status = 'INACTIVE'
+    }else{
+        status = 'ACTIVE'
+    }
+
     // Отправляем запрос на сервер
     fetch(`/admin/modules/updateStatus/${moduleID}/${status}`, {
         method: 'POST',
@@ -23,7 +29,7 @@ function adminUpdateModuleStatus(moduleID, status) {
         })
         .then(data => {
             // Успешное удаление
-            alert(data.message);
+            showAlert(data.message, 'success');
 
             // Опционально: обновляем страницу или удаляем элемент из DOM
             location.reload(); // Перезагрузка страницы
@@ -31,7 +37,7 @@ function adminUpdateModuleStatus(moduleID, status) {
         })
         .catch(error => {
             // Обработка ошибок
-            alert(`Ошибка: ${error.message}`);
+            showAlert(`Ошибка: ${error.message}`, 'error');
             console.error('Ошибка при обновлении статуса:', error);
         });
 }

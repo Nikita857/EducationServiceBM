@@ -3,14 +3,18 @@ package com.bm.education.controllers;
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.dto.ModuleUpdateRequest;
+import com.bm.education.models.Module;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
+import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.services.CoursesService;
 import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,26 +26,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @Slf4j
 @RequiredArgsConstructor
 public class AdminModuleController {
 
     private final ModuleService moduleService;
-    private final CoursesService coursesService;
     private final CoursesRepository coursesRepository;
     private final LessonService lessonService;
+    private final ModuleRepository moduleRepository;
 
     @GetMapping("/admin/modules")
-    public String addModule(Model model, @RequestParam(value = "courseId", required = false) String id) {
+    public ResponseEntity<?> getModulesWithPagination(@RequestParam(defaultValue = "1") int page,
+                                                      @RequestParam(defaultValue = "10") int size)
+    {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Page<ModuleResponseDTO> modules = moduleService.putModulesInDTO(page, size);
 
-        if(id != null && !id.equals("all")){
-            model.addAttribute("modules", moduleService.getModulesByCourseId(Integer.parseInt(id)));
-        }else{
-            model.addAttribute("modules", moduleService.getAllModules());
+            response.put("success", true);
+            response.put("modules", modules.getContent());
+            response.put("currentPage", modules.getNumber() + 1);
+            response.put("totalPages", modules.getTotalPages());
+            response.put("totalItems", modules.getTotalElements());
+            response.put("pageSize", size);
+
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
-        model.addAttribute("courses", coursesService.getAllCourses());
-        return "adminModule";
     }
 
     @GetMapping("/admin/modules/json")
@@ -54,6 +69,24 @@ public class AdminModuleController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/admin/module/{id}")
+    public ResponseEntity<?> getModuleById(@PathVariable("id") int id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            ModuleResponseDTO module = moduleService.findModuleById(id);
+            if(module != null) {
+                response.put("success", true);
+                response.put("module", module);
+                return ResponseEntity.ok(response);
+            }
+            response.put("success", false);
+            response.put("module", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -126,6 +159,38 @@ public class AdminModuleController {
             return !moduleLessons.isEmpty() ? ResponseEntity.ok(moduleLessons) : ResponseEntity.notFound().build();
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/admin/modules/update")
+    public ResponseEntity<?> updateModule(@Valid @RequestBody ModuleUpdateRequest request,
+                                          BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(fieldError -> {
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            });
+            response.put("success", "false");
+            response.put("errors", errors);
+            return ResponseEntity.badRequest().body(response);
+        }
+        try {
+            boolean success = moduleService.updateModule(request);
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Module updated successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("error", "Failed to update module");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }

@@ -82,5 +82,6 @@
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/indexPage.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/main.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 </body>
 </html>

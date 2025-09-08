@@ -1,8 +1,10 @@
 package com.bm.education.services;
 
+import com.bm.education.dto.LessonResponseDTO;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Course;
+import com.bm.education.models.Lesson;
 import com.bm.education.models.Module;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
@@ -11,6 +13,10 @@ import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.repositories.UserProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -98,5 +104,40 @@ public class ModuleService {
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
+        Page<Module> modules = moduleRepository.findAll(pageable);
+        return modules.map(this::convertToModuleResponseDTO);
+    }
+
+    public ModuleResponseDTO findModuleById(Integer id) {
+        Module module = moduleRepository.findById(id).orElse(null);
+        return module!=null? convertToModuleResponseDTO(module): null;
+    }
+
+    public boolean updateModule(com.bm.education.dto.ModuleUpdateRequest request) {
+        try {
+            Module module = moduleRepository.findById(request.getModuleId()).orElseThrow(
+                    () -> new RuntimeException("Could not find module with id: " + request.getModuleId())
+            );
+
+            module.setTitle(request.getName());
+            module.setSlug(request.getSlug());
+
+            if (request.getCourseId() != null) {
+                Course course = coursesRepository.findById(request.getCourseId()).orElseThrow(
+                        () -> new RuntimeException("Could not find course with id: " + request.getCourseId())
+                );
+                module.setCourse(course);
+            }
+
+            moduleRepository.save(module);
+            return true;
+        } catch (Exception e) {
+            log.error("Error updating module: {}", e.getMessage(), e);
+            return false;
+        }
     }
 }

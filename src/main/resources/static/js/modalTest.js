@@ -75,7 +75,7 @@ function saveUserProgress() {
         })
         .then(data => {
             console.log('Success:', data);
-            alert('Урок пройден!');
+            showAlert('Урок пройден!', 'success');
         })
         .catch(error => {
             console.error('Error:', error);

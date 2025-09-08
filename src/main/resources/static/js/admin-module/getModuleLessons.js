@@ -1,4 +1,4 @@
-async function loadLessons(moduleId) {
+async function loadModuleLessons(moduleId) {
     try {
         const response = await fetch(`/admin/modules/${moduleId}/lessons`);
 
@@ -11,7 +11,7 @@ async function loadLessons(moduleId) {
         }
     } catch (error) {
         console.log(error);
-        alert('Ошибка при загрузке уроков: ' + error.message);
+        showAlert('Ошибка при загрузке уроков: ' + error.message, 'error');
     }
 }
 
@@ -92,9 +92,4 @@ function viewLesson(lessonId, courseSlug, moduleSlug) {
     // Редирект на страницу просмотра урока
     console.log(`/course/${courseSlug}/module/${moduleSlug}/lesson/${lessonId}`);
     window.location.href = `/course/${courseSlug}/module/${moduleSlug}/lesson/${lessonId}`;
-}
-
-// Функция для создания нового урока (опционально)
-function createNewLesson(moduleId) {
-    window.location.href = `/admin/lessons/create?moduleId=${moduleId}`;
 }

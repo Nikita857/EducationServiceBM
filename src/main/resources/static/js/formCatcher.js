@@ -31,7 +31,7 @@ async function submitOfferForm(event) {
 
         const result = await response.json();
         console.log('Оффер создан:', result);
-        alert("Предложение отправлено!");
+        showAlert("Предложение отправлено!", 'success');
     } catch (error) {
         alert("Произошла ошибка");
     }

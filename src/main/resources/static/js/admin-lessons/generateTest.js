@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let isValid = true;
 
         if (questionCards.length === 0) {
-            alert('Пожалуйста, добавьте хотя бы один вопрос.');
+            showAlert('Пожалуйста, добавьте хотя бы один вопрос.', 'info');
             return;
         }
 
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (!isValid) {
-            alert('Пожалуйста, заполните все текстовые поля и выберите правильный ответ для каждого вопроса.');
+            showAlert('Пожалуйста, заполните все текстовые поля и выберите правильный ответ для каждого вопроса.', 'info');
             return;
         }
 
@@ -149,9 +149,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function copyToClipboard() {
     if (!window.generatedCodeForCopy) return;
     navigator.clipboard.writeText(window.generatedCodeForCopy).then(() => {
-        alert('Код скопирован в буфер обмена!');
+        showAlert('Код скопирован в буфер обмена!', 'success');
     }).catch(err => {
         console.error('Ошибка копирования:', err);
-        alert('Не удалось скопировать код');
+        showAlert('Не удалось скопировать код', 'error');
     });
 }

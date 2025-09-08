@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } catch (error) {
                 console.error('Ошибка при загрузке урока:', error);
-                alert(error.message);
+                showAlert(error.message, 'error');
             }
         }
     });
@@ -86,14 +86,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Успех
             editLessonModal.hide();
-            alert('Урок успешно обновлен!');
+            showAlert('Урок успешно обновлен!', 'success');
             
             // Опционально: обновить данные на лету без перезагрузки страницы
             // Это потребует более сложной логики для поиска и обновления элемента в списке
 
         } catch (error) {
             console.error('Ошибка при сохранении урока:', error);
-            alert(error.message);
+            showAlert(error.message, 'error');
         }
     });
 });

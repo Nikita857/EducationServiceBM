@@ -147,6 +147,7 @@
 <script src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/modalTest.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 <script>
     // Анимация элементов при загрузке
     document.addEventListener('DOMContentLoaded', function() {

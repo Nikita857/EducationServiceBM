@@ -183,5 +183,6 @@
         });
     });
 </script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 </body>
 </html>

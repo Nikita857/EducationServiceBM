@@ -1,3 +1,4 @@
+<div id="custom-alert-container"></div>
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <!-- Бренд и логотип -->

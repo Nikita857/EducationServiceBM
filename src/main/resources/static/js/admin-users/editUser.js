@@ -34,7 +34,7 @@ async function openEditUserModal(userId) {
 
     } catch (error) {
         console.error('Ошибка открытия модального окна:', error);
-        alert('Не удалось открыть форму редактирования');
+        showAlert('Не удалось открыть форму редактирования', 'error');
     }
 }
 
@@ -64,7 +64,7 @@ async function saveUserChanges() {
         console.log(result);
 
         if (response.ok && result.success) {
-            alert('Данные успешно обновлены!');
+            showAlert('Данные успешно обновлены!', 'success');
 
             // Закрываем модальное окно
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
@@ -78,13 +78,13 @@ async function saveUserChanges() {
             if (result.errors) {
                 displayValidationErrors(result.errors);
             } else {
-                alert(result.error || 'Ошибка при сохранении данных');
+                showAlert(result.error || 'Ошибка при сохранении данных', 'error');
             }
         }
 
     } catch (error) {
         console.error('Ошибка сохранения:', error);
-        alert('Произошла ошибка при сохранении данных');
+        showAlert('Произошла ошибка при сохранении данных', 'error');
     }
 }
 
@@ -97,9 +97,8 @@ function displayValidationErrors(errors) {
         errorMessages.push(`${getFieldDisplayName(field)}: ${message}`);
     }
 
-    // Показываем все ошибки в alert или в специальном контейнере
     if (errorMessages.length > 0) {
-        alert('Ошибки валидации:\n' + errorMessages.join('\n'));
+        showAlert('Ошибки валидации:\n' + errorMessages.join('\n'), 'error');
     }
 }
 

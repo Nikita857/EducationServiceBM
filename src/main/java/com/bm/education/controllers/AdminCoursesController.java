@@ -2,6 +2,7 @@ package com.bm.education.controllers;
 
 import com.bm.education.dto.CourseResponseDTO;
 import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.models.Course;
 import com.bm.education.services.CoursesService;
 import com.bm.education.services.ModuleService;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,24 @@ public class AdminCoursesController {
                             "error", e.getMessage()
                     )
             );
+        }
+    }
+    @GetMapping("/admin/courses/all")
+    public ResponseEntity<?> getCourses() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<CourseResponseDTO> courses = coursesService.findCoursesAndWriteDTO();
+            if(courses != null && !courses.isEmpty()) {
+                response.put("success", true);
+                response.put("courses", courses);
+                return ResponseEntity.ok(response);
+            }else {
+                response.put("success", false);
+                response.put("error", "Courses not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(String.format("error %s", e.getLocalizedMessage()), e.getMessage()));
         }
     }
 

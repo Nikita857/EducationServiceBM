@@ -173,6 +173,13 @@ public class CoursesService {
             return 0;
         }
     }
+    public List<CourseResponseDTO> findCoursesAndWriteDTO() {
+        List<Course> courses = coursesRepository.findAll();
+        return courses
+                .stream()
+                .map(this::convertToCoursesDto)
+                .collect(Collectors.toList());
+    }
 
     public CourseWithProgressDTO convertToCourseWithProgressDTO(Course course) {
         CourseWithProgressDTO cwp = new CourseWithProgressDTO();
@@ -182,6 +189,19 @@ public class CoursesService {
         cwp.setSlug(course.getSlug());
         cwp.setImage(course.getImage());
         return cwp;
+    }
+
+    public CourseResponseDTO convertToCoursesDto(Course course) {
+        return new CourseResponseDTO(
+                course.getId(),
+                course.getTitle(),
+                course.getImage(),
+                course.getDescription(),
+                course.getSlug(),
+                course.getStatus().toString(),
+                course.getCreatedAt().toString(),
+                course.getUpdatedAt().toString()
+                );
     }
 
     public boolean deleteCourseById(Integer courseId) {

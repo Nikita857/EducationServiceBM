@@ -103,33 +103,7 @@ function getCsrfToken() {
     return '';
 }
 
-/**
- * Показать уведомление
- */
-function showAlert(message, type) {
-    // Удаляем старые уведомления
-    const oldAlerts = document.querySelectorAll('.alert');
-    oldAlerts.forEach(alert => alert.remove());
 
-    // Создаем новое уведомление
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    // Вставляем после формы
-    const form = document.getElementById('passwordChangeForm');
-    form.parentNode.insertBefore(alertDiv, form.nextSibling);
-
-    // Автоскрытие через 5 секунд
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
 
 /**
  * Очистка формы

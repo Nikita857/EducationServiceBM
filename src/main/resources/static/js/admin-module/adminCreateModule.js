@@ -29,17 +29,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 const result = await response.json();
-                showSuccess('Модуль успешно сохранен!');
+                showAlert('Модуль успешно сохранен!', 'success');
                 form.reset(); // Очистка формы после успешного сохранения
             } else {
                 const error = await response.json();
-                showError(error.message || "Ошибки при создании модуля");
+                showAlert(error.message || "Ошибки при создании модуля", 'error');
                 console.log(error.errors)
             }
 
         } catch (error) {
             console.error('Ошибка:', error);
-            showError('Произошла ошибка при отправке данных');
+            showAlert('Произошла ошибка при отправке данных', 'error');
         }
     });
 
@@ -50,24 +50,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const title = document.getElementById('title').value;
 
         if (!courseId) {
-            showError('Пожалуйста, выберите курс');
+            showAlert('Пожалуйста, выберите курс', 'error');
             return false;
         }
 
         if (!slug) {
-            showError('Пожалуйста, укажите URI модуля');
+            showAlert('Пожалуйста, укажите URI модуля', 'error');
             return false;
         }
 
         if (!title) {
-            showError('Пожалуйста, введите название модуля');
+            showAlert('Пожалуйста, введите название модуля', 'error');
             return false;
         }
 
         // Валидация slug (только латинские буквы, цифры и дефисы)
         const slugRegex = /^[a-z0-9-]+$/;
         if (!slugRegex.test(slug)) {
-            showError('URI может содержать только латинские буквы в нижнем регистре, цифры и дефисы');
+            showAlert('URI может содержать только латинские буквы в нижнем регистре, цифры и дефисы', 'error');
             return false;
         }
 
@@ -80,15 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('input[name="_csrf"]')?.value;
     }
 
-    // Функции для отображения уведомлений
-    function showSuccess(message) {
-        // Можно использовать Toast, SweetAlert или создать свой элемент
-        alert('✅ ' + message);
-    }
-
-    function showError(message) {
-        alert('❌ ' + message);
-    }
+    
 
     // Автогенерация slug из названия (опционально)
     const titleInput = document.getElementById('title');

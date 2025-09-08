@@ -9,6 +9,8 @@
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <title>Панель управления</title>
@@ -43,6 +45,7 @@
     </style>
 </head>
 <body>
+<div id="custom-alert-container"></div>
 <div class="admin-layout">
     <!-- Header -->
     <header class="admin-header">
@@ -93,18 +96,21 @@
 
                 <div class="dropdown nav-item">
                     <button class="border-0 w-100 text-center text-muted nav-link bg-transparent dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-card-checklist"></i> Курсы
+                        <i class="bi bi-stack"></i> Курсы
                     </button>
                     <ul class="dropdown-menu">
                         <li><a class="nav-link" id="openAddModuleTab" data-tab="courses-add-tab" href="#">Добавление курса</a></li>
                         <li><a class="nav-link"  data-tab="courses-edit-tab" href="#">Редактирование курсов</a></li>
                     </ul>
                 </div>
-                <div class="nav-item">
-                    <a href="/admin/modules" class="nav-link">
-                        <i class="bi bi-collection"></i>
-                        Модули
-                    </a>
+                <div class="dropdown nav-item">
+                    <button class="border-0 w-100 text-center text-muted nav-link bg-transparent dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-stickies"></i> Модули
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="nav-link"  data-tab="modules-edit-tab" href="#" >Редактирование модулей</a></li>
+                        <li><a class="nav-link"  data-tab="create-module-tab" href="#">Добавить модуль</a></li>
+                    </ul>
                 </div>
                 <div class="dropdown nav-item">
                     <button class="border-0 w-100 text-center text-muted nav-link bg-transparent dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -315,6 +321,27 @@
             </div>
         </div>
 
+        <#--Модули-->
+        <div class="tab-content" id="create-module-tab">
+            <section class="content-section">
+            Добавление модулей
+            </section>
+        </div>
+        <div class="tab-content" id="modules-edit-tab">
+            <section class="content-section">
+                <div id="modulesContainer">
+                    <div class="table-row">
+                        <div colspan="7" class="text-center py-4 text-muted">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            Загрузка модулей...
+                        </div>
+                    </div>
+                </div>
+                <!-- Пагинация модулей -->
+                <div class="pagination-container mt-3" id="modulesPagination"></div>
+            </section>
+        </div>
+
         <!-- Уроки -->
         <div class="tab-content" id="lessons-edit-tab">
             <section class="content-section">
@@ -327,7 +354,7 @@
                                 </div>
                             </div>
                         </div>
-                <!-- Пагинация -->
+                <!-- Пагинация уроков -->
                 <div class="pagination-container mt-3" id="lessonsPagination"></div>
             </section>
         </div>
@@ -597,6 +624,41 @@
     </div>
 </div>
 
+<!-- Modal for Editing Module -->
+<div class="modal fade" id="editModuleModal" tabindex="-1" aria-labelledby="editModuleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModuleModalLabel">Редактировать модуль</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editModuleForm">
+                    <input type="hidden" id="editModuleId" name="moduleId">
+                    <div class="mb-3">
+                        <label for="editModuleTitle" class="form-label">Название модуля</label>
+                        <input type="text" class="form-control" id="editModuleTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editModuleSlug" class="form-label">URI</label>
+                        <input type="text" class="form-control" id="editModuleSlug" name="slug" required>
+                    </div>
+                     <div class="mb-3">
+                        <label for="editModuleCourseId" class="form-label">Курс</label>
+                        <select class="form-select" id="editModuleCourseId" name="courseId" required>
+                            <!-- Courses will be loaded here -->
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" form="editModuleForm" class="btn btn-primary">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal for Editing Lesson -->
 <div class="modal fade" id="editLessonModal" tabindex="-1" aria-labelledby="editLessonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -651,7 +713,15 @@
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
 
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/getModules.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminDeleteModule.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/getModuleLessons.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/admin-module/admin-module-edit.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

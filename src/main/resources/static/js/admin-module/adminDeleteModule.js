@@ -24,7 +24,7 @@ function deleteModule(id) {
         })
         .then(data => {
             // Успешное удаление
-            alert(data.message || 'Модуль успешно удален');
+            showAlert(data.message || 'Модуль успешно удален', 'success');
 
             // Опционально: обновляем страницу или удаляем элемент из DOM
             location.reload(); // Перезагрузка страницы
@@ -32,7 +32,7 @@ function deleteModule(id) {
         })
         .catch(error => {
             // Обработка ошибок
-            alert(`Ошибка: ${error.message}`);
+            showAlert(`Ошибка: ${error.message}`, 'error');
             console.error('Ошибка при удалении модуля:', error);
         });
 }

@@ -85,7 +85,7 @@ document.getElementById('registrationForm').addEventListener('submit', function(
 
     if (!/[0-9]/.test(password)) {
         e.preventDefault();
-        alert('Пароль должен содержать хотя бы одну цифру');
+        showAlert('Пароль должен содержать хотя бы одну цифру', 'error');
         return;
     }
 });

@@ -30,7 +30,7 @@ async function loadLessons(page = 1) {
         }
     } catch (error) {
         console.error('Ошибка загрузки уроков:', error);
-        showError('Не удалось загрузить список уроков');
+        showAlert('Не удалось загрузить список уроков', 'error');
     } finally {
         showLoading(false);
     }
@@ -266,12 +266,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Функции действий (заглушки)
-function editLesson(lessonId) {
-    console.log('Редактирование урока:', lessonId);
-    alert(`Редактирование урока: ${lessonId}`);
-}
-
 async function deleteLesson(lessonId, lessonTitle) {
     if (!confirm(`Вы уверены, что хотите удалить урок "${lessonTitle}"?`)) {
         return;
@@ -288,7 +282,7 @@ async function deleteLesson(lessonId, lessonTitle) {
 
         // Обрабатываем разные статусы ответа
         if (response.status === 404) {
-            alert('Урок не найден');
+            showAlert('Урок не найден', 'error');
             return;
         }
 
@@ -296,27 +290,22 @@ async function deleteLesson(lessonId, lessonTitle) {
 
         if (response.ok) {
             if (result.success) {
-                alert(`Урок ${lessonTitle} успешно удален`);
+                showAlert(`Урок ${lessonTitle} успешно удален`, 'success');
                 // Обновляем таблицу уроков
                 if (typeof loadLessons === 'function') {
                     loadLessons(currentLessonsPage || 1);
                 }
             } else {
-                alert(`не удалось удалить урок: ${error}`);
+                showAlert(`не удалось удалить урок: ${error}`, 'error');
             }
         } else {
-            alert(`Ошибка сервера: ${error}`);
+            showAlert(`Ошибка сервера: ${error}`, 'error');
         }
 
     } catch (error) {
         console.error('Ошибка удаления урока:', error);
-        alert(`Ошибка : ${error}`);
+        showAlert(`Ошибка : ${error}`, 'error');
     }
-}
-
-function openAddLessonModal() {
-    console.log('Открытие модального окна добавления урока');
-    alert('Добавление нового урока');
 }
 
 // Инициализация

@@ -55,21 +55,21 @@ async function deleteCourse(courseId, courseTitle) {
 
         if (response.ok) {
             if (result.success) {
-                alert(`Курс "${courseTitle}" успешно удален!`, 'success');
+                showAlert(`Курс "${courseTitle}" успешно удален!`, 'success');
                 // Обновляем список курсов
                 if (typeof loadCourses === 'function') {
                     loadCourses(currentPage || 1);
                 }
             } else {
-                alert(`Не удалось удалить курс ${error}`);
+                showAlert(`Не удалось удалить курс ${error}`, 'error');
             }
         } else {
-            alert(`Ошибка сервера ${error}`);
+            showAlert(`Ошибка сервера ${error}`, 'error');
         }
 
     } catch (error) {
         console.error(`Ошибка удаления ${error}`);
-        alert(`Ошибка удаления ${error}`);
+        showAlert(`Ошибка удаления ${error}`, 'error');
     }
 }
 

@@ -304,7 +304,7 @@
         </div>
     </div>
 </div>
-
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 <script>
     function togglePassword() {
         const passwordInput = document.getElementById('password');

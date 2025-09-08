@@ -136,8 +136,8 @@ function handleSuccessResponse(result) {
     modal.hide();
 
     // Обновляем список уроков если нужно
-    if (typeof loadLessons === 'function') {
-        loadLessons(1);
+    if (typeof loadModuleLessons === 'function') {
+        loadModuleLessons(1);
     }
 
     // Можно показать дополнительную информацию
@@ -206,29 +206,7 @@ function getCsrfToken() {
 }
 
 // Показать уведомление
-function showAlert(message, type = 'info') {
-    const alertClass = type === 'success' ? 'alert-success' :
-        type === 'error' ? 'alert-danger' : 'alert-info';
 
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
-    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; width: auto; max-width: 400px; pointer-events: none;';
-
-    alertDiv.innerHTML = `
-        <div style="pointer-events: auto;">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" style="pointer-events: auto;"></button>
-        </div>
-    `;
-
-    document.body.appendChild(alertDiv);
-
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.parentNode.removeChild(alertDiv);
-        }
-    }, 5000);
-}
 
 // Инициализация при загрузке документа
 document.addEventListener('DOMContentLoaded', function() {

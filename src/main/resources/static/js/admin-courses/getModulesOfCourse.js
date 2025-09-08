@@ -153,7 +153,7 @@ function addNewModule() {
 
 function editModule(moduleId) {
     console.log('Редактирование модуля:', moduleId);
-    alert(`Редактирование модуля: ${moduleId}`);
+    showAlert(`Редактирование модуля: ${moduleId}`, 'info');
 }
 
 function manageCourse(courseId) {
