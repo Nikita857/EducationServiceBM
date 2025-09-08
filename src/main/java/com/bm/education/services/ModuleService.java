@@ -35,7 +35,7 @@ public class ModuleService {
     }
 
     public int totalLessons(Integer courseId) {
-        return lessonRepository.countLessonsByCourseId(courseId);
+        return lessonRepository.countByModuleCourseId(courseId);
     }
 
     public int completedLessons(Integer courseId, Integer userId) {

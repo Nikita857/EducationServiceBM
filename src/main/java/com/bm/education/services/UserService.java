@@ -227,5 +227,22 @@ public class UserService {
                     .map(course -> new CourseSelectionDTO(course.getId(), course.getTitle()))
                     .collect(Collectors.toList());
     }
+
+    @Transactional
+    public boolean unenrollUserFromCourse(Integer userId, Integer courseId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        Course course = coursesRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + courseId));
+
+        if (!userCourseRepository.existsByUserAndCourse(user, course)) {
+            log.warn("Enrollment for user {} in course {} does not exist.", userId, courseId);
+            return false; // Или выбросить исключение
+        }
+
+        userCourseRepository.deleteByUserAndCourse(user, course);
+        log.info("Successfully unenrolled user {} from course {}", userId, courseId);
+        return true;
+    }
 }
 

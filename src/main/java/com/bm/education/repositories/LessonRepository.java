@@ -16,19 +16,11 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
     Optional<Lesson> findLessonById(Integer id);
 
-    @Query(value = "SELECT COUNT(*) AS total_lessons FROM lessons l JOIN modules m ON l.module_id = m.id WHERE m.course_id = :courseId", nativeQuery = true)
-    Integer countLessonsByCourseId(@Param("courseId") Integer courseId);
+    @Query("SELECT count(l) FROM Lesson l WHERE l.module.course.id = :courseId")
+    Integer countByModuleCourseId(@Param("courseId") Integer courseId);
 
-    List<Lesson> findAll();
+    @Query("SELECT count(up) FROM UserProgress up WHERE up.user.id = :userId AND up.lesson.module.course.id = :courseId AND up.completedAt IS NOT NULL")
+    Integer countCompletedLessons(@Param("courseId") Integer courseId, @Param("userId") Integer userId);
 
-    @Query("SELECT l FROM Lesson l JOIN l.module m WHERE m.course.id = :courseId")
-    List<Lesson> findAllCourseLessons(@Param("courseId") Integer courseId);
-
-    // Метод для завершенных уроков
-    @Query("SELECT l FROM Lesson l JOIN l.module m JOIN UserProgress up ON up.lesson.id = l.id " +
-            "WHERE m.course.id = :courseId AND up.user.id = :userId")
-    List<Lesson> findCompletedLessonsByCourseAndUser(@Param("courseId") Integer courseId,
-                                                     @Param("userId") Integer userId);
-
-
+    Optional<Lesson> findLessonByVideo(String video);
 }

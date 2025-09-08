@@ -95,7 +95,7 @@ function renderLessonsTable(lessons) {
                     </div>
                     <div class="table-cell">
                         ${lesson.video ? `
-                            <a href="${lesson.video}" target="_blank" class="text-primary text-decoration-none">
+                            <a href="/admin/video/${lesson.video}" class="text-primary text-decoration-none">
                                 <i class="fas fa-video me-1"></i> Смотреть
                             </a>
                         ` : '<span class="text-muted">Нет видео</span>'}

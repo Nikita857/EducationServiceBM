@@ -7,6 +7,7 @@ import com.bm.education.services.ModuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,13 +80,14 @@ public class AdminCoursesController {
                 return ResponseEntity.ok(response);
             }else {
                 response.put("success", false);
-                response.put("error", "Такого курса нет");
-                return ResponseEntity.ok(response);
+                response.put("error", "Курс с id " + id + " не найден");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         }catch (Exception e) {
+            log.error("Error deleting course id {}: {}", id, e.getMessage(), e);
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
-                    "error", e.getMessage()
+                    "error", "An internal server error occurred."
             ));
         }
     }

@@ -52,16 +52,14 @@ public class CoursesService {
     }
 
     public List<Course> getUserCourses(Integer userId) {
-        if(userRepository.findById(userId).isPresent()) {
-            if(userRepository.findById(userId).get().getRoles().contains(Role.ROLE_ADMIN)) {
+        return userRepository.findById(userId).map(user -> {
+            if (user.getRoles().contains(Role.ROLE_ADMIN)) {
                 log.info("Права пользователя определены как Администратор");
                 return coursesRepository.findAll();
             }
-            log.info("Права пользователя определы как ROLE_USER");
+            log.info("Права пользователя определены как ROLE_USER");
             return coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
-        }else{
-            return null;
-        }
+        }).orElse(null); // или orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
     }
     public Course createCourse(Course course, MultipartFile imageFile) throws IOException {
         // Проверяем уникальность slug
@@ -163,11 +161,11 @@ public class CoursesService {
 
     private Integer calculateCourseProgress(Integer courseId, Integer userId) {
         try {
-            Integer totalLessons = lessonService.findAllCourseLessons(courseId).size();
+            Integer totalLessons = lessonService.countByModuleCourseId(courseId);
             if (totalLessons == 0) {
                 return 0;
             }
-            Integer completedLessons = lessonService.findAllCompletedLessonsOfCourseWithUser(courseId, userId).size();
+            Integer completedLessons = lessonService.countCompletedLessons(courseId, userId);
             double progressPercentage = (completedLessons.doubleValue() / totalLessons.doubleValue()) * 100;
             return (int) Math.round(progressPercentage);
         } catch (Exception e) {

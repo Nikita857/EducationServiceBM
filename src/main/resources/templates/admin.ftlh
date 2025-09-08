@@ -6,7 +6,6 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="_csrf" content="${_csrf.token}"/>
-    <!-- default header name is X-CSRF-TOKEN -->
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
@@ -133,7 +132,7 @@
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="/logout" class="nav-link">
+                    <a href="#" class="nav-link" id="logoutButton">
                         <i class="bi bi-box-arrow-right"></i>
                         Выход
                     </a>
@@ -631,6 +630,9 @@
     </div>
 </div>
 
+<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
+
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/getLessons.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/generateTest.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-lessons/createLesson.js"></script>
@@ -649,9 +651,7 @@
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
 
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

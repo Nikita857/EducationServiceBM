@@ -3,7 +3,7 @@ let totalPagesUsers = 1;
 let totalItemsUsers = 0;
 
 // Количество пользователей на странице
-const usersPerPage = 2;
+const usersPerPage = 10;
 
 async function loadUsers(page = 1) {
     try {
@@ -12,7 +12,7 @@ async function loadUsers(page = 1) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Данные получены:', data);
+            console.log('Полный ответ от сервера:', data); // DEBUG: Log the full response
 
             if (data.success && data.users) {
                 currentPageUsers = data.currentPage || page;
@@ -21,11 +21,7 @@ async function loadUsers(page = 1) {
 
                 console.log("Рендерим таблицу...");
                 renderUsersTable(data.users);
-                console.log("Таблица отрендерена");
-
-                console.log("Рендерим пагинацию...");
-                renderPagination();
-                console.log("Пагинация отрендерена");
+                console.log("Таблица и пагинация отрендерены");
             } else {
                 throw new Error("Неверный формат данных");
             }
@@ -162,13 +158,12 @@ function renderUsersTable(users) {
     `;
 
     tableContainer.innerHTML = tableHTML;
-}
 
-function renderPagination() {
+    // --- START PAGINATION LOGIC ---
     const paginationContainer = document.querySelector('#users-tab .pagination-container');
 
     if (!paginationContainer) {
-        console.error('Контейнер для пагинации не найден');
+        console.error('Контейнер для пагинации не найден после рендеринга таблицы');
         return;
     }
 
@@ -181,54 +176,49 @@ function renderPagination() {
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
                 <li class="page-item ${currentPageUsers === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPageUsers - 1}); return false;" aria-label="Previous">
+                    <a class="page-link" href="#" onclick="changeUsersPage(${currentPageUsers - 1}); return false;" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
     `;
 
-    // Показываем ограниченное количество страниц
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPageUsers - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPagesUsers, startPage + maxVisiblePages - 1);
 
-    // Корректируем начало, если接近 концу
     if (endPage - startPage + 1 < maxVisiblePages) {
         startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    // Первая страница с многоточием
     if (startPage > 1) {
         paginationHTML += `
             <li class="page-item">
-                <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+                <a class="page-link" href="#" onclick="changeUsersPage(1); return false;">1</a>
             </li>
             ${startPage > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
         `;
     }
 
-    // Основные страницы
     for (let i = startPage; i <= endPage; i++) {
         paginationHTML += `
             <li class="page-item ${i === currentPageUsers ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                <a class="page-link" href="#" onclick="changeUsersPage(${i}); return false;">${i}</a>
             </li>
         `;
     }
 
-    // Последняя страница с многоточием
     if (endPage < totalPagesUsers) {
         paginationHTML += `
             ${endPage < totalPagesUsers - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
             <li class="page-item">
-                <a class="page-link" href="#" onclick="changePage(${totalPagesUsers}); return false;">${totalPagesUsers}</a>
+                <a class="page-link" href="#" onclick="changeUsersPage(${totalPagesUsers}); return false;">${totalPagesUsers}</a>
             </li>
         `;
     }
 
     paginationHTML += `
                 <li class="page-item ${currentPageUsers === totalPagesUsers ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPageUsers + 1}); return false;" aria-label="Next">
+                    <a class="page-link" href="#" onclick="changeUsersPage(${currentPageUsers + 1}); return false;" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
@@ -244,9 +234,11 @@ function renderPagination() {
     `;
 
     paginationContainer.innerHTML = paginationHTML;
+    // --- END PAGINATION LOGIC ---
 }
 
-function changePage(page) {
+function changeUsersPage(page) {
+    console.log(`changePage вызвана для страницы: ${page}`); // DEBUG
     if (page < 1 || page > totalPagesUsers || page === currentPageUsers) return;
     loadUsers(page);
 }
@@ -397,6 +389,10 @@ async function openViewCoursesModal(userId, userName) {
     const userCoursesList = document.getElementById('userCoursesList');
     userCoursesList.innerHTML = '<li class="list-group-item">Загрузка курсов...</li>';
 
+    // Сохраняем данные для перезагрузки
+    userCoursesList.dataset.userId = userId;
+    userCoursesList.dataset.userName = userName;
+
     const modal = new bootstrap.Modal(document.getElementById('viewUserCoursesModal'));
     modal.show();
 
@@ -408,21 +404,66 @@ async function openViewCoursesModal(userId, userName) {
             userCoursesList.innerHTML = '';
             if(data.courses.length === 0) {
                 userCoursesList.innerHTML = '<li class="list-group-item">Пользователь не записан ни на один курс.</li>';
-            }else {
+            } else {
                 data.courses.forEach(course => {
                     const listItem = document.createElement('li');
-                    listItem.className = 'list-group-item';
-                    listItem.textContent = course.title;
+                    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = course.title;
+                    listItem.appendChild(titleSpan);
+
+                    const unenrollButton = document.createElement('button');
+                    unenrollButton.className = 'btn btn-danger btn-sm';
+                    unenrollButton.textContent = 'Отписать';
+                    unenrollButton.onclick = () => confirmUnenrollment(userId, userName, course.id, course.title);
+                    listItem.appendChild(unenrollButton);
+
                     userCoursesList.append(listItem);
                 })
             }
-        }else {
+        } else {
             userCoursesList.innerHTML = '<li class="list-group-item text-danger">Ошибка загрузки курсов.</li>';
             console.error('Failed to load user courses:', data.error);
         }
-    }catch (e) {
+    } catch (e) {
         userCoursesList.innerHTML = '<li class="list-group-item text-danger">Произошла сетевая ошибка.</li>';
         console.error('Network error loading user courses:', e);
+    }
+}
+
+function confirmUnenrollment(userId, userName, courseId, courseTitle) {
+    const message = `Вы уверены, что хотите отписать пользователя "${userName}" от курса "${courseTitle}"?`;
+    if (confirm(message)) {
+        unenrollRequest(userId, courseId, userName);
+    }
+}
+
+async function unenrollRequest(userId, courseId, userName) {
+    const requestData = { userId, courseId };
+
+    try {
+        const response = await fetch('/admin/user/unenroll', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert(result.message);
+            // Обновляем список курсов в модальном окне
+            await openViewCoursesModal(userId, userName);
+        } else {
+            alert(`Ошибка: ${result.message || 'Не удалось отписать пользователя.'}`);
+        }
+    } catch (e) {
+        alert('Произошла сетевая ошибка при отписке.');
+        console.error(e);
     }
 }
 

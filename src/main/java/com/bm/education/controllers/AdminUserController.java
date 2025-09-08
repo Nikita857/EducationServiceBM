@@ -172,4 +172,30 @@ public class AdminUserController {
             return ResponseEntity.internalServerError().body(Map.of("success", false, "error", e.getMessage()));
         }
     }
+
+    @PostMapping("/admin/user/unenroll")
+    public ResponseEntity<?> unenrollUserFromCourse(@Valid @RequestBody UserEnrollmentRequestDTO request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, Object> errors = new HashMap<>();
+            bindingResult
+                    .getAllErrors()
+                    .forEach(error -> {
+                        errors.put(error.getObjectName(), error.getDefaultMessage());
+                    });
+            return ResponseEntity.badRequest().body(errors);
+        }
+
+        try {
+            boolean isUnenrolled = userService.unenrollUserFromCourse(request.getUserId(), request.getCourseId());
+
+            if (isUnenrolled) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "Пользователь успешно отписан от курса."));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Произошла ошибка. Возможно, пользователь не был записан на этот курс."));
+            }
+        } catch (Exception e) {
+            log.error("Error unenrolling user: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
 }

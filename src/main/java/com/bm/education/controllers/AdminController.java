@@ -3,10 +3,7 @@ package com.bm.education.controllers;
 import com.bm.education.dto.CourseCreateRequest;
 import com.bm.education.dto.OfferDto;
 import com.bm.education.dto.OfferResponseDto;
-import com.bm.education.models.Course;
-import com.bm.education.models.Offer;
-import com.bm.education.models.OfferStatus;
-import com.bm.education.models.Role;
+import com.bm.education.models.*;
 import com.bm.education.services.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PrePersist;
@@ -16,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -63,6 +61,7 @@ public class AdminController {
     }
 
     @GetMapping("admin/offers/{offerId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId, Authentication auth) {
         try {
             OfferDto offerDto = offerService.getOfferById(offerId);
@@ -77,6 +76,7 @@ public class AdminController {
 
     // Обновление ответа и статуса
     @PostMapping("admin/updateOffer")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateOffer(
             @Valid @RequestBody OfferResponseDto updateDto,
             BindingResult bindingResult) {
@@ -129,6 +129,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/course/create")
+    @PreAuthorize("hasRole('ADMIN')")
     public String createCourse(
             @Valid @ModelAttribute("course") CourseCreateRequest courseRequest,
             BindingResult bindingResult,
@@ -187,7 +188,24 @@ public class AdminController {
         }
     }
     @GetMapping("/admin/modules/create")
-    public String addModule(Authentication auth) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public String addModule() {
         return "admin/addModule";
+    }
+
+    @GetMapping("/admin/video/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String watchVideoUrl (@PathVariable String name, Model model) {
+        Lesson lesson = lessonService.getLessonByVideoName(name);
+        if (lesson == null) {
+            model.addAttribute("video", "Такого ведеоролика нет");
+            model.addAttribute("title", "Видео не найдено");
+        } else {
+            model.addAllAttributes(Map.of(
+                    "video", lesson.getVideo(),
+                    "title", lesson.getTitle()
+            ));
+        }
+        return "admin/video";
     }
 }

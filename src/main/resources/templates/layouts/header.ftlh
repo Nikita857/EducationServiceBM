@@ -65,7 +65,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item text-danger" href="/logout">
+                                <a class="dropdown-item text-danger" href="#" id="logoutButton">
                                     <i class="bi bi-box-arrow-right me-2"></i>Выход
                                 </a>
                             </li>
@@ -75,4 +75,5 @@
         </div>
     </div>
 </nav>
-<script src="/js/notification.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/notification.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>

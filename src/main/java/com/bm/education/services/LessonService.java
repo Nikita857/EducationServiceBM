@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,12 +57,12 @@ public class LessonService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    public List<Lesson> findAllCourseLessons(Integer courseId) {
-        return lessonRepository.findAllCourseLessons(courseId);
+    public Integer countByModuleCourseId(Integer courseId) {
+        return lessonRepository.countByModuleCourseId(courseId);
     }
 
-    public List<Lesson> findAllCompletedLessonsOfCourseWithUser(Integer courseId, Integer userId) {
-        return lessonRepository.findCompletedLessonsByCourseAndUser(courseId, userId);
+    public Integer countCompletedLessons(Integer courseId, Integer userId) {
+        return lessonRepository.countCompletedLessons(courseId, userId);
     }
 
     public LessonResponseDTO convertToLessonResponseDTO(Lesson lesson) {
@@ -118,5 +119,9 @@ public class LessonService {
         lessonToUpdate.setVideo(lessonDto.getVideoUrl());
 
         return lessonRepository.save(lessonToUpdate);
+    }
+
+    public Lesson getLessonByVideoName(String videoName) {
+       return lessonRepository.findLessonByVideo(videoName).orElse(null);
     }
 }
