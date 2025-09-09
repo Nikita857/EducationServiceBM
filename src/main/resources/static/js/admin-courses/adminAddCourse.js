@@ -56,31 +56,50 @@
     uploadPlaceholder.style.display = 'block';
 });
 
-    // Генерация slug из названия
-    courseTitle.addEventListener('blur', function() {
-    if (!courseSlug.value) {
-    const slug = this.value
-    .toLowerCase()
-    .replace(/[^a-z0-9а-яё\s]/gi, '')
-    .replace(/\s+/g, '-')
-    .replace(/[а-яё]/g, function(char) {
-    const cyrToLat = {
-    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
-    'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
-    'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
-    'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
-    'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch',
-    'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
-    'э': 'e', 'ю': 'yu', 'я': 'ya'
-};
-    return cyrToLat[char] || char;
-})
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    // --- Slug Generation Logic ---
+    let isSlugManuallyEdited = false;
 
-    courseSlug.value = slug;
-}
-});
+    if (courseTitle && courseSlug) {
+        // Generate slug as user types in the title field
+        courseTitle.addEventListener('input', () => {
+            if (!isSlugManuallyEdited) {
+                generateSlugFromTitle();
+            }
+        });
+
+        // Detect when user edits the slug field manually to disable auto-generation
+        courseSlug.addEventListener('input', () => {
+            isSlugManuallyEdited = true;
+        });
+    }
+
+    function generateSlugFromTitle() {
+        const title = courseTitle.value.trim();
+        if (title) {
+            const translitMap = {
+                'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+                'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+                'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts',
+                'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+            };
+
+            let slug = title.toLowerCase();
+            let result = '';
+            for (let i = 0; i < slug.length; i++) {
+                result += translitMap[slug[i]] || slug[i];
+            }
+
+            slug = result
+                .replace(/['"’]/g, '')      // remove quotes
+                .replace(/\s+/g, '-')       // collapse whitespace and replace by -
+                .replace(/[^a-z0-9-]/g, '') // remove invalid chars
+                .replace(/-+/g, '-')        // collapse dashes
+                .replace(/^-|-$/g, '');     // trim - from start or end
+
+            courseSlug.value = slug;
+        }
+    }
+    // --- End Slug Generation Logic ---
 
     // Функция очистки формы
     window.resetForm = function() {

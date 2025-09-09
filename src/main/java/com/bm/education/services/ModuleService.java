@@ -1,10 +1,8 @@
 package com.bm.education.services;
 
-import com.bm.education.dto.LessonResponseDTO;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Course;
-import com.bm.education.models.Lesson;
 import com.bm.education.models.Module;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
@@ -70,23 +68,25 @@ public class ModuleService {
         return true;
     }
 
-    public boolean createModule(ModuleCreateRequest moduleCreateRequest, CoursesRepository coursesRepository) {
-        try {
-            Module module = new Module();
-            module.setTitle(moduleCreateRequest.getTitle());
-            module.setSlug(moduleCreateRequest.getSlug());
-
-            Course course = coursesRepository.findById(moduleCreateRequest.getCourseId()).orElseThrow(
-                    () -> new RuntimeException("Could not find course with id: " + moduleCreateRequest.getCourseId())
-            );
-            course.setId(moduleCreateRequest.getCourseId());
-            module.setCourse(course);
-
-            moduleRepository.save(module);
-            return true;
-        }catch (Exception e){
-            throw new IllegalArgumentException(e);
+    public ModuleResponseDTO createModule(ModuleCreateRequest moduleCreateRequest) {
+        // 1. Check for slug uniqueness
+        if (moduleRepository.findBySlug(moduleCreateRequest.getSlug()).isPresent()) {
+            throw new IllegalStateException("Модуль с таким URI (slug) уже существует: " + moduleCreateRequest.getSlug());
         }
+
+        // 2. Find the associated course
+        Course course = coursesRepository.findById(moduleCreateRequest.getCourseId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Курс с ID " + moduleCreateRequest.getCourseId() + " не найден"));
+
+        // 3. Create and map the entity
+        Module module = new Module();
+        module.setTitle(moduleCreateRequest.getTitle());
+        module.setSlug(moduleCreateRequest.getSlug());
+        module.setCourse(course);
+
+        // 4. Save and return DTO
+        Module savedModule = moduleRepository.save(module);
+        return convertToModuleResponseDTO(savedModule);
     }
 
     private ModuleResponseDTO convertToModuleResponseDTO(Module module) {

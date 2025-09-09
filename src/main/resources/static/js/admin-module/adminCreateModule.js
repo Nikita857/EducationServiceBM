@@ -1,106 +1,140 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('moduleForm');
+    const form = document.getElementById('createModuleForm');
+    const courseSelect = document.getElementById('moduleCourseId');
+    const titleInput = document.getElementById('moduleTitle');
+    const slugInput = document.getElementById('moduleSlug');
 
-    form.addEventListener('submit', async function(event) {
-        event.preventDefault();
 
-        // Валидация формы
-        if (!validateForm()) {
-            return;
-        }
+    /**TODO
+ * Продолжить реализацию функционала добавления модулей
+    Вчера я остановился на настройке fetch списка курсов для инжекта их в селект курса
+    к которому новый модуль необходимо привязать
+    А там видно будет
+    * */
 
-        try {
-            // Сбор данных формы
-            const formData = {
-                courseId: document.getElementById('courseId').value,
-                slug: document.getElementById('slug').value,
-                title: document.getElementById('title').value
-            };
+    const courseSelectAdminCreateModule = document.getElementById('moduleCourseId');
+    loadCoursesIntoSelect(courseSelectAdminCreateModule, null)
 
-            // Отправка данных на сервер
-            const response = await fetch('/admin/modules/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken() // Если используется CSRF защита
-                },
-                body: JSON.stringify(formData)
-            });
+    // Load courses when the tab is shown
+    const createModuleTab = document.querySelector('a[data-tab="create-module-tab"]');
+    if (createModuleTab) {
+        createModuleTab.addEventListener('click', loadCourses);
+    }
+    
+    // Also load courses if the tab is already active on page load
+    if (document.getElementById('create-module-tab')?.classList.contains('active')) {
+        loadCourses();
+    }
 
-            if (response.ok) {
-                const result = await response.json();
-                showAlert('Модуль успешно сохранен!', 'success');
-                form.reset(); // Очистка формы после успешного сохранения
-            } else {
-                const error = await response.json();
-                showAlert(error.message || "Ошибки при создании модуля", 'error');
-                console.log(error.errors)
+
+    if (form) {
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                return;
             }
 
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Произошла ошибка при отправке данных', 'error');
-        }
-    });
+            try {
+                const formData = {
+                    courseId: courseSelect.value,
+                    slug: slugInput.value,
+                    title: titleInput.value,
+                };
 
-    // Валидация формы
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+
+                const response = await fetch('/admin/modules/create', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showAlert('Модуль успешно создан!', 'success');
+                    form.reset();
+                } else {
+                    const errorData = await response.json();
+                    showAlert(errorData.message || "Ошибка при создании модуля", 'error');
+                    console.error('Server error:', errorData.errors);
+                }
+
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                showAlert('Произошла критическая ошибка при отправке данных', 'error');
+            }
+        });
+    }
+
     function validateForm() {
-        const courseId = document.getElementById('courseId').value;
-        const slug = document.getElementById('slug').value;
-        const title = document.getElementById('title').value;
-
-        if (!courseId) {
+        if (!courseSelect.value) {
             showAlert('Пожалуйста, выберите курс', 'error');
             return false;
         }
-
-        if (!slug) {
+        if (!titleInput.value.trim()) {
+            showAlert('Пожалуйста, введите название модуля', 'error');
+            return false;
+        }
+        if (!slugInput.value.trim()) {
             showAlert('Пожалуйста, укажите URI модуля', 'error');
             return false;
         }
 
-        if (!title) {
-            showAlert('Пожалуйста, введите название модуля', 'error');
-            return false;
-        }
-
-        // Валидация slug (только латинские буквы, цифры и дефисы)
         const slugRegex = /^[a-z0-9-]+$/;
-        if (!slugRegex.test(slug)) {
+        if (!slugRegex.test(slugInput.value)) {
             showAlert('URI может содержать только латинские буквы в нижнем регистре, цифры и дефисы', 'error');
             return false;
         }
-
         return true;
     }
 
-    // Получение CSRF токена (если используется Spring Security)
-    function getCsrfToken() {
-        return document.querySelector('meta[name="_csrf"]')?.content ||
-            document.querySelector('input[name="_csrf"]')?.value;
+    let isSlugManuallyEdited = false;
+
+    if (titleInput && slugInput) {
+        // Generate slug as user types in the title field
+        titleInput.addEventListener('input', () => {
+            if (!isSlugManuallyEdited) {
+                generateSlugFromTitle();
+            }
+        });
+
+        // Detect when user edits the slug field manually to disable auto-generation
+        slugInput.addEventListener('input', () => {
+            isSlugManuallyEdited = true;
+        });
     }
-
-    
-
-    // Автогенерация slug из названия (опционально)
-    const titleInput = document.getElementById('title');
-    const slugInput = document.getElementById('slug');
-
-    titleInput.addEventListener('blur', function() {
-        if (!slugInput.value) {
-            generateSlugFromTitle();
-        }
-    });
 
     function generateSlugFromTitle() {
         const title = titleInput.value.trim();
         if (title) {
-            const slug = title
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^a-z0-9-]/g, '')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
+            const translitMap = {
+                'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+                'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+                'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts',
+                'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+            };
+
+            let slug = title.toLowerCase();
+            let result = '';
+            for (let i = 0; i < slug.length; i++) {
+                result += translitMap[slug[i]] || slug[i];
+            }
+
+            slug = result
+                .replace(/['"’]/g, '')      // remove quotes
+                .replace(/\s+/g, '-')       // collapse whitespace and replace by -
+                .replace(/[^a-z0-9-]/g, '') // remove invalid chars
+                .replace(/-+/g, '-')        // collapse dashes
+                .replace(/^-|-$/g, '');     // trim - from start or end
 
             slugInput.value = slug;
         }

@@ -324,7 +324,34 @@
         <#--Модули-->
         <div class="tab-content" id="create-module-tab">
             <section class="content-section">
-            Добавление модулей
+                <h2 class="section-title">Добавление модуля</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <form id="createModuleForm">
+                            <div class="mb-3">
+                                <label for="moduleTitle" class="form-label">Название модуля</label>
+                                <input type="text" class="form-control" id="moduleTitle" name="title" placeholder="Введите название модуля" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="moduleSlug" class="form-label">URI (часть URL)</label>
+                                <input type="text" class="form-control" id="moduleSlug" name="slug" placeholder="naprimer-takoi-uri" required>
+                                <div class="form-text">Используйте латинские буквы, цифры и дефисы.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="moduleCourseId" class="form-label">Привязать к курсу</label>
+                                <select class="form-select" id="moduleCourseId" name="courseId" required>
+                                    <option value="" selected disabled>Выберите курс...</option>
+                                    <!-- Курсы будут загружены динамически с помощью JS -->
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-2"></i>Создать модуль
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </section>
         </div>
         <div class="tab-content" id="modules-edit-tab">

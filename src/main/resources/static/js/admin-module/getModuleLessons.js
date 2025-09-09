@@ -2,21 +2,51 @@ async function loadModuleLessons(moduleId) {
     try {
         const response = await fetch(`/admin/modules/${moduleId}/lessons`);
 
+        // Case 1: Success (200 OK)
         if (response.ok) {
-            const lessons = await response.json();
-            console.log(lessons);
-            showLessonsModal(lessons);
-        } else {
-            throw new Error("Ошибка получения списка уроков");
+            const data = await response.json();
+            if (data.status === 'success' && data.moduleLessons) {
+                showLessonsModal(data.moduleLessons);
+            } else {
+                // Handle cases where status is 200 but body is unexpected
+                showAlert('Получен неожиданный ответ от сервера.', 'warning');
+            }
+            return;
         }
+
+        // Case 2: Not Found (404)
+        if (response.status === 404) {
+            showAlert('В этом модуле пока нет уроков.', 'info');
+            // Show an empty modal for better UX
+            showLessonsModal([]);
+            return;
+        }
+
+        // Case 3: Server Error (500) or other client errors (4xx)
+        let errorMessage = `HTTP ошибка: ${response.status} ${response.statusText}`;
+        try {
+            // Try to get a more specific error message from the response body
+            const errorData = await response.json();
+            if (errorData && errorData.error) {
+                errorMessage = `Ошибка на сервере: ${errorData.error}`;
+            }
+        } catch (e) {
+            // Body is not JSON or is empty, stick with the generic HTTP error message
+            console.error("Could not parse error JSON.", e);
+        }
+
+        showAlert(errorMessage, 'error');
+        console.error('Failed to load lessons:', errorMessage);
+
     } catch (error) {
-        console.log(error);
-        showAlert('Ошибка при загрузке уроков: ' + error.message, 'error');
+        // Case 4: Network error or other fetch-related failures
+        console.error('Network or fetch error:', error);
+        showAlert('Сетевая ошибка. Не удалось подключиться к серверу.', 'error');
     }
 }
 
 function showLessonsModal(lessons) {
-    // Создаем модальное окно, если его еще нет
+    // Create the modal if it doesn't exist yet
     if (!document.getElementById('lessonsModal')) {
         const modalHtml = `
             <div class="modal fade" id="lessonsModal" tabindex="-1" aria-labelledby="lessonsModalLabel" aria-hidden="true">
@@ -27,7 +57,7 @@ function showLessonsModal(lessons) {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" id="lessonsModalBody">
-                            <!-- Сюда будет вставлен список уроков -->
+                            <!-- Lesson list will be inserted here -->
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -39,37 +69,34 @@ function showLessonsModal(lessons) {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
-    // Заполняем модальное окно уроками
     const modalBody = document.getElementById('lessonsModalBody');
+    const modalTitle = document.getElementById('lessonsModalLabel');
 
     if (lessons.length === 0) {
+        modalTitle.textContent = 'Уроки модуля';
         modalBody.innerHTML = `
             <div class="text-center py-4">
-                <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                <i class="bi bi-book-half fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">В этом модуле нет уроков</h5>
-                <p class="text-muted">Создайте первый урок</p>
+                <p class="text-muted">Вы можете создать первый урок в разделе "Уроки".</p>
             </div>
         `;
     } else {
-        // Получаем название модуля из первого урока (предполагая, что все уроки одного модуля)
         const moduleName = lessons[0]?.moduleName || 'Модуль';
+        modalTitle.textContent = `Уроки модуля: ${moduleName}`;
 
         modalBody.innerHTML = `
-            <div class="mb-3">
-                <h6 class="text-muted">Модуль: ${moduleName}</h6>
-            </div>
             <div class="list-group">
                 ${lessons.map(lesson => `
                     <div class="list-group-item list-group-item-action">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">${lesson.title || 'Без названия'}</h6>
-                                <small class="text-muted">ID: ${lesson.id} | Модуль: ${lesson.moduleName}</small>
-                                ${lesson.moduleSlug ? `<br><small class="text-muted">Slug модуля: ${lesson.moduleSlug}</small>` : ''}
+                                <small class="text-muted">ID: ${lesson.id}</small>
                             </div>
                             <div class="btn-group ms-3">
                                 <button class="btn btn-outline-info btn-sm" onclick="viewLesson(${lesson.id}, '${lesson.courseSlug}', '${lesson.moduleSlug}')">
-                                    <i class="fas fa-eye"></i> Просмотреть
+                                    <i class="bi bi-eye"></i> Просмотреть
                                 </button>
                             </div>
                         </div>
@@ -82,14 +109,16 @@ function showLessonsModal(lessons) {
         `;
     }
 
-    // Показываем модальное окно
     const modal = new bootstrap.Modal(document.getElementById('lessonsModal'));
     modal.show();
 }
 
-// Дополнительная функция для просмотра урока (опционально)
 function viewLesson(lessonId, courseSlug, moduleSlug) {
-    // Редирект на страницу просмотра урока
-    console.log(`/course/${courseSlug}/module/${moduleSlug}/lesson/${lessonId}`);
-    window.location.href = `/course/${courseSlug}/module/${moduleSlug}/lesson/${lessonId}`;
+    if (!courseSlug || !moduleSlug) {
+        showAlert('Недостаточно данных для перехода к уроку (отсутствует slug курса или модуля).', 'error');
+        return;
+    }
+    const url = `/course/${courseSlug}/module/${moduleSlug}/lesson/${lessonId}`;
+    console.log(`Redirecting to: ${url}`);
+    window.location.href = url;
 }

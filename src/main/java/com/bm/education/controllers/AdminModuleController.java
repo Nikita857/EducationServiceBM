@@ -127,38 +127,56 @@ public class AdminModuleController {
     }
 
     @PostMapping("/admin/modules/create")
-    ResponseEntity<?> addModule(@Valid @RequestBody ModuleCreateRequest mcr, BindingResult bindingResult, Model model) {
-        try {
-            Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> addModule(@Valid @RequestBody ModuleCreateRequest mcr, BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
 
-            if(bindingResult.hasErrors()) {
-                Map<String, String> errors = new HashMap<>();
-                bindingResult.getFieldErrors().forEach(fieldError -> {
-                    errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-                });
-                response.put("success", "false");
-                response.put("errors", errors);
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            if(moduleService.createModule(mcr, coursesRepository)) {
-                response.put("success", "true");
-                response.put("message", "Created the new module");
-                return ResponseEntity.ok(response);
-            }
-        }catch (Exception e){
-            throw new RuntimeException(String.format("Не удалось создать модуль. Ошибка: %s", e.getMessage()));
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(fieldError -> {
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            });
+            response.put("success", false);
+            response.put("message", "Ошибка валидации");
+            response.put("errors", errors);
+            return ResponseEntity.badRequest().body(response);
         }
-        return null;
+
+        try {
+            ModuleResponseDTO createdModule = moduleService.createModule(mcr);
+
+            response.put("success", true);
+            response.put("message", "Модуль успешно создан");
+            response.put("module", createdModule);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (Exception e) {
+            log.error("Ошибка при создании модуля: {}", e.getMessage());
+            response.put("success", false);
+            response.put("message", "Не удалось создать модуль: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/admin/modules/{id}/lessons")
-    ResponseEntity<List<LessonRequestDTO>> getModuleLessons(@PathVariable Integer id) {
+    ResponseEntity<?> getModuleLessons(@PathVariable String id) {
         try {
-            List<LessonRequestDTO> moduleLessons = lessonService.getModuleLessons(id);
-            return !moduleLessons.isEmpty() ? ResponseEntity.ok(moduleLessons) : ResponseEntity.notFound().build();
+            List<LessonRequestDTO> moduleLessons = lessonService.getModuleLessons(Integer.parseInt(id));
+            if(!moduleLessons.isEmpty()) {
+                return ResponseEntity.ok(
+                        Map.of(
+                                "status", "success",
+                                "moduleLessons", moduleLessons
+                        )
+                );
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        Map.of(
+                                "status", "not_found"
+                        )
+                );
+            }
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
 

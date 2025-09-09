@@ -23,9 +23,6 @@ async function openEditModuleModal(moduleId) {
     try {
         // 1. Получаем данные модуля
         const response = await fetch(`/admin/module/${moduleId}`);
-        if (!response.ok) {
-            throw new Error('Не удалось загрузить данные модуля.');
-        }
         const data = await response.json();
         const module = data.module;
 
@@ -45,7 +42,6 @@ async function openEditModuleModal(moduleId) {
 
     } catch (error) {
         console.error('Ошибка при открытии модального окна:', error);
-        showAlert('Произошла ошибка: ' + error.message, 'error');
     }
 }
 

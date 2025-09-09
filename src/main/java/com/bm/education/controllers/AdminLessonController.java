@@ -20,10 +20,11 @@ public class AdminLessonController {
 
     @GetMapping("/admin/lessons")
     public ResponseEntity<?> getLessonsWithPagination(@RequestParam(defaultValue = "1") int page,
-                                                      @RequestParam(defaultValue = "10") int size){
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(defaultValue = "0") int moduleId){
         Map<String, Object> response = new HashMap<>();
         try {
-            Page<LessonResponseDTO> lessons = lessonService.putLessonsInDTO(page, size);
+            Page<LessonResponseDTO> lessons = lessonService.putLessonsInDTO(page, size, moduleId);
 
             response.put("success", true);
             response.put("lessons", lessons.getContent());

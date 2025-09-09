@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
 public class ModuleCreateRequest {
@@ -17,4 +18,5 @@ public class ModuleCreateRequest {
     @NotBlank(message = "Поле title не может быть пустым")
     @Size(min = 2, max = 100, message = "Поле title не может содержать больше 100 символов")
     private String title;
-}
+
+    }

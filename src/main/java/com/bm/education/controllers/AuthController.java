@@ -6,7 +6,9 @@ import com.bm.education.services.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,10 +25,12 @@ public class AuthController {
 
     private final UserDetailsService userDetailsService;
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthController(UserDetailsService userDetailsService, UserService userService) {
+    public AuthController(UserDetailsService userDetailsService, UserService userService, AuthenticationManager authenticationManager) {
         this.userDetailsService = userDetailsService;
         this.userService = userService;
+        this.authenticationManager = authenticationManager;
     }
 
     @GetMapping("/login")
@@ -58,15 +62,15 @@ public class AuthController {
 
         try {
             userService.createUser(user);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
+                    user.getUsername(),
+                    user.getPassword()
             );
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            Authentication authentication = authenticationManager.authenticate(authToken);
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             return SecurityContextHolder.getContext().getAuthentication().isAuthenticated() ? "redirect:/":null;
 

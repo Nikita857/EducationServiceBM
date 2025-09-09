@@ -3,13 +3,17 @@ package com.bm.education.security;
 import com.bm.education.Exceptions.CustomAuthenticationFailureHandler;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
+import org.springframework.boot.autoconfigure.integration.IntegrationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,6 +39,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                )
+                .sessionManagement(session -> session
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::migrateSession)
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

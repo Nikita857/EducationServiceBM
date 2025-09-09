@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LessonService {
     private final LessonRepository lessonRepository;
-    private final ModuleService moduleService;
     private final ModuleRepository moduleRepository;
 
     public Lesson getLesson(int id, int moduleId) {
@@ -76,9 +75,14 @@ public class LessonService {
         return lessonResponseDTO;
     }
 
-    public Page<LessonResponseDTO> putLessonsInDTO(Integer page, Integer size) {
+    public Page<LessonResponseDTO> putLessonsInDTO(Integer page, Integer size, Integer moduleId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
-        Page<Lesson> lessons = lessonRepository.findAll(pageable);
+        Page<Lesson> lessons;
+        if(moduleId == 0) {
+            lessons = lessonRepository.findAll(pageable);
+        }else{
+            lessons = lessonRepository.findByModuleId(moduleId, pageable);
+        }
         return lessons.map(this::convertToLessonResponseDTO);
     }
 

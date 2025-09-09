@@ -5,12 +5,55 @@ let totalLessonsPages = 1;
 let totalLessonsItems = 0;
 let lessonsPerPage = 5;
 
-// Загрузка уроков
+// --- NEW: Function to load modules for the filter dropdown ---
+async function loadModulesForFilter() {
+    try {
+        const response = await fetch('/admin/modules/json');
+        if (!response.ok) {
+            throw new Error('Failed to load modules for filter');
+        }
+        const data = await response.json();
+        if (data.success && data.modules) {
+            const select = document.getElementById('moduleFilterSelect');
+            if (!select) return;
+
+            // Save selected value if it exists
+            const currentFilter = select.value;
+
+            select.innerHTML = '<option value="">Все модули</option>'; // Reset and add default option
+            data.modules.forEach(module => {
+                const option = document.createElement('option');
+                option.value = module.moduleId;
+                option.textContent = `${module.moduleTitle}`;
+                select.appendChild(option);
+            });
+
+            // Restore selected value
+            if (currentFilter) {
+                select.value = currentFilter;
+            }
+
+        } else {
+            throw new Error('Invalid data format for modules');
+        }
+    } catch (error) {
+        console.error('Error loading modules for filter:', error);
+        showAlert('Не удалось загрузить фильтр модулей.', 'warning');
+    }
+}
+
+// --- MODIFIED: Load lessons with filtering capability ---
 async function loadLessons(page = 1) {
     try {
         showLoading(true);
 
-        const response = await fetch(`/admin/lessons?page=${page}&size=${lessonsPerPage}`);
+        const moduleId = document.getElementById('moduleFilterSelect')?.value || '';
+        let url = `/admin/lessons?page=${page}&size=${lessonsPerPage}`;
+        if (moduleId) {
+            url += `&moduleId=${moduleId}`;
+        }
+
+        const response = await fetch(url);
 
         if (response.ok) {
             const data = await response.json();
@@ -26,51 +69,64 @@ async function loadLessons(page = 1) {
                 throw new Error("Неверный формат данных");
             }
         } else {
-            throw new Error(`Ошибка сервера: ${response.status}`);
+            // Handle cases like 404 when no lessons are found for a filter
+            if (response.status === 404) {
+                renderLessonsTable([]);
+                renderLessonsPagination();
+            } else {
+                throw new Error(`Ошибка сервера: ${response.status}`);
+            }
         }
     } catch (error) {
         console.error('Ошибка загрузки уроков:', error);
-        showAlert('Не удалось загрузить список уроков', 'error');
+        showError(error.message);
     } finally {
         showLoading(false);
     }
 }
 
-// Рендер таблицы уроков
+// --- MODIFIED: Render lessons table with filter dropdown ---
 function renderLessonsTable(lessons) {
     const container = document.getElementById('lessonsContainer');
-
     if (!container) {
         console.error('Контейнер уроков не найден');
         return;
     }
 
-    // Очищаем контейнер
     container.innerHTML = '';
 
     const tableWrapper = document.createElement('div');
-    tableWrapper.className = 'courses-table-container'; // Для скролла на малых экранах
+    tableWrapper.className = 'courses-table-container';
 
     const tableHTML = `
         <div class="data-table courses-table lessons-table">
-            <div class="table-header d-flex justify-content-between align-items-center">
-                <h3 class="table-title">Список уроков</h3>
-                <div class="page-size-selector">
-                    <div class="input-group">
-                        <span class="input-group-text">Отображать</span>
-                        <select class="form-select" id="lessonsPageSizeSelect" onchange="changeLessonsPerPage(this.value)">
-                            <option value="5" ${lessonsPerPage === 5 ? 'selected' : ''}>5 строк</option>
-                            <option value="10" ${lessonsPerPage === 10 ? 'selected' : ''}>10 строк</option>
-                            <option value="20" ${lessonsPerPage === 20 ? 'selected' : ''}>20 строк</option>
-                            <option value="50" ${lessonsPerPage === 50 ? 'selected' : ''}>50 строк</option>
+            <div class="table-header d-flex justify-content-between align-items-center flex-wrap">
+                <h3 class="table-title mb-2 mb-md-0">Список уроков</h3>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <!-- NEW: Module Filter -->
+                    <div class="filter-group">
+                        <select class="form-select form-select-sm" id="moduleFilterSelect" onchange="loadLessons(1)">
+                            <option value="">Фильтр по модулю...</option>
                         </select>
-                        <button class="btn btn-primary" onclick="openCreateLessonModal()">Новый урок</button>
                     </div>
+                    <div class="page-size-selector">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Отображать</span>
+                            <select class="form-select" id="lessonsPageSizeSelect" onchange="changeLessonsPerPage(this.value)">
+                                <option value="5" ${lessonsPerPage === 5 ? 'selected' : ''}>5</option>
+                                <option value="10" ${lessonsPerPage === 10 ? 'selected' : ''}>10</option>
+                                <option value="20" ${lessonsPerPage === 20 ? 'selected' : ''}>20</option>
+                                <option value="50" ${lessonsPerPage === 50 ? 'selected' : ''}>50</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openCreateLessonModal()">
+                        <i class="bi bi-plus-circle me-1"></i>Новый урок
+                    </button>
                 </div>
             </div>
 
             <div class="table-content">
-                <!-- Заголовок таблицы -->
                 <div class="table-row header-row">
                     <div class="table-cell">ID</div>
                     <div class="table-cell">Название</div>
@@ -80,7 +136,6 @@ function renderLessonsTable(lessons) {
                     <div class="table-cell">Действия</div>
                 </div>
 
-                <!-- Строки с уроками -->
                 ${lessons.length > 0 ? lessons.map(lesson => `
                 <div class="table-row">
                     <div class="table-cell text-muted">#${lesson.id || 'N/A'}</div>
@@ -96,7 +151,7 @@ function renderLessonsTable(lessons) {
                     <div class="table-cell">
                         ${lesson.video ? `
                             <a href="/admin/video/${lesson.video}" class="text-primary text-decoration-none">
-                                <i class="fas fa-video me-1"></i> Смотреть
+                                <i class="bi bi-camera-video me-1"></i> Смотреть
                             </a>
                         ` : '<span class="text-muted">Нет видео</span>'}
                     </div>
@@ -113,8 +168,8 @@ function renderLessonsTable(lessons) {
                 `).join('') : `
                 <div class="table-row">
                     <div class="table-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">
-                        <i class="fas fa-book-open me-2"></i>
-                        Уроки не найдены
+                        <i class="bi bi-book-open me-2"></i>
+                        Уроки не найдены. Измените фильтр или добавьте новый урок.
                     </div>
                 </div>
                 `}
@@ -124,19 +179,19 @@ function renderLessonsTable(lessons) {
 
     tableWrapper.innerHTML = tableHTML;
     container.appendChild(tableWrapper);
+
+    // --- NEW: Populate the filter after rendering the table structure ---
+    loadModulesForFilter();
 }
 
 // Рендер пагинации
 function renderLessonsPagination() {
     const container = document.getElementById('lessonsPagination');
-
-    // Если контейнер не найден, выходим
     if (!container) {
         console.warn('Контейнер пагинации не найден');
         return;
     }
 
-    // Если всего одна страница, очищаем контейнер
     if (totalLessonsPages <= 1) {
         container.innerHTML = '';
         return;
@@ -146,9 +201,7 @@ function renderLessonsPagination() {
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
                 <li class="page-item ${currentLessonsPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changeLessonsPage(${currentLessonsPage - 1}); return false;">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+                    <a class="page-link" href="#" onclick="changeLessonsPage(${currentLessonsPage - 1}); return false;">&laquo;</a>
                 </li>
     `;
 
@@ -161,44 +214,33 @@ function renderLessonsPagination() {
     }
 
     if (startPage > 1) {
-        paginationHTML += `
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="changeLessonsPage(1); return false;">1</a>
-            </li>
-            ${startPage > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
-        `;
+        paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changeLessonsPage(1); return false;">1</a></li>`;
+        if (startPage > 2) {
+            paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
     }
 
     for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <li class="page-item ${i === currentLessonsPage ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="changeLessonsPage(${i}); return false;">${i}</a>
-            </li>
-        `;
+        paginationHTML += `<li class="page-item ${i === currentLessonsPage ? 'active' : ''}"><a class="page-link" href="#" onclick="changeLessonsPage(${i}); return false;">${i}</a></li>`;
     }
 
     if (endPage < totalLessonsPages) {
-        paginationHTML += `
-            ${endPage < totalLessonsPages - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
-            <li class="page-item">
-                <a class="page-link" href="#" onclick="changeLessonsPage(${totalLessonsPages}); return false;">${totalLessonsPages}</a>
-            </li>
-        `;
+        if (endPage < totalLessonsPages - 1) {
+            paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+        paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changeLessonsPage(${totalLessonsPages}); return false;">${totalLessonsPages}</a></li>`;
     }
 
     paginationHTML += `
                 <li class="page-item ${currentLessonsPage === totalLessonsPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changeLessonsPage(${currentLessonsPage + 1}); return false;">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
+                    <a class="page-link" href="#" onclick="changeLessonsPage(${currentLessonsPage + 1}); return false;">&raquo;</a>
                 </li>
             </ul>
         </nav>
         
         <div class="pagination-info text-center mt-2">
             <small class="text-muted">
-                Страница ${currentLessonsPage} из ${totalLessonsPages} • 
-                Показано ${lessonsPerPage} из ${totalLessonsItems} уроков
+                Страница ${currentLessonsPage} из ${totalLessonsPages} • Показано ${lessons.length} из ${totalLessonsItems} уроков
             </small>
         </div>
     `;
@@ -225,10 +267,9 @@ function showLoading(show) {
 
     if (show) {
         container.innerHTML = `
-            <div class="table-row">
-                <div colspan="7" class="text-center py-4 text-muted">
-                    <i class="fas fa-spinner fa-spin me-2"></i>
-                    Загрузка уроков...
+            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
                 </div>
             </div>
         `;
@@ -240,15 +281,12 @@ function showError(message) {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="table-row">
-            <div colspan="7" class="text-center py-4 text-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                ${escapeHtml(message)}
-            </div>
-        </div>
-        <div class="text-center mt-2">
+        <div class="text-center py-4 text-danger">
+            <i class="bi bi-exclamation-triangle-fill fa-2x mb-3"></i>
+            <h5>Ошибка загрузки</h5>
+            <p>${escapeHtml(message)}</p>
             <button class="btn btn-primary btn-sm" onclick="loadLessons(1)">
-                <i class="fas fa-redo me-1"></i> Попробовать снова
+                <i class="bi bi-arrow-clockwise me-1"></i> Попробовать снова
             </button>
         </div>
     `;
@@ -260,7 +298,7 @@ function truncateText(text, maxLength) {
 }
 
 function escapeHtml(text) {
-    if (!text) return '';
+    if (typeof text !== 'string') return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -272,60 +310,47 @@ async function deleteLesson(lessonId, lessonTitle) {
     }
 
     try {
-        const response = await fetch(`/admin/lessons/${lessonId}/delete`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
-            }
-        });
-
-        // Обрабатываем разные статусы ответа
-        if (response.status === 404) {
-            showAlert('Урок не найден', 'error');
-            return;
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
         }
 
-        const result = await response.json();
+        const response = await fetch(`/admin/lessons/${lessonId}/delete`, {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        const result = await response.json().catch(() => ({})); // Handle empty response
 
         if (response.ok) {
-            if (result.success) {
-                showAlert(`Урок ${lessonTitle} успешно удален`, 'success');
-                // Обновляем таблицу уроков
-                if (typeof loadLessons === 'function') {
-                    loadLessons(currentLessonsPage || 1);
-                }
-            } else {
-                showAlert(`не удалось удалить урок: ${error}`, 'error');
-            }
+            showAlert(result.message || `Урок ${lessonTitle} успешно удален`, 'success');
+            loadLessons(currentLessonsPage || 1);
         } else {
-            showAlert(`Ошибка сервера: ${error}`, 'error');
+            throw new Error(result.message || `Ошибка сервера: ${response.status}`);
         }
 
     } catch (error) {
         console.error('Ошибка удаления урока:', error);
-        showAlert(`Ошибка : ${error}`, 'error');
+        showAlert(error.message, 'error');
     }
 }
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем, существует ли таб с уроками
-    const lessonsTab = document.getElementById('lessons-tab');
-    if (lessonsTab) {
-        // Загружаем уроки только если таб активен
-        if (lessonsTab.classList.contains('active')) {
-            loadLessons(1);
-        }
+    const lessonsTabTrigger = document.querySelector('a[data-tab="lessons-edit-tab"]');
+    if (lessonsTabTrigger) {
+        lessonsTabTrigger.addEventListener('click', function() {
+            // Ensure we load lessons only when the tab is activated
+            setTimeout(() => loadLessons(1), 10); 
+        });
 
-        // Добавляем обработчик для переключения табов
-        const tabTrigger = document.querySelector('[data-bs-target="#lessons-tab"]');
-        if (tabTrigger) {
-            tabTrigger.addEventListener('shown.bs.tab', function (e) {
-                if (e.target.getAttribute('data-bs-target') === '#lessons-tab') {
-                    loadLessons(1);
-                }
-            });
+        // If the tab is already active on page load, load lessons
+        if (document.getElementById('lessons-edit-tab')?.classList.contains('active')) {
+            loadLessons(1);
         }
     }
 });
