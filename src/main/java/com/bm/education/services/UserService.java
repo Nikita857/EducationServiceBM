@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -198,14 +199,14 @@ public class UserService {
         );
     }
 
-    public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size) {
-        // Создаем объект пагинации (Spring Data pages are 0-based)
+    public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size, String role) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-
-        // Получаем пагинированный результат
-        Page<User> usersPage = userRepository.findAll(pageable);
-
-        // Конвертируем в DTO
+        Page<User> usersPage;
+        if(!role.equals("ALL")) {
+            usersPage = userRepository.findAllByRoles(pageable, Role.valueOf("ROLE_".concat(role)));
+        }else{
+            usersPage = userRepository.findAll(pageable);
+        }
         return usersPage.map(this::convertToUserDTO);
     }
 

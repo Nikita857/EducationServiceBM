@@ -1,29 +1,25 @@
+
 let currentPageUsers = 1;
 let totalPagesUsers = 1;
 let totalItemsUsers = 0;
+let usersPerPage = 10; // Default page size
+let roleFilter = 'ALL'; // Default role filter
 
-// Количество пользователей на странице
-const usersPerPage = 7;
-
-async function loadUsers(page = 1) {
+async function loadUsers(page = 1, size = usersPerPage, role = roleFilter) {
     try {
-        console.log(`Загрузка пользователей, страница: ${page}`);
-        const response = await fetch(`/admin/users?page=${page}&size=${usersPerPage}`);
+        console.log(`Загрузка пользователей: страница ${page}, размер ${size}, роль ${role}`);
+        const response = await fetch(`/admin/users?page=${page}&size=${size}&role=${role}`);
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Полный ответ от сервера:', data); // DEBUG: Log the full response
-
             if (data.success && data.users) {
                 currentPageUsers = data.currentPage || page;
                 totalPagesUsers = data.totalPages || 1;
                 totalItemsUsers = data.totalItems || data.users.length;
 
-                console.log("Рендерим таблицу...");
                 renderUsersTable(data.users);
-                console.log("Таблица и пагинация отрендерены");
             } else {
-                throw new Error("Неверный формат данных");
+                throw new Error("Неверный формат данных от сервера");
             }
         } else {
             throw new Error(`Ошибка сервера: ${response.status}`);
@@ -34,10 +30,22 @@ async function loadUsers(page = 1) {
     }
 }
 
+function rowsInUserTable(size) {
+    usersPerPage = parseInt(size, 10);
+    loadUsers(1, usersPerPage, roleFilter);
+}
+
+function filterByUserRole(role) {
+    roleFilter = role;
+    loadUsers(1, usersPerPage, roleFilter);
+}
+
+
 function getCsrfToken() {
     return document.querySelector('meta[name="_csrf"]')?.content ||
         document.querySelector('input[name="_csrf"]')?.value;
 }
+
 
 async function deleteUsersRequest(userId) {
     try {
@@ -57,7 +65,7 @@ async function deleteUsersRequest(userId) {
             if (response.success) {
                 showAlert(response.message, 'success');
                 // Перезагружаем список пользователей
-                await loadUsers(currentPageUsers);
+                await loadUsers(currentPageUsers, usersPerPage, roleFilter);
             } else {
                 showAlert(response.message, 'error');
             }
@@ -72,57 +80,73 @@ async function deleteUsersRequest(userId) {
 
 function renderUsersTable(users) {
     const tableContainer = document.querySelector('#users-tab .card-body');
-
     if (!tableContainer) {
         console.error('Контейнер для таблицы не найден');
         return;
     }
-
-    // Очищаем контейнер
     tableContainer.innerHTML = '';
 
     const tableHTML = `
-        <div class="data-table">
-            <div class="table-header">
+    <div class="users-table-container">
+        <div class="data-table users-table">
+            <div class="table-header d-flex justify-content-between align-items-center">
                 <h3 class="table-title">Список пользователей</h3>
+                <div class="table-header-actions d-flex align-items-center" style="gap: 1rem;">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-people"></i></span>
+                        <select class="form-select form-select-sm" id="roleFilter" onchange="filterByUserRole(this.value)">
+                            <option value="ALL" ${roleFilter === 'ALL' ? 'selected' : ''}>Все роли</option>
+                            <option value="USER" ${roleFilter === 'USER' ? 'selected' : ''}>Пользователь</option>
+                            <option value="ADMIN" ${roleFilter === 'ADMIN' ? 'selected' : ''}>Администратор</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Показывать</span>
+                        <select class="form-select form-select-sm" id="pageSizeSelect" onchange="rowsInUserTable(this.value)">
+                            <option value="5" ${usersPerPage == 5 ? 'selected' : ''}>5</option>
+                            <option value="10" ${usersPerPage == 10 ? 'selected' : ''}>10</option>
+                            <option value="20" ${usersPerPage == 20 ? 'selected' : ''}>20</option>
+                            <option value="50" ${usersPerPage == 50 ? 'selected' : ''}>50</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             
             <div class="table-content">
                 <!-- Заголовок таблицы -->
                 <div class="table-row header-row">
-                    <div>ID</div>
-                    <div>Аватар</div>
-                    <div>Имя</div>
-                    <div>Фамилия</div>
-                    <div>Отдел</div>
-                    <div>Должность</div>
-                    <div>Квалификация</div>
-                    <div>Логин</div>
-                    <div>Создан</div>
-                    <div>Роль</div>
-                    <div>Действия</div>
+                    <div class="table-cell">ID</div>
+                    <div class="table-cell">Аватар</div>
+                    <div class="table-cell">Имя</div>
+                    <div class="table-cell">Фамилия</div>
+                    <div class="table-cell">Отдел</div>
+                    <div class="table-cell">Должность</div>
+                    <div class="table-cell">Квалификация</div>
+                    <div class="table-cell">Логин</div>
+                    <div class="table-cell">Создан</div>
+                    <div class="table-cell">Роль</div>
+                    <div class="table-cell">Действия</div>
                 </div>
                 
                 ${users.length > 0 ? users.map(user => `
                     <div class="table-row">
-                        <div class="text-muted">#${user.id || 'N/A'}</div>
-                        <div>
-                            <img src="/avatars/${user.avatar || 'avatar.png'}" alt="Аватар" 
-                                 style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div class="table-cell text-muted">#${user.id || 'N/A'}</div>
+                        <div class="table-cell">
+                            <img src="/avatars/${user.avatar || 'avatar.png'}" alt="Аватар" class="user-avatar">
                         </div>
-                        <div>${escapeHtml(user.firstName || 'Не указано')}</div>
-                        <div>${escapeHtml(user.lastName || 'Не указано')}</div>
-                        <div>${escapeHtml(user.department || 'Не указан')}</div>
-                        <div>${escapeHtml(user.jobTitle || 'Не указана')}</div>
-                        <div>
+                        <div class="table-cell">${escapeHtml(user.firstName || 'Не указано')}</div>
+                        <div class="table-cell">${escapeHtml(user.lastName || 'Не указано')}</div>
+                        <div class="table-cell">${escapeHtml(user.department || 'Не указан')}</div>
+                        <div class="table-cell">${escapeHtml(user.jobTitle || 'Не указана')}</div>
+                        <div class="table-cell">
                             <span class="status-badge ${getQualificationClass(user.qualification)}">
                                 ${escapeHtml(user.qualification || 'Не указана')}
                             </span>
                         </div>
-                        <div>${escapeHtml(user.username || 'Не указан')}</div>
-                        <div class="text-sm text-muted">${formatDate(user.createdAt)}</div>
-                        <div>${displayRoles(user.role)}</div>
-                        <div class="action-buttons">
+                        <div class="table-cell">${escapeHtml(user.username || 'Не указан')}</div>
+                        <div class="table-cell text-sm text-muted">${formatDate(user.createdAt)}</div>
+                        <div class="table-cell">${displayRoles(user.role)}</div>
+                        <div class="table-cell action-buttons justify-content-center">
                             <button class="btn btn-primary btn-icon btn-sm" title="Редактировать" onclick="editUser(${user.id})">
                                 <i class="bi bi-pencil"></i>
                             </button>
@@ -138,37 +162,35 @@ function renderUsersTable(users) {
                         </div>
                     </div>
                 `).join('') : `
-                    <div class="table-row">
-                        <div colspan="11" class="text-center py-4 text-muted">
-                            <i class="fas fa-users-slash me-2"></i>
+                    <div class="table-row" style="grid-template-columns: 1fr;">
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                             Пользователи не найдены
                         </div>
                     </div>
                 `}
             </div>
         </div>
+    </div>
         
-        <!-- Контейнер для пагинации -->
-        <div class="pagination-container mt-3"></div>
-        
-        <!-- Кнопка обновления -->
-        <div class="text-center mt-3">
-            <button class="btn btn-primary" onclick="loadUsers(currentPageUsers)">
-                <i class="fas fa-sync-alt"></i> Обновить список
-            </button>
-        </div>
+    <!-- Контейнер для пагинации -->
+    <div class="pagination-container mt-3"></div>
+    
+    <!-- Кнопка обновления -->
+    <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="loadUsers(currentPageUsers, usersPerPage, roleFilter)">
+            <i class="bi bi-arrow-repeat"></i> Обновить список
+        </button>
+    </div>
     `;
 
     tableContainer.innerHTML = tableHTML;
 
-    // --- START PAGINATION LOGIC ---
     const paginationContainer = document.querySelector('#users-tab .pagination-container');
-
     if (!paginationContainer) {
-        console.error('Контейнер для пагинации не найден после рендеринга таблицы');
+        console.error('Контейнер для пагинации не найден');
         return;
     }
-
     if (totalPagesUsers <= 1) {
         paginationContainer.innerHTML = '';
         return;
@@ -234,15 +256,14 @@ function renderUsersTable(users) {
             </small>
         </div>
     `;
-
     paginationContainer.innerHTML = paginationHTML;
-    // --- END PAGINATION LOGIC ---
 }
 
 function changeUsersPage(page) {
     if (page < 1 || page > totalPagesUsers || page === currentPageUsers) return;
-    loadUsers(page);
+    loadUsers(page, usersPerPage, roleFilter);
 }
+
 
 // Вспомогательные функции
 function escapeHtml(text) {
@@ -413,7 +434,7 @@ async function openViewCoursesModal(userId, userName) {
                 data.courses.forEach(course => {
                     const listItem = document.createElement('li');
                     listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-                    
+
                     const titleSpan = document.createElement('span');
                     titleSpan.textContent = course.title;
                     listItem.appendChild(titleSpan);
@@ -473,11 +494,12 @@ async function unenrollRequest(userId, courseId, userName) {
 }
 
 // Инициализация
+
 document.addEventListener('DOMContentLoaded', function() {
     // Загружаем пользователей при загрузке страницы
     const usersTab = document.getElementById('users-tab');
     if (usersTab) {
-        loadUsers(1);
+        loadUsers(1, usersPerPage, roleFilter);
     }
 });
 
@@ -491,3 +513,5 @@ window.confirmUnenrollment = confirmUnenrollment;
 window.unenrollRequest = unenrollRequest;
 window.changeUsersPage = changeUsersPage;
 window.currentPageUsers = currentPageUsers;
+window.rowsInUserTable = rowsInUserTable;
+window.filterByUserRole = filterByUserRole;

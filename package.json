@@ -20,5 +20,8 @@
   "homepage": "https://github.com/Nikita857/EducationServiceBM#readme",
   "devDependencies": {
     "parcel": "^2.15.4"
+  },
+  "dependencies": {
+    "tinymce": "^8.0.2"
   }
 }

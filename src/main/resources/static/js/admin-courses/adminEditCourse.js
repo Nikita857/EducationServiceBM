@@ -139,7 +139,7 @@ function renderCoursesTable(courses) {
                         <code>/courses/${course.slug}</code>
                     </div>
                     <div class="table-cell">
-                        <span class="status-badge status-review">${course.status}</span>
+                    ${adaptiveCourseStatus(course.status)}
                     </div>
                     <div class="table-cell text-sm text-muted">${formatCourseDate(course.createdAt)}</div>
                     <div class="table-cell text-sm text-muted">${formatCourseDate(course.updatedAt)}</div>
@@ -171,6 +171,18 @@ function renderCoursesTable(courses) {
 
     tableContainer.innerHTML = tableHTML;
     document.getElementById('pageSizeSelect').value = coursesPerPage;
+}
+
+function adaptiveCourseStatus(status) {
+    switch (status) {
+        case 'ACTIVE' :
+            return '<span class="badge rounded-pill text-bg-success">Активный</span>';
+        case 'INACTIVE' :
+            return '<span class="badge rounded-pill text-bg-secondary">Неактивный</span>';
+        case 'ARCHIVED' :
+            return '<span class="badge rounded-pill text-bg-dark">В архиве</span>';
+
+    }
 }
 
 function renderPagination() {

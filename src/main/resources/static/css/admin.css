@@ -488,13 +488,13 @@ textarea.form-control {
     display: flex;
     align-items: center;
 }
- .data-table {
-     background: var(--card-bg);
-     border-radius: 12px;
-     border: 1px solid rgba(255, 255, 255, 0.1);
-     overflow: hidden;
-     margin-bottom: 2rem;
- }
+.data-table {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
 
 .table-header {
     padding: 1.5rem;
@@ -1015,9 +1015,210 @@ code {
 }
 
 .modal-body .form-control:-ms-input-placeholder {
-   color: #a0aec0;
+    color: #a0aec0;
 }
 
 .modal-body .form-control::-ms-input-placeholder {
-   color: #a0aec0;
+    color: #a0aec0;
+}
+
+/* =============================================== */
+/*            OFFERS TABLE STYLES                */
+/* =============================================== */
+
+.offers-table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.offers-table {
+    width: 100%;
+    min-width: 1200px; /* Adjust as needed for content */
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.offers-table .table-header {
+    padding: 1rem 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.offers-table .table-header-actions .form-select,
+.offers-table .table-header-actions .input-group-text {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.offers-table .table-header-actions .form-select {
+    color: #e2e8f0;
+}
+
+.offers-table .table-header-actions .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #6366f1;
+    box-shadow: none;
+    color: #e2e8f0;
+}
+
+.offers-table .table-header-actions .form-select option {
+    background-color: var(--card-bg);
+    color: #e2e8f0;
+}
+
+.offers-table .table-content {
+    width: 100%;
+    padding: 0;
+}
+
+.offers-table .table-row {
+    display: grid;
+    /* ID, User, Topic, Desc, Resp, Status, Created, Updated, Actions */
+    grid-template-columns: 60px minmax(150px, 1fr) minmax(150px, 1fr) minmax(200px, 2fr) minmax(200px, 1fr) 140px 120px 120px 120px;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.offers-table .table-row.header-row {
+    background: rgba(99, 102, 241, 0.08);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6366f1;
+}
+
+.offers-table .table-row:last-child {
+    border-bottom: none;
+}
+
+.offers-table .table-row:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.offers-table .table-cell {
+    min-width: 0;
+    overflow: hidden;
+}
+/* =============================================== */
+/* USERS TABLE STYLES */
+/* =============================================== */
+
+.users-table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.users-table {
+    width: 100%;
+    min-width: 1400px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.users-table .table-header {
+    padding: 1rem 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.users-table .table-header-actions .form-select,
+.users-table .table-header-actions .input-group-text {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.users-table .table-header-actions .form-select {
+    color: #e2e8f0;
+}
+
+.users-table .table-header-actions .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #6366f1;
+    box-shadow: none;
+    color: #e2e8f0;
+}
+
+.users-table .table-header-actions .form-select option {
+    background-color: var(--card-bg);
+    color: #e2e8f0;
+}
+
+.users-table .table-content {
+    width: 100%;
+    padding: 0;
+}
+
+.users-table .table-row {
+    display: grid;
+    grid-template-columns: 50px 60px 1fr 1fr 1fr 1fr 1fr 1fr 120px 100px 160px;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.users-table .table-row.header-row {
+    background: rgba(99, 102, 241, 0.08);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6366f1;
+}
+
+.users-table .table-row:last-child {
+    border-bottom: none;
+}
+
+.users-table .table-row:hover {
+    background: rgba(99, 102, 241, 0.03);
+}
+
+.users-table .table-cell {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.users-table .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+/* =============================================== */
+/* LESSONS TABLE STYLES */
+/* =============================================== */
+
+.lessons-table .table-header .form-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.lessons-table .table-header .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #6366f1;
+    box-shadow: none;
+}
+
+.lessons-table .table-header .form-select option {
+    background-color: var(--card-bg);
+    color: #e2e8f0;
 }

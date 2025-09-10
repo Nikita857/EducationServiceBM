@@ -29,14 +29,15 @@ public class AdminUserController {
 
     @GetMapping("/admin/users")
     ResponseEntity<?> getAllUsers(
-            @RequestParam(defaultValue = "1", name = "page") int page,
-            @RequestParam(defaultValue = "10", required = false, name = "size") int size) {
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam String role) {
 
         try {
             Map<String, Object> response = new HashMap<>();
 
             // Получаем пагинированный список
-            Page<UserResponseDTO> usersPage = userService.getAllUsersByDTO(page, size);
+            Page<UserResponseDTO> usersPage = userService.getAllUsersByDTO(page, size, role);
 
             response.put("success", true);
             response.put("users", usersPage.getContent());

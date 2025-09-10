@@ -91,105 +91,89 @@ function renderOffersTable(offers) {
     offerTableContainer.innerHTML = '';
 
     const tableHTML = `
-        <div class="data-table courses-table">
-    <div class="table-header d-flex justify-content-between align-items-center">
-        <h3 class="table-title">Список заявок (Всего: ${offers.length})</h3>
-        
-        <div class="d-flex">
-            <div class="sort-filter">
+<div class="offers-table-container">
+    <div class="data-table offers-table">
+        <div class="table-header d-flex justify-content-between align-items-center">
+            <h3 class="table-title">Список заявок</h3>
+            <div class="table-header-actions d-flex align-items-center" style="gap: 1rem;">
                 <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="bi bi-funnel"></i>
-                    </span>
-                    <select class="form-select" id="statusFilter" onchange="filterByStatus(this.value)">
-                        <option value="#" selected>Фильтры</option>
-                        <option value="all">Все заявки</option>
+                    <span class="input-group-text"><i class="bi bi-funnel"></i></span>
+                    <select class="form-select form-select-sm" id="statusFilter" onchange="filterByStatus(this.value)">
+                        <option value="all" selected>Все статусы</option>
                         <option value="PENDING">На рассмотрении</option>
                         <option value="APPROVED">Одобреные</option>
                         <option value="COMPLETED">Выполненые</option>
                         <option value="REJECTED">Отклоненные</option>
                     </select>
                 </div>
-                <div class="page-size-selector">
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            Отображать в таблице
-                        </span>
-                        <select class="form-select" id="pageSizeSelect" onchange="rowsInOfferTable(this.value)">
-                            <option value="5">5 строк</option>
-                            <option value="10" selected>10 строк</option>
-                            <option value="20">20 строк</option>
-                            <option value="50">50 строк</option>
-                        </select>
-                    </div>
+                <div class="input-group">
+                    <span class="input-group-text">Показывать</span>
+                    <select class="form-select form-select-sm" id="pageSizeSelect" onchange="rowsInOfferTable(this.value)">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
             </div>
         </div>
+
+        <div class="table-content">
+            <!-- Заголовок таблицы -->
+            <div class="table-row header-row">
+                <div class="table-cell">ID</div>
+                <div class="table-cell">Пользователь</div>
+                <div class="table-cell">Тема</div>
+                <div class="table-cell">Описание</div>
+                <div class="table-cell">Ответ</div>
+                <div class="table-cell">Статус</div>
+                <div class="table-cell">Создана</div>
+                <div class="table-cell">Обновлена</div>
+                <div class="table-cell">Действия</div>
+            </div>
+
+            <!-- Строки с заявками -->
+            ${offers.length > 0 ? offers.map(offer => `
+            <div class="table-row">
+                <div class="table-cell text-muted">#${offer.id || 'N/A'}</div>
+                <div class="table-cell">
+                    <div class="fw-bold">${offer.fio || 'N/A'}</div>
+                </div>
+                <div class="table-cell">
+                    <div class="fw-bold">${offer.topic || 'N/A'}</div>
+                </div>
+                <div class="table-cell">
+                    <span class="course-description">
+                        ${offer.description || 'N/A'}
+                    </span>
+                </div>
+                <div class="table-cell">
+                    <span class="course-description">
+                        ${offer.response || 'Нет ответа'}
+                    </span>
+                </div>
+                <div class="table-cell">
+                    ${convertStatusIntoBadge(offer.status)}
+                </div>
+                <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.createdAt)}</div>
+                <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.updatedAt)}</div>
+                <div class="table-cell action-buttons justify-content-center">
+                    ${createOfferResponseButton(offer)}
+                    <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteOffer(${offer.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            `).join('') : `
+            <div class="table-row" style="grid-template-columns: 1fr;">
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                    Заявки не найдены
+                </div>
+            </div>
+            `}
+        </div>
     </div>
-
-    <div class="table-content">
-        <!-- Заголовок таблицы -->
-        <div class="table-row header-row">
-            <div class="table-cell">ID</div>
-            <div class="table-cell">Пользователь</div>
-            <div class="table-cell">Тема</div>
-            <div class="table-cell">Описание</div>
-            <div class="table-cell">Ответ</div>
-            <div class="table-cell">Статус</div>
-            <div class="table-cell">Создана</div>
-            <div class="table-cell">Обновлена</div>
-            <div class="table-cell">Действия</div>
-        </div>
-
-        <!-- Строки с заявками -->
-        ${offers.length > 0 ? offers.map(offer => `
-        <div class="table-row">
-            <div class="table-cell text-muted">#${offer.id || 'N/A'}</div>
-            <div class="table-cell text-muted">#${offer.fio || 'N/A'}</div>
-            <div class="table-cell">
-                <div class="fw-bold">${offer.topic || 'N/A'}</div>
-            </div>
-            <div class="table-cell">
-                <span class="course-description">
-                    ${offer.description || 'N/A'}
-                </span>
-            </div>
-            <div class="table-cell">
-                <span class="course-description">
-                    ${offer.response || 'Нет ответа'}
-                </span>
-            </div>
-            <div class="table-cell">
-                ${convertStatusIntoBadge(offer.status)}
-            </div>
-            <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.createdAt)}</div>
-            <div class="table-cell text-sm text-muted">${extractDateWithRegex(offer.updatedAt)}</div>
-            <div class="table-cell action-buttons">
-                ${createOfferResponseButton(offer)}
-                <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteOffer(${offer.id})">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('') : `
-        <div class="table-row">
-            <div class="text-center py-4 text-muted">
-                <i class="bi bi-inbox"></i>
-                Заявки не найдены
-            </div>
-        </div>
-    `}
-    </div>
-</div>
-
-<!-- Пагинация офферов-->
-<div class="pagination-container-edit-offers mt-3"></div>
-
-<!-- Кнопка обновления -->
-<div class="text-center mt-3">
-    <button class="btn btn-primary" onclick="loadOffers(currentOfferPage)">
-        <i class="bi bi-arrow-repeat"></i> Обновить список
-    </button>
 </div>
 `;
 

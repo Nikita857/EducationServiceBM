@@ -131,4 +131,3 @@ function editUser(userId) {
 }
 
 window.editUser = editUser;
-

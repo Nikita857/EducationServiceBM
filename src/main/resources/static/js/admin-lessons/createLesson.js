@@ -235,6 +235,17 @@ const formStyles = `
     font-weight: 600;
 }
 
+#createLessonModal .form-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+#createLessonModal .form-select option {
+    background-color: var(--card-bg);
+    color: #e2e8f0;
+}
+
 #createLessonModal .form-control:focus,
 #createLessonModal .form-select:focus {
     background: rgba(255, 255, 255, 0.12);

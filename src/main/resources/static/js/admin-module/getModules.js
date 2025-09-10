@@ -162,7 +162,7 @@ function renderModuleRows(modules) {
                 </div>
                 <div class="table-cell">
                     <span class="badge ${module.moduleStatus === 'ACTIVE' ? 'bg-success' : 'bg-secondary'}" style="cursor: pointer" onclick="adminUpdateModuleStatus(${module.moduleId}, '${module.moduleStatus}')">
-                        ${escapeHtml(module.moduleStatus)}
+                        ${escapeHtml(adaptiveModuleStatus(module.moduleStatus))}
                     </span>
                 </div>
                 <div class="table-cell action-buttons">
@@ -184,7 +184,7 @@ function renderModuleRows(modules) {
 
 // --- UNCHANGED (mostly) ---
 function renderModulesPagination() {
-    const container = document.getElementById('modulesPagination');
+    let container = document.getElementById('modulesPagination');
     if (!container) {
         // If the main container exists but pagination doesn't, create it.
         const mainContainer = document.getElementById('modulesContainer');
@@ -286,6 +286,10 @@ function showErrorModules(message) {
             </button>
         </div>
     `;
+}
+
+function adaptiveModuleStatus(status) {
+    return status === 'ACTIVE' ? 'Активный' : 'Неактивный'
 }
 
 function escapeHtml(text) {
