@@ -1,6 +1,7 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.CreateLessonDTO;
+import com.bm.education.dto.LessonDto;
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.LessonResponseDTO;
 import com.bm.education.models.Lesson;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import java.util.HashMap;
@@ -30,15 +32,17 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final ModuleRepository moduleRepository;
 
+    @Transactional
     public Lesson getLesson(int id, int moduleId) {
         return lessonRepository.findLessonByIdAndModuleId(id, moduleId).orElse(null);
     }
 
+    @Transactional
     public List<Lesson> getLessonIds(int moduleId) {
         return lessonRepository.findLessonsByModuleId(moduleId);
     }
-    public List<Lesson> getAllLessons() {return lessonRepository.findAll();}
 
+    @Transactional
     public long getLessonsCount() {return lessonRepository.count();}
 
     public LessonRequestDTO convertToDTO(Lesson lesson) {
@@ -48,9 +52,11 @@ public class LessonService {
         lessonDTO.setModuleName(lesson.getModule().getTitle());
         lessonDTO.setModuleSlug(lesson.getModule().getSlug());
         lessonDTO.setCourseSlug(lesson.getModule().getCourse().getSlug());
-        // добавьте все необходимые поля
+
         return lessonDTO;
     }
+
+    @Transactional
     public List<LessonRequestDTO> getModuleLessons(Integer moduleId) {
         List<Lesson> lessons = lessonRepository.findLessonsByModuleId(moduleId);
 //        Пробегаемся по листу уроков конвертируем каждый обьект lesson в ДТО и собираем кучу дтошек в лист
@@ -58,6 +64,7 @@ public class LessonService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
     public Integer countByModuleCourseId(Integer courseId) {
         return lessonRepository.countByModuleCourseId(courseId);
     }
@@ -116,7 +123,8 @@ public class LessonService {
         return lessonRepository.save(lesson);
     }
 
-    public Lesson updateLesson(Integer lessonId, com.bm.education.dto.LessonDto lessonDto) {
+    @Transactional
+    public Lesson updateLesson(Integer lessonId, LessonDto lessonDto) {
         Lesson lessonToUpdate = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId)); // Or a more specific exception
 
@@ -127,6 +135,7 @@ public class LessonService {
         return lessonRepository.save(lessonToUpdate);
     }
 
+    @Transactional(readOnly = true)
     public Lesson getLessonByVideoName(String videoName) {
        return lessonRepository.findLessonByVideo(videoName).orElse(null);
     }

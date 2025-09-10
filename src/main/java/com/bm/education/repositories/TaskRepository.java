@@ -1,6 +1,5 @@
 package com.bm.education.repositories;
 
-import com.bm.education.dto.ViewModuleDto;
 import com.bm.education.models.Tasks;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

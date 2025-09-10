@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import com.bm.education.models.Module;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

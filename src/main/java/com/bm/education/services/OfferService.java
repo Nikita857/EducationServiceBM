@@ -8,7 +8,6 @@ import com.bm.education.models.Offer;
 import com.bm.education.models.OfferStatus;
 import com.bm.education.repositories.OfferRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -69,6 +69,7 @@ public class OfferService {
     public List<Offer> getOffersWithStatus(String status) {
         return offerRepository.findByStatus(status).isEmpty()? Collections.emptyList() : offerRepository.findByStatus(status);
     }
+    @Transactional(readOnly = true)
     public OfferDto getOfferById(Integer id) {
         Offer offer = offerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Offer not found with id: " + id));
@@ -98,11 +99,10 @@ public class OfferService {
                     offer.getUpdatedAt()
         );
     }
-
-    public List<Offer> getAllOffers() {return offerRepository.findAll();}
+    @Transactional(readOnly = true)
     public long getOffersCount() {return offerRepository.count();}
+    @Transactional(readOnly = true)
     public long getPendingOffersCount() {return offerRepository.countByStatus(OfferStatus.PENDING);}
-    public Offer getSelectedOffer(Integer id) {return offerRepository.findById(id).orElse(null);}
 
     @Transactional
     public Offer updateAdminResponse(OfferResponseDto updateDto) {

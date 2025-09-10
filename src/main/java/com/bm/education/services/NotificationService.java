@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
+    @Transactional
     public Notification createNotification(User user, String message, String link) {
         Notification notification = new Notification();
         notification.setUser(user);

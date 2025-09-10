@@ -132,7 +132,8 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void deleteOldAvatar(String avatarPath) {
+    @Transactional
+    protected void deleteOldAvatar(String avatarPath) {
         try {
             String filename = avatarPath.substring(avatarPath.lastIndexOf("/") + 1);
             Path oldAvatarPath = Paths.get(UPLOAD_DIR).resolve(filename);
@@ -149,37 +150,22 @@ public class UserService {
     @Transactional
     public void changePassword(String username, String currentPassword,
                                String newPassword, String confirmPassword) {
-
-        // Находим пользователя
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-
-        // Проверяем текущий пароль
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new RuntimeException("Текущий пароль неверен");
         }
-
-        // Проверяем что новый пароль и подтверждение совпадают
         if (!newPassword.equals(confirmPassword)) {
             throw new RuntimeException("Новый пароль и подтверждение не совпадают");
         }
-
-        // Проверяем что новый пароль отличается от старого
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
             throw new RuntimeException("Новый пароль должен отличаться от старого");
         }
-
-        // Обновляем пароль
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-
-        log.info("Пароль изменен для пользователя: {}", username);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
+    @Transactional(readOnly = true)
     public long getUsersCount() {
         return userRepository.count();
     }
@@ -199,6 +185,7 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size, String role) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<User> usersPage;
@@ -239,6 +226,8 @@ public class UserService {
         }
     }
 
+
+    @Transactional
     public List<CourseSelectionDTO> getUserCourses(Integer userId) {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException("User not found");

@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -22,35 +23,21 @@ public class UserProgressService {
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
 
+    @Transactional
     public void saveProgress(Integer userId, Integer courseId, Integer moduleId, Integer lessonId) {
-        log.info("Saving progress - userId: {}, courseId: {}, moduleId: {}, lessonId: {}",
-                userId, courseId, moduleId, lessonId);
-
         try {
             // Проверяем существование сущностей
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> {
-                        log.error("User not found with id: {}", userId);
-                        return new EntityNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
             Course course = coursesRepository.findById(courseId)
-                    .orElseThrow(() -> {
-                        log.error("Course not found with id: {}", courseId);
-                        return new EntityNotFoundException("Course not found");
-                    });
+                    .orElseThrow(() -> new EntityNotFoundException("Course not found"));
 
             Module module = moduleRepository.findById(moduleId)
-                    .orElseThrow(() -> {
-                        log.error("Module not found with id: {}", moduleId);
-                        return new EntityNotFoundException("Module not found");
-                    });
+                    .orElseThrow(() -> new EntityNotFoundException("Module not found"));
 
             Lesson lesson = lessonRepository.findById(lessonId)
-                    .orElseThrow(() -> {
-                        log.error("Lesson not found with id: {}", lessonId);
-                        return new EntityNotFoundException("Lesson not found");
-                    });
+                    .orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
 
             // Проверяем, существует ли уже запись
             Optional<UserProgress> existingProgress = userProgressRepository
@@ -76,7 +63,7 @@ public class UserProgressService {
 
         } catch (Exception e) {
             log.error("Error in saveProgress: ", e);
-            throw e;
+            throw new RuntimeException("Error in saveProgress: ", e);
         }
     }
 }

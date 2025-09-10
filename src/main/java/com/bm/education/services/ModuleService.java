@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,18 +31,21 @@ public class ModuleService {
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
 
+    @Transactional(readOnly = true)
     public List<Module> getModulesByCourseId(Integer courseId) {
         return moduleRepository.getModulesByCourseId(courseId);
     }
 
+    @Transactional(readOnly = true)
     public Module getModuleBySlug(String moduleSlug) {
         return moduleRepository.getModuleBySlugAndStatus(moduleSlug, ModuleStatus.ACTIVE).orElse(null);
     }
-
+    @Transactional(readOnly = true)
     public int totalLessons(Integer courseId) {
         return lessonRepository.countByModuleCourseId(courseId);
     }
 
+    @Transactional(readOnly = true)
     public int completedLessons(Integer courseId, Integer userId) {
         return userProgressRepository.totalCompletedLessonByUserId(userId, courseId);
     }
@@ -53,8 +57,10 @@ public class ModuleService {
 
     public List<Module> getAllModules() {return moduleRepository.findAll();}
 
+    @Transactional(readOnly = true)
     public long getModulesCount() {return moduleRepository.count();}
 
+    @Transactional
     public boolean deleteModule(Integer moduleId) {
         if (moduleRepository.findById(moduleId).isPresent()) {
             moduleRepository.deleteById(moduleId);
@@ -62,6 +68,7 @@ public class ModuleService {
         }else return false;
     }
 
+    @Transactional
     public boolean updateModuleStatus(Integer moduleId, ModuleStatus moduleStatus) {
         if(moduleRepository.findById(moduleId).isEmpty()){
             return false;
@@ -70,6 +77,7 @@ public class ModuleService {
         return true;
     }
 
+    @Transactional
     public ModuleResponseDTO createModule(ModuleCreateRequest moduleCreateRequest) {
         // 1. Check for slug uniqueness
         if (moduleRepository.findBySlug(moduleCreateRequest.getSlug()).isPresent()) {
@@ -108,6 +116,7 @@ public class ModuleService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size, Integer courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Module> modules;
