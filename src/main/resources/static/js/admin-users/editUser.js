@@ -71,7 +71,7 @@ async function saveUserChanges() {
             modal.hide();
 
             // Обновляем таблицу пользователей
-            loadUsers(currentPage);
+            loadUsers();
 
         } else {
             // Обработка ошибок валидации
@@ -129,3 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function editUser(userId) {
     openEditUserModal(userId);
 }
+
+window.editUser = editUser;
+

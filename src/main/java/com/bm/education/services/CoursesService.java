@@ -1,8 +1,6 @@
 package com.bm.education.services;
 
-import com.bm.education.dto.CourseResponseDTO;
-import com.bm.education.dto.CourseWithProgressDTO;
-import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.dto.*;
 import com.bm.education.models.Course;
 import com.bm.education.models.CourseStatus;
 import com.bm.education.models.Module;
@@ -41,6 +39,7 @@ public class CoursesService {
     private final LessonService lessonService;
 
     public List<Course> getAllCourses() {return coursesRepository.findAll();}
+    public long getCoursesCount() {return coursesRepository.count();}
     public Course getSelectedCourseBySlug(String slug) {
         if (!slug.isEmpty()) {
             return coursesRepository.findBySlugAndStatus(slug, CourseStatus.ACTIVE);
@@ -61,17 +60,34 @@ public class CoursesService {
             return coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
         }).orElse(null); // или orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
     }
-    public Course createCourse(Course course, MultipartFile imageFile) throws IOException {
+    public Course createCourse(CourseCreateRequest courseRequest, MultipartFile imageFile) throws IOException {
         // Проверяем уникальность slug
-        if (coursesRepository.existsBySlug(course.getSlug())) {
+        if (coursesRepository.existsBySlug(courseRequest.getSlug())) {
             throw new IllegalArgumentException("Курс с таким URL уже существует");
         }
 
-        // Обрабатываем изображение, если оно есть
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = saveImage(imageFile);
-            course.setImage(imageUrl);
+        // Проверяем тип файла
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Изображение для курса обязательно");
         }
+        
+        String contentType = imageFile.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") &&
+                 !contentType.equals("image/png") &&
+                 !contentType.equals("image/gif"))) {
+            throw new IllegalArgumentException("Разрешены только файлы JPG, PNG или GIF");
+        }
+
+        // Конвертируем DTO в Entity
+        Course course = new Course();
+        course.setTitle(courseRequest.getTitle());
+        course.setSlug(courseRequest.getSlug());
+        course.setDescription(courseRequest.getDescription());
+
+        // Обрабатываем изображение
+        String imageUrl = saveImage(imageFile);
+        course.setImage(imageUrl);
 
         return coursesRepository.save(course);
     }
@@ -107,6 +123,32 @@ public class CoursesService {
         return coursesRepository.findById(courseId).orElseThrow(IllegalArgumentException::new);
     }
 
+    public Course updateCourse(CourseUpdateRequest request) throws IOException {
+        Course existingCourse = coursesRepository.findById(request.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Курс с id " + request.getId() + " не найден"));
+
+        if (request.getSlug() != null && !request.getSlug().isBlank() && !request.getSlug().equals(existingCourse.getSlug())) {
+            if (coursesRepository.existsBySlug(request.getSlug())) {
+                throw new IllegalArgumentException("Курс с таким URL уже существует");
+            }
+            existingCourse.setSlug(request.getSlug());
+        }
+
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            existingCourse.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+            existingCourse.setDescription(request.getDescription());
+        }
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String newImageName = saveImage(request.getImage());
+            existingCourse.setImage(newImageName);
+        }
+
+        return coursesRepository.save(existingCourse);
+    }
+
     private CourseResponseDTO convertToCourseResponseDto(Course course) {
         return new CourseResponseDTO(
                 course.getId(),
@@ -120,9 +162,15 @@ public class CoursesService {
         );
     }
 
-    public Page<CourseResponseDTO> getCoursesForDTO(Integer page, Integer size) {
+    public Page<CourseResponseDTO> getCoursesForDTO(Integer page, Integer size, Integer courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        Page<Course> courses = coursesRepository.findAll(pageable);
+        //Пиздатый подход, потому что сразу выделяем память под объект а только потом устанавливаем ему значение
+        Page<Course> courses;
+        if(courseId != 0) {
+            courses = coursesRepository.findById(courseId, pageable);
+        }else{
+            courses = coursesRepository.findAll(pageable);
+        }
         return courses.map(this::convertToCourseResponseDto);
     }
 

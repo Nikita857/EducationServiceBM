@@ -2,6 +2,8 @@ package com.bm.education.repositories;
 
 import com.bm.education.models.ModuleStatus;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.bm.education.models.Module;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,5 +30,9 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
     @Transactional
     @Query(value = "UPDATE modules SET status = :status WHERE id = :id", nativeQuery = true)
     void updateStatusById(@Param("id") Integer id, @Param("status") String status);
+
     Optional<Module> findBySlug(String slug);
+
+    Page<Module> findAllByCourse_Id(Integer courseId, org.springframework.data.domain.Pageable pageable);
+    long count();
 }

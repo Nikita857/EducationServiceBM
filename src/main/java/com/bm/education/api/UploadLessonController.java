@@ -72,6 +72,9 @@ public class UploadLessonController {
             Path filePath = uploadPath.resolve(uniqueFileName);
             Files.write(filePath, file.getBytes());
 
+            /*Гемини ебанулся и начал весь сайт ломать,
+            * надо будет проверить всю ебаторию что он натворил, если что скачать с гита проект и добавить отсюда механизм редактирования курсов*/
+
             // Проверяем что файл действительно сохранился
             if (Files.exists(filePath) && Files.size(filePath) > 0) {
                 CreateLessonDTO dto = new CreateLessonDTO();

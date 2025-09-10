@@ -122,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const code = `const questions = [\n${generatedQuestions.map(q => 
-`    {\n        question: "${q.question.replace(/"/g, '\\"')}",\n        answers: [\n${q.answers.map(a => 
-`            { text: "${a.text.replace(/"/g, '\\"')}", correct: ${a.correct} }`).join(',\n')}\n        ]\n    }`
+`    {\n        question: "${q.question.replace(new RegExp('"', 'g'), '\\"')}",\n        answers: [\n${q.answers.map(a => 
+`            { text: "${a.text.replace(new RegExp('"', 'g'), '\\"')}", correct: ${a.correct} }`).join(',\n')}\n        ]\n    }`
 ).join(',\n')}\n];`;
 
         document.getElementById('generatedCode').textContent = code;
@@ -155,3 +155,5 @@ function copyToClipboard() {
         showAlert('Не удалось скопировать код', 'error');
     });
 }
+
+window.copyToClipboard = copyToClipboard;

@@ -979,3 +979,45 @@ code {
         -webkit-line-clamp: 1;
     }
 }
+
+/* =============================================== */
+/*            MODAL AND FORM FIXES                 */
+/* =============================================== */
+
+/* 1. Fix for Modal Close Button */
+/* Ensures the 'X' button is always white on dark modal headers */
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100) brightness(200%);
+}
+
+/* 2. Fix for Form Inputs in Modals */
+/* Ensures all form elements in modals have a consistent dark theme */
+.modal-body .form-control,
+.modal-body .form-select,
+.modal-body .form-control:disabled {
+    background-color: #2d3748; /* Чуть более светлый темный фон */
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+/* Исправление цвета плейсхолдера (серого текста-подсказки) */
+.modal-body .form-control::placeholder {
+    color: #a0aec0;
+    opacity: 1;
+}
+
+.modal-body .form-control:-ms-input-placeholder {
+   color: #a0aec0;
+}
+
+.modal-body .form-control::-ms-input-placeholder {
+   color: #a0aec0;
+}

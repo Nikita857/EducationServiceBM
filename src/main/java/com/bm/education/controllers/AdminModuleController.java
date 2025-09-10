@@ -4,11 +4,9 @@ import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.dto.ModuleUpdateRequest;
-import com.bm.education.models.Module;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.ModuleRepository;
-import com.bm.education.services.CoursesService;
 import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
 import jakarta.validation.Valid;
@@ -17,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,11 +34,12 @@ public class AdminModuleController {
 
     @GetMapping("/admin/modules")
     public ResponseEntity<?> getModulesWithPagination(@RequestParam(defaultValue = "1") int page,
-                                                      @RequestParam(defaultValue = "10") int size)
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(defaultValue = "0") int courseId)
     {
         Map<String, Object> response = new HashMap<>();
         try {
-            Page<ModuleResponseDTO> modules = moduleService.putModulesInDTO(page, size);
+            Page<ModuleResponseDTO> modules = moduleService.putModulesInDTO(page, size, courseId);
 
             response.put("success", true);
             response.put("modules", modules.getContent());

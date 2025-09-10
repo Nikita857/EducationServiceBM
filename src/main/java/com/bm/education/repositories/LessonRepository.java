@@ -26,4 +26,5 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
     Optional<Lesson> findLessonByVideo(String video);
     Page<Lesson> findByModuleId(Integer moduleId, Pageable pageable);
+    long count();
 }

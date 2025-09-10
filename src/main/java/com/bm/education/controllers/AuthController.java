@@ -3,15 +3,16 @@ package com.bm.education.controllers;
 import com.bm.education.Exceptions.ApiException;
 import com.bm.education.models.User;
 import com.bm.education.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,17 +22,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 @Slf4j
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final UserDetailsService userDetailsService;
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-
-    public AuthController(UserDetailsService userDetailsService, UserService userService, AuthenticationManager authenticationManager) {
-        this.userDetailsService = userDetailsService;
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-    }
+    private final UserDetailsService userDetailsService;
 
     @GetMapping("/login")
     public String login(Model model, HttpSession session) {
@@ -48,8 +43,8 @@ public class AuthController {
         return "register";
     }
 
-    @PostMapping("/register")
-    public String createUser(@Valid User user, BindingResult bindingResult, Model model) {
+        @PostMapping("/register")
+    public String createUser(@Valid User user, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
             bindingResult.getAllErrors().forEach(objectError ->{
@@ -63,16 +58,22 @@ public class AuthController {
         try {
             userService.createUser(user);
 
+            // Manually create the Authentication object
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+            
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    user.getUsername(),
-                    user.getPassword()
+                userDetails, 
+                null, // Credentials can be null as we are already authenticated
+                userDetails.getAuthorities()
             );
 
-            Authentication authentication = authenticationManager.authenticate(authToken);
+            // Set the authentication in the SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Manually update the session
+            request.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
-            return SecurityContextHolder.getContext().getAuthentication().isAuthenticated() ? "redirect:/":null;
+            return "redirect:/";
 
         } catch (ApiException e) {
             model.addAttribute("user", user);

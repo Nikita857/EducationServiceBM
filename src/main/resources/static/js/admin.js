@@ -1,6 +1,7 @@
+// Original content of admin.js
 async function getOfferDescription(offerId) {
     try {
-        const response = await fetch(`http://localhost:8080/admin/offers/${offerId}`, {
+        const response = await fetch(`/admin/offers/${offerId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -44,3 +45,6 @@ function switchToView(viewType) {
     $('.view-content').addClass('d-none')
     $(`.${viewType}`).removeClass('d-none')
 }
+
+window.getOfferDescription = getOfferDescription;
+window.switchToView = switchToView;

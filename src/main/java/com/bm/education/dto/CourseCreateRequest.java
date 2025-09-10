@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseCreateRequest {
 
     @NotBlank(message = "Название курса обязательно")
-    @Size(max = 255, message = "Название не должно превышать 255 символов")
+    @Size(min = 2, max = 255, message = "Название не должно превышать 255 символов")
     private String title;
 
     @NotBlank(message = "URL-адрес обязателен")
@@ -19,7 +19,7 @@ public class CourseCreateRequest {
     private String slug;
 
     @NotBlank(message = "Описание обязательно")
-    @Size(min = 50, max = 2000, message = "Описание должно содержать от 50 до 2000 символов")
+    @Size(min = 50, max = 255, message = "Описание должно содержать от 50 до 255 символов")
     private String description;
 
     private MultipartFile image;

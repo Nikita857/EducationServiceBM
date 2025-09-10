@@ -5,13 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const slugInput = document.getElementById('moduleSlug');
 
 
-    /**TODO
- * Продолжить реализацию функционала добавления модулей
-    Вчера я остановился на настройке fetch списка курсов для инжекта их в селект курса
-    к которому новый модуль необходимо привязать
-    А там видно будет
-    * */
-
     const courseSelectAdminCreateModule = document.getElementById('moduleCourseId');
     loadCoursesIntoSelect(courseSelectAdminCreateModule, null)
 

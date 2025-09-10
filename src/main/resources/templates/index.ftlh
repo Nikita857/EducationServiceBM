@@ -78,7 +78,7 @@
     </#if>
 </div>
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
-<script src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
+<script type="module" src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/indexPage.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/main.js"></script>

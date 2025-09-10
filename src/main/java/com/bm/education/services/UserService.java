@@ -7,12 +7,9 @@ import com.bm.education.dto.UserUpdateRequestDTO;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.models.UserCourses;
-import com.bm.education.repositories.CoursesRepository;
-import com.bm.education.repositories.UserRepository;
+import com.bm.education.repositories.*;
 import com.bm.education.models.Course;
-import com.bm.education.repositories.UserCourseRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +20,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,6 +41,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserCourseRepository userCourseRepository;
     private final CoursesRepository coursesRepository;
+    private final NotificationRepository notificationRepository;
+    private final OfferRepository offerRepository;
+    private final UserProgressRepository userProgressRepository;
 
     @Transactional
     public boolean enrollUserInCourse(Integer userId, Integer courseId) {
@@ -68,11 +69,28 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
+    @Transactional
     public boolean deleteUser(Integer userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new EntityNotFoundException("User not found with id: " + userId);
+        }
+
+        // 1. Delete related entities from child tables
+        notificationRepository.deleteByUser_Id(userId);
+        offerRepository.deleteByUser_Id(userId);
+        userProgressRepository.deleteByUser_Id(userId);
+        userCourseRepository.deleteByUser_Id(userId);
+
+        // 2. Delete from the join table for roles
+        userRepository.deleteUserRolesByUserId(userId);
+
+        // 3. Delete the user itself
         userRepository.deleteById(userId);
-        return userRepository.existsById(userId) ? false : true;
+
+        return !userRepository.existsById(userId);
     }
 
+    @Transactional
     public boolean createUser(User user) {
 
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -161,6 +179,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public long getUsersCount() {
+        return userRepository.count();
+    }
+
     private UserResponseDTO convertToUserDTO(User user) {
         return new UserResponseDTO(
                 user.getId(),
@@ -245,4 +267,3 @@ public class UserService {
         return true;
     }
 }
-

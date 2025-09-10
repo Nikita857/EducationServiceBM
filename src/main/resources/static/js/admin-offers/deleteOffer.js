@@ -1,4 +1,1 @@
-async function deleteOffer(offerId) {
-    const response = await fetch(`/admin/offers/delete/${offerId}}`)
-
-}
+// This file is deprecated. The deleteOffer function is now in getOffers.js

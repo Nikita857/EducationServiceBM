@@ -36,3 +36,5 @@ function deleteModule(id) {
             console.error('Ошибка при удалении модуля:', error);
         });
 }
+
+window.deleteModule = deleteModule;

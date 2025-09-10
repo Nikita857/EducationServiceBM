@@ -39,6 +39,8 @@ public class LessonService {
     }
     public List<Lesson> getAllLessons() {return lessonRepository.findAll();}
 
+    public long getLessonsCount() {return lessonRepository.count();}
+
     public LessonRequestDTO convertToDTO(Lesson lesson) {
         LessonRequestDTO lessonDTO = new LessonRequestDTO();
         lessonDTO.setId(lesson.getId());

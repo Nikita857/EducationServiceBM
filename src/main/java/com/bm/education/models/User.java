@@ -75,6 +75,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private Set<Notification> notifications = new HashSet<>();
+
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"))

@@ -354,3 +354,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+window.loadLessons = loadLessons;
+window.changeLessonsPerPage = changeLessonsPerPage;
+window.changeLessonsPage = changeLessonsPage;
+window.deleteLesson = deleteLesson;

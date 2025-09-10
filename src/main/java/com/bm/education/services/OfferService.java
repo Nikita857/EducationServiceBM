@@ -100,6 +100,8 @@ public class OfferService {
     }
 
     public List<Offer> getAllOffers() {return offerRepository.findAll();}
+    public long getOffersCount() {return offerRepository.count();}
+    public long getPendingOffersCount() {return offerRepository.countByStatus(OfferStatus.PENDING);}
     public Offer getSelectedOffer(Integer id) {return offerRepository.findById(id).orElse(null);}
 
     @Transactional

@@ -41,3 +41,5 @@ function adminUpdateModuleStatus(moduleID, status) {
             console.error('Ошибка при обновлении статуса:', error);
         });
 }
+
+window.adminUpdateModuleStatus = adminUpdateModuleStatus;

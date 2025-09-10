@@ -1,4 +1,4 @@
-<form id="addCourseForm" class="needs-validation" action="/admin/course/create" method="post" enctype="multipart/form-data">
+<form id="addCourseForm" class="needs-validation" enctype="multipart/form-data">
     <div class="row">
         <!-- Название курса -->
         <div class="col-md-8 mb-3">
@@ -97,12 +97,12 @@
                       placeholder="Опишите содержание курса, цели обучения, целевую аудиторию..."
                       required
                       minlength="50"
-                      maxlength="2000"></textarea>
+                      maxlength="255"></textarea>
             <div class="invalid-feedback">
                 Описание должно содержать не менее 50 символов.
             </div>
             <div class="form-text">
-                Минимум 50 символов, максимум 2000 символов
+                Минимум 50 символов, максимум 255 символов
             </div>
 
             <!-- Счетчик символов -->

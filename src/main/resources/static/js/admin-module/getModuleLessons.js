@@ -122,3 +122,6 @@ function viewLesson(lessonId, courseSlug, moduleSlug) {
     console.log(`Redirecting to: ${url}`);
     window.location.href = url;
 }
+
+window.loadModuleLessons = loadModuleLessons;
+window.viewLesson = viewLesson;

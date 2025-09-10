@@ -87,9 +87,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Успех
             editLessonModal.hide();
             showAlert('Урок успешно обновлен!', 'success');
-            
-            // Опционально: обновить данные на лету без перезагрузки страницы
-            // Это потребует более сложной логики для поиска и обновления элемента в списке
 
         } catch (error) {
             console.error('Ошибка при сохранении урока:', error);

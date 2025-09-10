@@ -1,4 +1,3 @@
-
 // Глобальные переменные
 let modulesList = [];
 
@@ -258,3 +257,5 @@ const formStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = formStyles;
 document.head.appendChild(styleSheet);
+
+window.openCreateLessonModal = openCreateLessonModal;

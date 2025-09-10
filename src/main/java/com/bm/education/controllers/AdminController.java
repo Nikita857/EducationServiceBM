@@ -42,16 +42,16 @@ public class AdminController {
 
     @GetMapping("/admin")
     public String admin(Authentication auth, Model model) {
-        if(userService.getUserByUsername(auth.getName()) != null) {
-            if(userService.getUserByUsername(auth.getName()).getRoles().contains(Role.ROLE_ADMIN)) {
-
-                model.addAttribute("admin", userService.getUserByUsername(auth.getName()));
-                model.addAttribute("users", userService.getAllUsers().size());
-                model.addAttribute("courses", coursesService.getAllCourses().size());
-                model.addAttribute("modules", moduleService.getAllModules().size());
-                model.addAttribute("lessons", lessonService.getAllLessons());
-                model.addAttribute("offers", !offerService.getOffersWithStatus("PENDING").isEmpty()?offerService.getOffersWithStatus("PENDING").size():0);
-                model.addAttribute("offersTotal", offerService.getAllOffers().size());
+        User user = userService.getUserByUsername(auth.getName());
+        if (user != null) {
+            if (user.getRoles().contains(Role.ROLE_ADMIN)) {
+                model.addAttribute("admin", user);
+                model.addAttribute("users", userService.getUsersCount());
+                model.addAttribute("courses", coursesService.getCoursesCount());
+                model.addAttribute("modules", moduleService.getModulesCount());
+                model.addAttribute("lessons", lessonService.getLessonsCount());
+                model.addAttribute("offers", offerService.getPendingOffersCount());
+                model.addAttribute("offersTotal", offerService.getOffersCount());
                 model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
                 return "admin";
             }
@@ -128,65 +128,6 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/admin/course/create")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String createCourse(
-            @Valid @ModelAttribute("course") CourseCreateRequest courseRequest,
-            BindingResult bindingResult,
-            @RequestParam("image") MultipartFile imageFile,
-            RedirectAttributes redirectAttributes, Authentication auth) {
-
-        // Проверяем валидацию
-        log.debug("Проверка валидации в контроллере");
-        if (bindingResult.hasErrors()) {
-            return "admin";
-        }
-
-        // Проверяем размер файла
-        log.debug("Проверка размера файла в контроллере");
-        if (imageFile != null && !imageFile.isEmpty() && imageFile.getSize() > 5 * 1024 * 1024) {
-            bindingResult.rejectValue("image", "file.size", "Размер файла не должен превышать 5MB");
-            return "admin";
-        }
-
-        // Проверяем тип файла
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String contentType = imageFile.getContentType();
-            if (contentType == null ||
-                    (!contentType.equals("image/jpeg") &&
-                            !contentType.equals("image/png") &&
-                            !contentType.equals("image/gif"))) {
-                bindingResult.rejectValue("image", "file.type",
-                        "Разрешены только файлы JPG, PNG или GIF");
-                return "admin";
-            }
-        }
-
-        try {
-            // Конвертируем DTO в Entity
-            log.info("Вносим данные из дто в энтити");
-            Course course = new Course();
-            course.setTitle(courseRequest.getTitle());
-            course.setSlug(courseRequest.getSlug());
-            course.setDescription(courseRequest.getDescription());
-            log.info("Course {}", course);
-
-            // Сохраняем курс
-            log.info("Сохранение кусра");
-            Course savedCourse = coursesService.createCourse(course, imageFile);
-            log.info("Course saved");
-
-
-            return "redirect:/admin";
-
-        } catch (IllegalArgumentException e) {
-            bindingResult.rejectValue("slug", "course.slug.duplicate", e.getMessage());
-            return "admin";
-        } catch (IOException e) {
-            bindingResult.reject("file.upload.error", "Ошибка при загрузке изображения");
-            return "admin";
-        }
-    }
     @GetMapping("/admin/modules/create")
     @PreAuthorize("hasRole('ADMIN')")
     public String addModule() {

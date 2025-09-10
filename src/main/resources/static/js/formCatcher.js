@@ -10,6 +10,7 @@ async function submitOfferForm(event) {
         userId: parseInt(formData.get('userId').trim()), // Преобразуем в число
         topic: formData.get('topic').trim(),
         description: formData.get('description').trim()
+
     };
 
     try {
@@ -17,6 +18,7 @@ async function submitOfferForm(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
             },
             body: JSON.stringify(offerData)
         });
@@ -25,7 +27,7 @@ async function submitOfferForm(event) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            alert("Ошибка: "+ response.status+" "+errorData.message.get())
+            showAlert("Ошибка: "+ response.status+" "+errorData.message.get(), 'error')
             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
@@ -33,7 +35,7 @@ async function submitOfferForm(event) {
         console.log('Оффер создан:', result);
         showAlert("Предложение отправлено!", 'success');
     } catch (error) {
-        alert("Произошла ошибка");
+        showAlert("Не удалосб отправить заявку", 'error');
     }
 }
 

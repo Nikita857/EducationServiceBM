@@ -12,7 +12,11 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
+    <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
+    <script  src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script type="module" src="${springMacroRequestContext.contextPath}/js/admin-bundle.js"></script>
+
     <title>Панель управления</title>
     <style>
         .tab-content {
@@ -78,7 +82,7 @@
             <div class="nav-section">
                 <h3 class="nav-title">Основное</h3>
                 <div class="nav-item">
-                    <a href="#" class="nav-link active" data-tab="dashboard-tab">
+                    <a href="#" class="nav-link" data-tab="dashboard-tab">
                         <i class="bi bi-speedometer2"></i>
                         Дашборд
                     </a>
@@ -455,7 +459,7 @@
                     <i class="bi bi-lightbulb me-2"></i>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                        aria-label="Close"><i class="bi bi-x-lg"></i></button>
             </div>
 
             <form id="sendOffer">
@@ -489,14 +493,24 @@
                 <h5 class="modal-title">
                     <i class="bi bi-chat-dots me-2"></i>Обновление заявки
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
 
             <form id="adminUpdateForm">
                 <input type="hidden" id="offerId" name="id">
 
                 <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="responseDescription">Текст заявки</label>
+                        <div class="card">
+                            <div class="card-body" id="responseDescription">
+                            <#--Сюда выводится текст заявки-->
+                            </div>
+                        </div>
+                    </div>
                     <!-- Ответ администратора -->
                     <div class="mb-3">
                         <label class="form-label">Ответ пользователю</label>
@@ -509,7 +523,7 @@
                     <!-- Выбор статуса -->
                     <div class="mb-3">
                         <label class="form-label">Статус заявки</label>
-                        <select name="status" class="form-select" required>
+                        <select name="status" class="form-select bg-dark text-light" required>
                             <option value="">Выберите статус...</option>
                             <option value="APPROVED">Принята</option>
                             <option value="REJECTED">Отклонена</option>
@@ -537,7 +551,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Редактирование пользователя</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editUserId">
@@ -589,7 +605,7 @@
     </div>
 </div>
 
-<#--For modal imgViewer-->
+<#--Оболочка для интеграции модального окна просмотра изобржаения курса-->
 <div id="img-view-modal"></div>
 
 <!-- Модальное окно для ответа на заявки -->
@@ -598,7 +614,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Ответ на заявку #<span id="responseOfferId"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="offerId">
@@ -646,18 +664,15 @@
         </div>
     </div>
 </div>
-
-
-    </div>
-</div>
-
-<!-- Modal for Editing Module -->
+<!-- Модальноe окно для редактирования модулей -->
 <div class="modal fade" id="editModuleModal" tabindex="-1" aria-labelledby="editModuleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editModuleModalLabel">Редактировать модуль</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="editModuleForm">
@@ -686,13 +701,15 @@
     </div>
 </div>
 
-<!-- Modal for Editing Lesson -->
+<!-- Модальное окно редактирования уроков -->
 <div class="modal fade" id="editLessonModal" tabindex="-1" aria-labelledby="editLessonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editLessonModalLabel">Редактировать урок</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="editLessonForm">
@@ -718,124 +735,113 @@
         </div>
     </div>
 </div>
-
-<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/getLessons.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/generateTest.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/createLesson.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-lessons/admin-lesson-edit.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin-offers/reponseOffer.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-offers/getOffers.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin-users/getUsers.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-users/editUser.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/adminOfferResponse.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminAddCourse.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-courses/adminEditCourse.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-courses/getModulesOfCourse.js"></script>
-
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/getModules.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminCreateModule.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminDeleteModule.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/adminUpdateModuleStatus.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/getModuleLessons.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/admin-module/admin-module-edit.js"></script>
-
 <script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Анимация статистики
+            const statNumbers = document.querySelectorAll('.stat-content h3');
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent);
+                if (isNaN(target)) return;
+                let current = 0;
+                const increment = Math.max(1, target / 30);
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Анимация статистики
-        const statNumbers = document.querySelectorAll('.stat-content h3');
-        statNumbers.forEach(stat => {
-            const target = parseInt(stat.textContent);
-            let current = 0;
-            const increment = target / 30;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    stat.textContent = target;
-                    clearInterval(timer);
-                } else {
-                    stat.textContent = Math.floor(current);
-                }
-            }, 30);
-        });
-
-        // Mobile menu toggle
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const sidebar = document.querySelector('.admin-sidebar');
-
-        if (mobileMenuBtn && sidebar) {
-            mobileMenuBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('open');
-            });
-        }
-
-        // Переключение вкладок
-        const navLinks = document.querySelectorAll('.nav-link[data-tab]');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        // Функция для переключения вкладок
-        function switchTab(tabId) {
-            // Скрываем все вкладки
-            tabContents.forEach(tab => {
-                tab.classList.remove('active');
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        stat.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.floor(current);
+                    }
+                }, 30);
             });
 
-            // Показываем нужную вкладку
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
-                targetTab.classList.add('fade-in');
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const sidebar = document.querySelector('.admin-sidebar');
 
-                // Убираем класс анимации после завершения
-                setTimeout(() => {
-                    targetTab.classList.remove('fade-in');
-                }, 500);
+            if (mobileMenuBtn && sidebar) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
             }
-        }
 
-        // Обработчики кликов по ссылкам меню
-        navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
+            // --- MODIFIED TAB LOGIC WITH LOCALSTORAGE ---
+            const navLinks = document.querySelectorAll('.nav-link[data-tab]');
+            const tabContents = document.querySelectorAll('.tab-content');
 
-                // Убираем активный класс у всех ссылок
-                navLinks.forEach(l => l.classList.remove('active'));
+            function switchTab(tabId) {
+                if (!tabId) return;
 
-                // Добавляем активный класс к текущей ссылке
-                this.classList.add('active');
+                // Hide all tabs and remove active class from links
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                navLinks.forEach(link => link.classList.remove('active'));
 
-                // Переключаем вкладку
-                const targetTabId = this.getAttribute('data-tab');
-                switchTab(targetTabId);
+                // Show the target tab and set active class on the link
+                const targetTab = document.getElementById(tabId);
+                const targetLink = document.querySelector('.nav-link[data-tab="' + tabId + '"]');
+
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    targetTab.classList.add('fade-in');
+                    setTimeout(() => {
+                        targetTab.classList.remove('fade-in');
+                    }, 500);
+                }
+                if (targetLink) {
+                    targetLink.classList.add('active');
+                }
+
+                // Save the active tab to localStorage
+                try {
+                    localStorage.setItem('lastActiveAdminTab', tabId);
+                } catch (e) {
+                    console.error("Could not save tab to localStorage", e);
+                }
+            }
+
+            // Add click event listeners to nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetTabId = this.getAttribute('data-tab');
+                    switchTab(targetTabId);
+                });
             });
-        });
 
-        // Инициализация первой вкладки
-        const activeLink = document.querySelector('.nav-link.active[data-tab]');
-        if (activeLink) {
-            const initialTabId = activeLink.getAttribute('data-tab');
-            switchTab(initialTabId);
-        }
-    });
-</script>
+            // On page load, check localStorage for the last active tab
+            let lastTabId = null;
+            try {
+                lastTabId = localStorage.getItem('lastActiveAdminTab');
+            } catch (e) {
+                console.error("Could not read tab from localStorage", e);
+            }
+            
+            if (lastTabId && document.getElementById(lastTabId)) {
+                switchTab(lastTabId);
+            } else {
+                // Default to the first tab if nothing is stored or tab is invalid
+                const firstTab = document.querySelector('.nav-link[data-tab]');
+                if (firstTab) {
+                    switchTab(firstTab.getAttribute('data-tab'));
+                }
+            }
+            
+            // Make switchTab globally available if it's needed elsewhere
+            window.switchTab = switchTab;
+        });
+    </script>
 <!-- Форма создания урока -->
 <div class="modal fade" id="createLessonModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Создать новый урок</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="createLessonForm" enctype="multipart/form-data">
@@ -907,7 +913,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Запись пользователя на курс</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <p>Пользователь: <strong id="enrollUserName"></strong></p>
@@ -933,7 +941,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Курсы пользователя: <span id="viewUserName"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <ul id="userCoursesList" class="list-group"></ul>
@@ -944,6 +954,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

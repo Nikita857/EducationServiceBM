@@ -3,11 +3,9 @@ package com.bm.education.security;
 import com.bm.education.Exceptions.CustomAuthenticationFailureHandler;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
-import org.springframework.boot.autoconfigure.integration.IntegrationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +22,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**TODO
+     исправить механизм удаления пользователей
+     удаление начинается с таблицы Users но внешний ключ не позволяет это сделать
+     необходимо сначала удалить запись в таблице ролей, а потом только из таблицы пользоватлей*/
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) throws Exception {

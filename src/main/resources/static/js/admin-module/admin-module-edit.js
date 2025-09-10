@@ -119,3 +119,8 @@ async function loadCoursesIntoSelect(selectElement, selectedCourseTitle) {
 function getCsrfToken() {
     return document.querySelector('meta[name="_csrf"]')?.content || document.querySelector('input[name="_csrf"]')?.value;
 }
+
+window.loadCoursesIntoSelect = loadCoursesIntoSelect;
+window.submitEditModuleForm = submitEditModuleForm;
+window.openEditModuleModal = openEditModuleModal;
+

@@ -1,0 +1,24 @@
+{
+  "name": "educationservicebm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main/resources/static/js/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build src/main/resources/static/js/admin-bundle.js --dist-dir src/main/resources/static/dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nikita857/EducationServiceBM.git"
+  },
+  "keywords": [],
+  "author": "Bugakov Nikita",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nikita857/EducationServiceBM/issues"
+  },
+  "homepage": "https://github.com/Nikita857/EducationServiceBM#readme",
+  "devDependencies": {
+    "parcel": "^2.15.4"
+  }
+}

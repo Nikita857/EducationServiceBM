@@ -3,7 +3,7 @@ let totalPagesUsers = 1;
 let totalItemsUsers = 0;
 
 // Количество пользователей на странице
-const usersPerPage = 10;
+const usersPerPage = 7;
 
 async function loadUsers(page = 1) {
     try {
@@ -55,17 +55,17 @@ async function deleteUsersRequest(userId) {
 
         if (deleteRequest.ok) {
             if (response.success) {
-                alert(response.message);
+                showAlert(response.message, 'success');
                 // Перезагружаем список пользователей
                 await loadUsers(currentPageUsers);
             } else {
-                alert(response.message);
+                showAlert(response.message, 'error');
             }
         } else {
-            alert(`Ошибка сервера: ${response.error || 'Неизвестная ошибка'}`);
+            showAlert(`Ошибка сервера: ${response.error || 'Неизвестная ошибка'}`, 'error');
         }
     } catch (error) {
-        alert(`Ошибка удаления: ${error.message}`);
+        showAlert(`Ошибка удаления: ${error.message}`, 'error');
         console.error('Delete error:', error);
     }
 }
@@ -99,6 +99,7 @@ function renderUsersTable(users) {
                     <div>Квалификация</div>
                     <div>Логин</div>
                     <div>Создан</div>
+                    <div>Роль</div>
                     <div>Действия</div>
                 </div>
                 
@@ -120,6 +121,7 @@ function renderUsersTable(users) {
                         </div>
                         <div>${escapeHtml(user.username || 'Не указан')}</div>
                         <div class="text-sm text-muted">${formatDate(user.createdAt)}</div>
+                        <div>${displayRoles(user.role)}</div>
                         <div class="action-buttons">
                             <button class="btn btn-primary btn-icon btn-sm" title="Редактировать" onclick="editUser(${user.id})">
                                 <i class="bi bi-pencil"></i>
@@ -238,7 +240,6 @@ function renderUsersTable(users) {
 }
 
 function changeUsersPage(page) {
-    console.log(`changePage вызвана для страницы: ${page}`); // DEBUG
     if (page < 1 || page > totalPagesUsers || page === currentPageUsers) return;
     loadUsers(page);
 }
@@ -279,6 +280,10 @@ function getQualificationClass(qualification) {
     } else {
         return 'status-pending';
     }
+}
+
+function displayRoles(role) {
+    return role === '[ROLE_USER]' ? 'Пользователь' : 'Администратор';
 }
 
 function showError(message) {
@@ -371,15 +376,15 @@ async function confirmEnrollment() {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            alert(result.message);
+            showAlert(result.message);
             // Закрываем модальное окно
             const modal = bootstrap.Modal.getInstance(document.getElementById('enrollUserModal'));
             modal.hide();
         } else {
-            alert(`Ошибка: ${result.message || 'Не удалось записать пользователя.'}`);
+            showAlert(`Ошибка: ${result.message || 'Не удалось записать пользователя.'}`, 'error');
         }
     } catch (e) {
-        alert('Произошла сетевая ошибка.');
+        showAlert('Ошибка сервера', 'error');
         console.error(e);
     }
 }
@@ -427,7 +432,7 @@ async function openViewCoursesModal(userId, userName) {
             console.error('Failed to load user courses:', data.error);
         }
     } catch (e) {
-        userCoursesList.innerHTML = '<li class="list-group-item text-danger">Произошла сетевая ошибка.</li>';
+        userCoursesList.innerHTML = '<li class="list-group-item text-danger">Ошибка сервера.</li>';
         console.error('Network error loading user courses:', e);
     }
 }
@@ -459,10 +464,10 @@ async function unenrollRequest(userId, courseId, userName) {
             // Обновляем список курсов в модальном окне
             await openViewCoursesModal(userId, userName);
         } else {
-            alert(`Ошибка: ${result.message || 'Не удалось отписать пользователя.'}`);
+            showAlert(`Ошибка: ${result.message || 'Не удалось отписать пользователя.'}`, 'error');
         }
     } catch (e) {
-        alert('Произошла сетевая ошибка при отписке.');
+        showAlert('Ошибка сервера', 'error');
         console.error(e);
     }
 }
@@ -475,3 +480,14 @@ document.addEventListener('DOMContentLoaded', function() {
         loadUsers(1);
     }
 });
+
+// Expose functions to global scope for onclick attributes
+window.loadUsers = loadUsers;
+window.deleteUser = deleteUser;
+window.openEnrollModal = openEnrollModal;
+window.confirmEnrollment = confirmEnrollment;
+window.openViewCoursesModal = openViewCoursesModal;
+window.confirmUnenrollment = confirmUnenrollment;
+window.unenrollRequest = unenrollRequest;
+window.changeUsersPage = changeUsersPage;
+window.currentPageUsers = currentPageUsers;

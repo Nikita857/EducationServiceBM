@@ -134,3 +134,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+window.openOfferUpdateModal = openOfferUpdateModal;

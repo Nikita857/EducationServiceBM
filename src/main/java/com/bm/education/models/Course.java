@@ -66,6 +66,7 @@ public class Course {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        status = CourseStatus.ACTIVE;
     }
 
 }

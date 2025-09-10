@@ -12,7 +12,7 @@ async function openCourseModulesModal(courseId) {
         if (!response.ok) throw new Error('Ошибка загрузки модулей курса');
 
         const data = await response.json();
-        if (!data.success) alert(data.message || 'Модулей нет');
+        if (!data.success) showAlert(data.message || 'Модулей нет', 'info');
 
         courseModules = data.modules || [];
         currentCourse = { id: courseId, name: data.modules[0].courseName};
@@ -178,3 +178,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+window.addNewModule = addNewModule;
+window.editModule = editModule;
+window.manageCourse = manageCourse;
+window.showCourseModules = showCourseModules;

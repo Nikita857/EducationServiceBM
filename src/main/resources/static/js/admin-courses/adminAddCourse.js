@@ -1,5 +1,4 @@
-
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('addCourseForm');
     const descriptionTextarea = document.getElementById('courseDescription');
     const charCount = document.getElementById('charCount');
@@ -110,4 +109,67 @@
     imagePreview.style.display = 'none';
     uploadPlaceholder.style.display = 'block';
 };
+
+    // --- Form Submission Logic ---
+    form.addEventListener('submit', async function(event) {
+        // 1. Предотвращаем стандартную отправку формы
+        event.preventDefault();
+        event.stopPropagation();
+
+        // 2. Проверяем валидность формы с помощью Bootstrap
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Дополнительная проверка на наличие файла
+        if (fileInput.files.length === 0) {
+            showAlert('Пожалуйста, выберите изображение для курса.', 'error');
+            return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.innerHTML;
+
+        try {
+            // 3. Показываем индикатор загрузки
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Создание...';
+
+            // 4. Собираем данные формы с помощью FormData
+            const formData = new FormData(form);
+
+            // 5. Получаем CSRF-токен
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            // 6. Отправляем данные на сервер
+            const response = await fetch('/admin/course/create', {
+                method: 'POST',
+                headers: {
+                    // ВАЖНО: Не устанавливаем 'Content-Type', браузер сделает это сам для FormData
+                    [csrfHeader]: csrfToken
+                },
+                body: formData
+            });
+
+            // 7. Обрабатываем ответ
+            if (response.status === 201) { // 201 Created
+                showAlert('Курс успешно создан!', 'success');
+                window.resetForm(); // Используем уже существующую функцию для очистки
+            } else {
+                const errorData = await response.json();
+                const errorMessage = errorData.error || Object.values(errorData).join(', ');
+                throw new Error(errorMessage || 'Произошла неизвестная ошибка');
+            }
+
+        } catch (error) {
+            console.error('Ошибка при создании курса:', error);
+            showAlert(`Ошибка: ${error.message}`, 'error');
+        } finally {
+            // 8. Возвращаем кнопку в исходное состояние
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+        }
+    });
 });

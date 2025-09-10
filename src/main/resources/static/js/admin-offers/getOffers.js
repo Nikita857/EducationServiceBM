@@ -13,20 +13,15 @@ async function loadOffers(page = 1) {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Данные получены:', data);
 
             if (data.success && data.offers) {
                 currentOfferPage = data.currentPage || page;
                 totalOfferPages = data.totalPages || 1;
                 totalOfferItems = data.totalItems || data.offers.length;
 
-                console.log("Рендерим таблицу...");
                 renderOffersTable(data.offers);
-                console.log("Таблица отрендерена");
 
-                console.log("Рендерим пагинацию таблицы заявок...");
                 renderOfferPagePagination();
-                console.log("Пагинация страницы заявок отрендерена");
             } else {
                 throw new Error("Неверный формат данных от AdminOfferController");
             }
@@ -56,16 +51,16 @@ async function deleteOffer(offerId) {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            alert('Заявка успешно удалена!');
+            showAlert('Заявка успешно удалена!', 'success');
             // Обновляем список заявок
             loadOffers(currentOfferPage);
         } else {
-            alert(result.error || 'Ошибка при удалении заявки');
+            showAlert(result.error || 'Ошибка при удалении заявки', 'error');
         }
 
     } catch (error) {
         console.error('Ошибка удаления заявки:', error);
-        alert('Произошла ошибка при удалении заявки');
+        showAlert('Произошла ошибка при удалении заявки', 'error');
     }
 }
 
@@ -320,3 +315,9 @@ document.addEventListener('DOMContentLoaded', function () {
         loadOffers(1)
     }
 });
+
+window.loadOffers = loadOffers;
+window.deleteOffer = deleteOffer;
+window.rowsInOfferTable = rowsInOfferTable;
+window.filterByStatus = filterByStatus;
+window.changeOfferPage = changeOfferPage;

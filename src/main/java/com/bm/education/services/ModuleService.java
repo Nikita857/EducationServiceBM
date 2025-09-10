@@ -53,6 +53,8 @@ public class ModuleService {
 
     public List<Module> getAllModules() {return moduleRepository.findAll();}
 
+    public long getModulesCount() {return moduleRepository.count();}
+
     public boolean deleteModule(Integer moduleId) {
         if (moduleRepository.findById(moduleId).isPresent()) {
             moduleRepository.deleteById(moduleId);
@@ -106,9 +108,16 @@ public class ModuleService {
                 .collect(Collectors.toList());
     }
 
-    public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size) {
+    public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size, Integer courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
-        Page<Module> modules = moduleRepository.findAll(pageable);
+        Page<Module> modules;
+
+        if (courseId != null && courseId > 0) {
+            modules = moduleRepository.findAllByCourse_Id(courseId, pageable);
+        } else {
+            modules = moduleRepository.findAll(pageable);
+        }
+
         return modules.map(this::convertToModuleResponseDTO);
     }
 

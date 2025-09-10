@@ -1,20 +1,24 @@
 package com.bm.education.controllers;
 
-import com.bm.education.dto.CourseResponseDTO;
-import com.bm.education.dto.ModuleResponseDTO;
+import com.bm.education.dto.*;
 import com.bm.education.models.Course;
 import com.bm.education.services.CoursesService;
-import com.bm.education.services.ModuleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -22,15 +26,15 @@ import java.util.Map;
 public class AdminCoursesController {
 
     private final CoursesService coursesService;
-    private final ModuleService moduleService;
 
     @GetMapping("/admin/courses")
-    public ResponseEntity<?> sendUsersJson(@RequestParam(defaultValue = "1", name = "page") int page,
-                                           @RequestParam(defaultValue = "10", required = false, name = "size") int size) {
+    public ResponseEntity<?> sendUsersJson(@RequestParam(defaultValue = "1") int page,
+                                           @RequestParam(defaultValue = "10") int size,
+                                           @RequestParam(defaultValue = "0") int courseId) {
         try {
             Map<String, Object> response = new HashMap<>();
 
-            Page<CourseResponseDTO> courseResponseDTOS  = coursesService.getCoursesForDTO(page, size);
+            Page<CourseResponseDTO> courseResponseDTOS  = coursesService.getCoursesForDTO(page, size, courseId);
 
             response.put("success", true);
             response.put("courses", courseResponseDTOS.getContent());
@@ -108,6 +112,58 @@ public class AdminCoursesController {
                     "success", false,
                     "error", "An internal server error occurred."
             ));
+        }
+    }
+
+    @PostMapping("/admin/course/create")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createCourse(@Valid @ModelAttribute CourseCreateRequest courseRequest,
+                                          BindingResult bindingResult,
+                                          @RequestParam("image") MultipartFile imageFile) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            fieldError -> fieldError.getDefaultMessage()
+                    ));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "errors", errors));
+        }
+
+        try {
+            Course savedCourse = coursesService.createCourse(courseRequest, imageFile);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("success", true, "course", savedCourse));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        } catch (IOException e) {
+            log.error("File upload failed for course: {}", courseRequest.getTitle(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("success", false, "error", "Ошибка при загрузке файла."));
+        }
+    }
+
+    @PostMapping("/admin/courses/update")
+    public ResponseEntity<?> updateCourse(@ModelAttribute CourseUpdateRequest courseUpdateRequest) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Course updatedCourse = coursesService.updateCourse(courseUpdateRequest);
+            response.put("success", true);
+            response.put("courseId", updatedCourse.getId());
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            log.error("File upload error during course update: {}", e.getMessage(), e);
+            response.put("success", false);
+            response.put("error", "Ошибка при загрузке файла.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid data for course update: {}", e.getMessage());
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            log.error("Error updating course: {}", e.getMessage(), e);
+            response.put("success", false);
+            response.put("error", "Внутренняя ошибка сервера.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }
