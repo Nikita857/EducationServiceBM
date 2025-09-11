@@ -13,7 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -259,5 +262,17 @@ public class CoursesService {
         }else{
             return false;
         }
+    }
+
+    @Transactional
+    public boolean updateCourseStatus(String status, Integer courseId) {
+        Course course = coursesRepository.findById(courseId).orElseThrow(
+                () -> new IllegalArgumentException("Course not found")
+        );
+        course.setStatus(CourseStatus.valueOf(status));
+        log.info("Setting status to Course {} {}", course.getId().toString(), status);
+        Course updatedCourse = coursesRepository.save(course);
+        log.info("Status of updatedCourse: {}", updatedCourse.getStatus());
+        return updatedCourse.getStatus() == CourseStatus.valueOf(status);
     }
 }

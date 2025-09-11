@@ -17,33 +17,39 @@ function openAddCourseForm() {
 // --- MODIFIED: Renamed for consistency ---
 function changeCoursesPerPage(perPage) {
     coursesPerPage = parseInt(perPage) || 10;
-    loadCourses(1);
+    void loadCourses(1);
 }
 
 async function loadCourses(page = 1) {
     try {
         const response = await fetch(`/admin/courses?page=${page}&size=${coursesPerPage}`);
-        if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+        if (!response.ok) {
+            console.error(new Error(`Ошибка сервера: ${response.status}`));
+            return null;
+        }
         
         const data = await response.json();
-        if (!data.success || !data.courses) throw new Error("Неверный формат данных от AdminCoursesController");
+        if (!data.success || !data["courses"]) {
+            console.error(new Error("Неверный формат данных от AdminCoursesController"));
+            return null;
+        }
 
-        currentPage = data.currentPage || page;
-        totalPages = data.totalPages || 1;
-        totalItems = data.totalItems || data.courses.length;
+        currentPage = data["currentPage"] || page;
+        totalPages = data["totalPages"] || 1;
+        totalItems = data["totalItems"] || data["courses"].length;
 
-        renderCoursesTable(data.courses);
+        renderCoursesTable(data["courses"]);
         renderPagination();
 
     } catch (e) {
         console.error('Ошибка загрузки курсов:', e);
-        // You might want a showError function here like in other scripts
+        showAlert(`Ошибка загрузки курсов ${e}`, 'error')
     }
 }
 
 async function deleteCourse(courseId, courseTitle) {
     if (!confirm(`Вы уверены, что хотите удалить курс "${courseTitle}"? Это действие удалит все модули и уроки этого курса, и его нельзя будет отменить.`)) {
-        return;
+        return null;
     }
 
     try {
@@ -68,7 +74,8 @@ async function deleteCourse(courseId, courseTitle) {
             }, 1500)
 
         } else {
-            throw new Error(result.message || `Ошибка сервера: ${response.status}`);
+            console.error(new Error(result.message || `Ошибка сервера: ${response.status}`));
+            return null;
         }
 
     } catch (error) {
@@ -87,7 +94,7 @@ function renderCoursesTable(courses) {
 
     tableContainer.innerHTML = ''; // Clear previous content
 
-    const tableHTML = `
+    tableContainer.innerHTML = `
         <div class="data-table courses-table">
             <div class="table-header d-flex justify-content-between align-items-center flex-wrap">
                 <h3 class="table-title mb-2 mb-md-0">Список курсов</h3>
@@ -122,7 +129,7 @@ function renderCoursesTable(courses) {
                     <div class="table-cell">Действия</div>
                 </div>
 
-                ${courses.length > 0 ? courses.map(course =>`
+                ${courses.length > 0 ? courses.map(course => `
                 <div class="table-row" id="course-row-${course.id}">
                     <div class="table-cell text-muted">#${course.id || 'N/A'}</div>
                     <div class="table-cell">
@@ -136,13 +143,13 @@ function renderCoursesTable(courses) {
                         <span class="course-description">${course.description || 'N/A'}</span>
                     </div>
                     <div class="table-cell">
-                        <code>/courses/${course.slug}</code>
+                        <code class="click-for-redirect" style="cursor: pointer">/course/${course.slug}</code>
                     </div>
-                    <div class="table-cell">
-                    ${adaptiveCourseStatus(course.status)}
+                    <div class="table-cell" data-course-id="${course.id}">
+                    ${adaptiveCourseStatus(course.status, course.id)}
                     </div>
-                    <div class="table-cell text-sm text-muted">${formatCourseDate(course.createdAt)}</div>
-                    <div class="table-cell text-sm text-muted">${formatCourseDate(course.updatedAt)}</div>
+                    <div class="table-cell text-sm text-muted">${formatCourseDate(course["createdAt"])}</div>
+                    <div class="table-cell text-sm text-muted">${formatCourseDate(course["updatedAt"])}</div>
                     <div class="table-cell action-buttons">
                         <button class="btn btn-primary btn-icon btn-sm" title="Редактировать" onclick="openEditCourseModal(${course.id})">
                             <i class="bi bi-pencil"></i>
@@ -168,20 +175,80 @@ function renderCoursesTable(courses) {
 
         <div class="pagination-container-edit-course mt-3"></div>
     `;
-
-    tableContainer.innerHTML = tableHTML;
     document.getElementById('pageSizeSelect').value = coursesPerPage;
+
+    const dropdownToggleElements = tableContainer.querySelectorAll('[data-bs-toggle="dropdown"]');
+    dropdownToggleElements.forEach(dropdownToggleEl => {
+        new bootstrap.Dropdown(dropdownToggleEl);
+    });
+
+    // Force overflow to be visible on table cells to prevent dropdown clipping
+    const tableCells = tableContainer.querySelectorAll('.table-cell');
+    tableCells.forEach(cell => {
+        cell.style.overflow = 'visible';
+    });
 }
 
-function adaptiveCourseStatus(status) {
-    switch (status) {
-        case 'ACTIVE' :
-            return '<span class="badge rounded-pill text-bg-success">Активный</span>';
-        case 'INACTIVE' :
-            return '<span class="badge rounded-pill text-bg-secondary">Неактивный</span>';
-        case 'ARCHIVED' :
-            return '<span class="badge rounded-pill text-bg-dark">В архиве</span>';
+function adaptiveCourseStatus(status, courseId) {
+    const statusMap = {
+        'ACTIVE': { text: 'Активный', bg: 'success' },
+        'INACTIVE': { text: 'Неактивный', bg: 'secondary' },
+        'ARCHIVED': { text: 'В архиве', bg: 'dark' }
+    };
 
+    const currentStatusInfo = statusMap[status] || { text: 'Неизвестно', bg: 'light' };
+
+    const dropdownItems = Object.keys(statusMap).map(s => {
+        if (s === status) return '';
+        const newStatusInfo = statusMap[s];
+        return `<li><a class="dropdown-item" href="#" onclick="event.preventDefault(); updateCourseStatus(${courseId}, '${currentStatusInfo.text}', '${s}', '${newStatusInfo.text}')">${newStatusInfo.text}</a></li>`;
+    }).join('');
+
+    return `
+        <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle badge rounded-pill text-bg-${currentStatusInfo.bg}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                ${currentStatusInfo.text}
+            </button>
+            <ul class="dropdown-menu">
+                ${dropdownItems}
+            </ul>
+        </div>
+    `;
+}
+
+async function updateCourseStatus(courseId, currentStatusText, newStatus, newStatusText) {
+    if (!confirm(`Вы уверены, что хотите изменить статус курса с "${currentStatusText}" на "${newStatusText}"?`)) {
+        return;
+    }
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    if (csrfToken && csrfHeader) {
+        headers[csrfHeader] = csrfToken;
+    }
+
+    try {
+        const response = await fetch(`/admin/courses/update/status`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ courseId: courseId, status: newStatus })
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (response.ok && result.success) {
+            showAlert(`Статус курса успешно изменен на "${newStatusText}"!`, 'success');
+            await loadCourses(currentPage);
+        } else {
+            const errorMessage = result.error || `Ошибка сервера: ${response.status}`;
+            throw new Error(errorMessage);
+        }
+    } catch (error) {
+        console.error('Ошибка при смене статуса курса:', error);
+        showAlert(error.message, 'error');
     }
 }
 
@@ -240,7 +307,7 @@ function renderPagination() {
 
 function changePage(page) {
     if (page < 1 || page > totalPages || page === currentPage) return;
-    loadCourses(page);
+    void loadCourses(page);
 }
 
 function formatCourseDate(dateString) {
@@ -292,14 +359,28 @@ function renderImageViewModal() {
     }
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
     const coursesTabTrigger = document.querySelector('a[data-tab="courses-edit-tab"]');
+    const coursesContainer = document.getElementById('courses-edit-tab');
+
+    if (coursesContainer) {
+        coursesContainer.addEventListener('click', function (event) {
+            if (event.target && event.target.classList.contains('click-for-redirect')) {
+                const url = event.target.textContent.trim();
+                if (url) {
+                    window.location.href = url;
+                }
+            }
+
+            
+        });
+    }
+    
     if (coursesTabTrigger) {
         let isInitialized = false;
         coursesTabTrigger.addEventListener('click', () => {
             if (!isInitialized) {
-                loadCourses(1);
+                void loadCourses(1);
                 renderImageViewModal();
                 renderEditCourseModal(); // Render the edit modal structure on tab click
                 isInitialized = true;
@@ -307,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (document.getElementById('courses-edit-tab')?.classList.contains('active')) {
-            loadCourses(1);
+            void loadCourses(1);
             renderImageViewModal();
             renderEditCourseModal(); // Also render here if the tab is already active
             isInitialized = true;
@@ -321,8 +402,6 @@ function renderEditCourseModal() {
     if (document.getElementById('editCourseModal')) {
         return; // Already rendered
     }
-
-    
 
     const modalHTML = `
         <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
@@ -433,11 +512,12 @@ async function handleCourseUpdate(event) {
             showAlert(`Курс "${courseTitle}" успешно обновлен!`, 'success');
             const modal = bootstrap.Modal.getInstance(document.getElementById('editCourseModal'));
             modal.hide();
-            loadCourses(currentPage); // Refresh the table
+            void loadCourses(currentPage); // Refresh the table
         } else {
             // Prefer a server-sent message, otherwise use a generic one.
             const errorMessage = result.error || `Ошибка сервера: ${response.status}`;
-            throw new Error(errorMessage);
+            console.error(new Error(errorMessage));
+            return null;
         }
     } catch (error) {
         console.error('Ошибка обновления курса:', error);
@@ -452,4 +532,5 @@ window.changePage = changePage;
 window.openViewCourseImageModal = openViewCourseImageModal;
 window.openEditCourseModal = openEditCourseModal;
 window.handleCourseUpdate = handleCourseUpdate;
+window.updateCourseStatus = updateCourseStatus;
 window.loadCourses = loadCourses;

@@ -1,5 +1,4 @@
 // lessonsTable.js
-
 let currentLessonsPage = 1;
 let totalLessonsPages = 1;
 let totalLessonsItems = 0;
@@ -10,7 +9,8 @@ async function loadModulesForFilter() {
     try {
         const response = await fetch('/admin/modules/json');
         if (!response.ok) {
-            throw new Error('Failed to load modules for filter');
+            console.error(new Error('Failed to load modules for filter'));
+            return null;
         }
         const data = await response.json();
         if (data.success && data.modules) {
@@ -24,7 +24,7 @@ async function loadModulesForFilter() {
             data.modules.forEach(module => {
                 const option = document.createElement('option');
                 option.value = module.moduleId;
-                option.textContent = `${module.moduleTitle}`;
+                option.textContent = `${module["moduleTitle"]}`;
                 select.appendChild(option);
             });
 
@@ -34,7 +34,8 @@ async function loadModulesForFilter() {
             }
 
         } else {
-            throw new Error('Invalid data format for modules');
+            console.error(new Error('Invalid data format for modules'), 'error');
+            return null;
         }
     } catch (error) {
         console.error('Error loading modules for filter:', error);
@@ -58,28 +59,31 @@ async function loadLessons(page = 1) {
         if (response.ok) {
             const data = await response.json();
 
-            if (data.success && data.lessons) {
-                currentLessonsPage = data.currentPage || page;
-                totalLessonsPages = data.totalPages || 1;
-                totalLessonsItems = data.totalItems || data.lessons.length;
+            if (data.success && data["lessons"]) {
+                currentLessonsPage = data["currentPage"] || page;
+                totalLessonsPages = data["totalPages"] || 1;
+                totalLessonsItems = data["totalItems"] || data["lessons"].length;
 
-                renderLessonsTable(data.lessons);
-                renderLessonsPagination();
+                renderLessonsTable(data["lessons"]);
+                renderLessonsPagination(data["lessons"]);
             } else {
-                throw new Error("Неверный формат данных");
+                 console.error(new Error("Неверный формат данных"));
+                 showAlert('Неверный формат данных', 'error')
+                return null;
             }
         } else {
             // Handle cases like 404 when no lessons are found for a filter
             if (response.status === 404) {
                 renderLessonsTable([]);
-                renderLessonsPagination();
+                renderLessonsPagination([]);
             } else {
-                throw new Error(`Ошибка сервера: ${response.status}`);
+                console.error(new Error(`Ошибка сервера: ${response.status}`), 'error');
+                return null;
             }
         }
     } catch (error) {
         console.error('Ошибка загрузки уроков:', error);
-        showError(error.message);
+        showAlert(error.message, 'error');
     } finally {
         showLoading(false);
     }
@@ -98,7 +102,7 @@ function renderLessonsTable(lessons) {
     const tableWrapper = document.createElement('div');
     tableWrapper.className = 'courses-table-container';
 
-    const tableHTML = `
+    tableWrapper.innerHTML = `
         <div class="data-table courses-table lessons-table">
             <div class="table-header d-flex justify-content-between align-items-center flex-wrap">
                 <h3 class="table-title mb-2 mb-md-0">Список уроков</h3>
@@ -143,7 +147,7 @@ function renderLessonsTable(lessons) {
                         <div class="fw-bold">${escapeHtml(lesson.title || 'Без названия')}</div>
                     </div>
                     <div class="table-cell">
-                        <span class="text-muted">${escapeHtml(lesson.moduleName || 'N/A')}</span>
+                        <span class="text-muted">${escapeHtml(lesson["moduleName"] || 'N/A')}</span>
                     </div>
                     <div class="table-cell">
                         <span class="lesson-description">${truncateText(lesson.description || 'Нет описания', 100)}</span>
@@ -176,16 +180,14 @@ function renderLessonsTable(lessons) {
             </div>
         </div>
     `;
-
-    tableWrapper.innerHTML = tableHTML;
     container.appendChild(tableWrapper);
 
     // --- NEW: Populate the filter after rendering the table structure ---
-    loadModulesForFilter();
+    void loadModulesForFilter();
 }
 
 // Рендер пагинации
-function renderLessonsPagination() {
+function renderLessonsPagination(lessons) {
     const container = document.getElementById('lessonsPagination');
     if (!container) {
         console.warn('Контейнер пагинации не найден');
@@ -251,13 +253,13 @@ function renderLessonsPagination() {
 // Смена страницы
 function changeLessonsPage(page) {
     if (page < 1 || page > totalLessonsPages || page === currentLessonsPage) return;
-    loadLessons(page);
+    void loadLessons(page);
 }
 
 // Изменение количества уроков на странице
 function changeLessonsPerPage(perPage) {
     lessonsPerPage = parseInt(perPage) || 10;
-    loadLessons(1);
+     void loadLessons(1);
 }
 
 // Вспомогательные функции
@@ -274,22 +276,6 @@ function showLoading(show) {
             </div>
         `;
     }
-}
-
-function showError(message) {
-    const container = document.getElementById('lessonsContainer');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="text-center py-4 text-danger">
-            <i class="bi bi-exclamation-triangle-fill fa-2x mb-3"></i>
-            <h5>Ошибка загрузки</h5>
-            <p>${escapeHtml(message)}</p>
-            <button class="btn btn-primary btn-sm" onclick="loadLessons(1)">
-                <i class="bi bi-arrow-clockwise me-1"></i> Попробовать снова
-            </button>
-        </div>
-    `;
 }
 
 function truncateText(text, maxLength) {
@@ -328,9 +314,10 @@ async function deleteLesson(lessonId, lessonTitle) {
 
         if (response.ok) {
             showAlert(result.message || `Урок ${lessonTitle} успешно удален`, 'success');
-            loadLessons(currentLessonsPage || 1);
+            void loadLessons(currentLessonsPage || 1);
         } else {
-            throw new Error(result.message || `Ошибка сервера: ${response.status}`);
+            console.error(new Error(result.message || `Ошибка сервера: ${response.status}`));
+            return null;
         }
 
     } catch (error) {
@@ -350,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // If the tab is already active on page load, load lessons
         if (document.getElementById('lessons-edit-tab')?.classList.contains('active')) {
-            loadLessons(1);
+            void loadLessons(1);
         }
     }
 });

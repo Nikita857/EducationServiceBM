@@ -134,10 +134,7 @@ function handleSuccessResponse(result) {
     const modal = bootstrap.Modal.getInstance(document.getElementById('createLessonModal'));
     modal.hide();
 
-    // Обновляем список уроков если нужно
-    if (typeof loadModuleLessons === 'function') {
-        loadModuleLessons(1);
-    }
+    void loadLessons()
 
     // Можно показать дополнительную информацию
     console.log('Создан урок:', result);

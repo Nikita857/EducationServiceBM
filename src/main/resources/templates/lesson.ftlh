@@ -48,7 +48,7 @@
     <!-- Video Section -->
     <div class="video-container">
         <video controls autoplay name="media">
-            <source src="${springMacroRequestContext.contextPath}/videos/1.mp4">
+            <source src="${springMacroRequestContext.contextPath}/videos/${lessonData.video}">
         </video>
     </div>
 

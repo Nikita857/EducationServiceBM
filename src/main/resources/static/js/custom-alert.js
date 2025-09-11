@@ -32,10 +32,8 @@ function showAlert(message, status = 'info', duration = 3000) {
     `;
 
     container.appendChild(alertDiv);
-    console.log('Alert element appended to container');
 
     requestAnimationFrame(() => {
-        console.log('Adding "show" class');
         alertDiv.classList.add('show');
     });
 

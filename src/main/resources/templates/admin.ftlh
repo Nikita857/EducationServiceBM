@@ -682,6 +682,7 @@
 </div>
 <script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
+<script src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Анимация статистики
