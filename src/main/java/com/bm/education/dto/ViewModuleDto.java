@@ -16,7 +16,6 @@ public class ViewModuleDto {
     private LocalDateTime completedAt;
     private String formattedCompletedDate;
 
-    // Конструктор для преобразования из Object[]
     public ViewModuleDto(Integer id, String title, String shortDescription,
                                  String moduleTitle, String courseTitle,
                                  Integer completed, LocalDateTime completedAt) {

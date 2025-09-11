@@ -1,5 +1,4 @@
 import './admin.js';
-import './adminOfferResponse.js';
 import './admin-courses/adminAddCourse.js';
 import './admin-courses/adminEditCourse.js';
 import './admin-courses/getModulesOfCourse.js';

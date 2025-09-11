@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/selectedCourse.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <title>Какой то курс</title>
 </head>
 <body>

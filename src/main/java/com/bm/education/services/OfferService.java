@@ -21,8 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,16 +58,19 @@ public class OfferService {
                             .collect(Collectors.joining(", ")));
         } catch (Exception e) {
             log.error("Error saving offer: {}", e.getMessage(), e);
-            throw new ServiceException("Ошибка при сохранении предложения");
+            throw new ServiceException("Ошибка при сохранении заявки");
         }
     }
+    @Transactional(readOnly = true)
     public List<Offer> getUserOffers(Integer userId) {
         return offerRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<Offer> getOffersWithStatus(String status) {
         return offerRepository.findByStatus(status).isEmpty()? Collections.emptyList() : offerRepository.findByStatus(status);
     }
+
     @Transactional(readOnly = true)
     public OfferDto getOfferById(Integer id) {
         Offer offer = offerRepository.findById(id)
@@ -101,6 +103,7 @@ public class OfferService {
     }
     @Transactional(readOnly = true)
     public long getOffersCount() {return offerRepository.count();}
+
     @Transactional(readOnly = true)
     public long getPendingOffersCount() {return offerRepository.countByStatus(OfferStatus.PENDING);}
 
@@ -111,6 +114,14 @@ public class OfferService {
 
             Offer offer = offerRepository.findById(updateDto.getOfferId())
                     .orElseThrow(() -> new IllegalArgumentException("Заявка не найдена"));
+
+
+            if (!offer.getStatus().canTransitionTo(updateDto.getStatus())) {
+                throw new IllegalArgumentException(
+                        String.format("Невозможно изменить статус с %s на %s",
+                                offer.getStatus(), updateDto.getStatus())
+                );
+            }
 
             // Обновляем статус и ответ
             offer.setStatus(updateDto.getStatus());

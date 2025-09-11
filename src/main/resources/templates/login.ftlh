@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Вход в систему</title>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
 </head>
 <body>
 <style>

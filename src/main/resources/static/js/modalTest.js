@@ -1,4 +1,3 @@
-
 let currentQuestion = 0;
 let score = 0;
 
@@ -79,7 +78,7 @@ function saveUserProgress() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Ошибка: ' + error.message);
+            showAlert('Ошибка: ' + error.message, 'error');
         });
 }
 

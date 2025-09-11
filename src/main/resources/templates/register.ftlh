@@ -6,6 +6,7 @@
     <title>Регистрация</title>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/register.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
 <body>

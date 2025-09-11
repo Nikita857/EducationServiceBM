@@ -491,7 +491,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-chat-dots me-2"></i>Обновление заявки
+                    <i class="bi bi-chat-dots me-2"></i>Обновление заявки #<span id="responseOfferId"></span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
                     <i class="bi bi-x-lg"></i>
@@ -514,7 +514,7 @@
                     <!-- Ответ администратора -->
                     <div class="mb-3">
                         <label class="form-label">Ответ пользователю</label>
-                        <textarea name="response" class="form-control"
+                        <textarea id="responseText" name="response" class="form-control"
                                   placeholder="Введите ваш ответ пользователю..."
                                   rows="4" maxlength="2000"></textarea>
                         <div class="form-text">Максимум 2000 символов</div>
@@ -523,7 +523,7 @@
                     <!-- Выбор статуса -->
                     <div class="mb-3">
                         <label class="form-label">Статус заявки</label>
-                        <select name="status" class="form-select bg-dark text-light" required>
+                        <select id="responseStatus" name="status" class="form-select bg-dark text-light" required>
                             <option value="">Выберите статус...</option>
                             <option value="APPROVED">Принята</option>
                             <option value="REJECTED">Отклонена</option>
@@ -608,62 +608,7 @@
 <#--Оболочка для интеграции модального окна просмотра изобржаения курса-->
 <div id="img-view-modal"></div>
 
-<!-- Модальное окно для ответа на заявки -->
-<div class="modal fade" id="offerResponseModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Ответ на заявку #<span id="responseOfferId"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="offerId">
 
-                <!-- Описание заявки -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Описание заявки:</label>
-                    <div class="card bg-dark border-secondary">
-                        <div class="card-body">
-                            <p class="card-text" id="responseDescription">Описание отсутствует</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Форма ответа -->
-                <div class="response-form">
-                    <div class="mb-3">
-                        <label for="responseText" class="form-label fw-bold">Ответ:</label>
-                        <textarea class="form-control" id="responseText" rows="5"
-                                  placeholder="Введите ваш ответ здесь..."
-                                  style="background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12);"></textarea>
-                        <div class="form-text">Максимум 1000 символов</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="responseStatus" class="form-label fw-bold">Новый статус заявки:</label>
-                        <select class="form-select" id="responseStatus"
-                                style="background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12);">
-                            <option value="PENDING">В ожидании рассмотрения</option>
-                            <option value="APPROVED">Одобрено</option>
-                            <option value="REJECTED">Отклонено</option>
-                            <option value="COMPLETED">Завершено</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Отмена
-                </button>
-                <button type="button" class="btn btn-primary" id="submitResponseBtn">
-                    <i class="bi bi-send me-1"></i> Отправить ответ
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 <!-- Модальноe окно для редактирования модулей -->
 <div class="modal fade" id="editModuleModal" tabindex="-1" aria-labelledby="editModuleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">

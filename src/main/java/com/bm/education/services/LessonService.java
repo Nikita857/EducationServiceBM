@@ -1,11 +1,9 @@
 package com.bm.education.services;
 
-import com.bm.education.dto.CreateLessonDTO;
-import com.bm.education.dto.LessonDto;
-import com.bm.education.dto.LessonRequestDTO;
-import com.bm.education.dto.LessonResponseDTO;
+import com.bm.education.dto.*;
 import com.bm.education.models.Lesson;
 import com.bm.education.models.Module;
+import com.bm.education.models.User;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +30,8 @@ import java.util.stream.Collectors;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final ModuleRepository moduleRepository;
+    private final UserService userService;
+    private final ModuleService moduleService;
 
     @Transactional
     public Lesson getLesson(int id, int moduleId) {
@@ -138,5 +139,27 @@ public class LessonService {
     @Transactional(readOnly = true)
     public Lesson getLessonByVideoName(String videoName) {
        return lessonRepository.findLessonByVideo(videoName).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ViewModuleDto> getLessonsWithProgress(String userName, String moduleSlug) {
+        Integer userId = userService.getUserByUsername(userName).getId();
+        Integer moduleId = moduleService.getModuleBySlug(moduleSlug).getId();
+        List<Object[]> results = lessonRepository.findLessonsByModuleAndUserId(userId, moduleId);
+        return results.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ViewModuleDto mapToDTO(Object[] result) {
+        return new ViewModuleDto(
+                ((Integer) result[0]),
+                (String) result[1],
+                (String) result[2],
+                (String) result[3],
+                (String) result[4],
+                ((Integer) result[5]),
+                result[6] != null ? ( (java.sql.Timestamp) result[6]).toLocalDateTime(): null
+        );
     }
 }

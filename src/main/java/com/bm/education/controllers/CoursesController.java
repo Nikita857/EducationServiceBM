@@ -23,9 +23,10 @@ public class CoursesController {
     private final CoursesService coursesService;
     private final OfferService offerService;
     private final ModuleService moduleService;
-    private final TaskService taskService;
     private final LessonService lessonService;
     private final UserService userService;
+
+    /*TODO крч я удалил Tasks сущность, теперь надо фиксить все и тестить, в принципе приложуха компилируется, но возникла ошибка при прохождении курсов, крч разбираться надо*/
 
     @GetMapping("/")
     public String index(Model model, Authentication auth) {
@@ -63,10 +64,7 @@ public class CoursesController {
         model.addAttribute("user", userService.getUserByUsername(auth.getName()));
         model.addAttribute("selectedCourseData", coursesService.getSelectedCourseBySlug(name));
         model.addAttribute("selectedModuleData", moduleService.getModuleBySlug(moduleSlug));
-        model.addAttribute("moduleLessons", taskService.getTasksWithProgress(
-                moduleService.getModuleBySlug(moduleSlug).getId(),
-                userService.getUserByUsername(auth.getName()).getId()
-        ));
+        model.addAttribute("moduleLessons", lessonService.getLessonsWithProgress(auth.getName(), moduleSlug));
         return "tasklist";
     }
 
