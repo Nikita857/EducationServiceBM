@@ -1,8 +1,7 @@
 package com.bm.education.security;
 
 import com.bm.education.Exceptions.CustomAuthenticationFailureHandler;
-import com.bm.education.models.User;
-import com.bm.education.repositories.UserRepository;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,11 +21,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    /**TODO
-     исправить механизм удаления пользователей
-     удаление начинается с таблицы Users но внешний ключ не позволяет это сделать
-     необходимо сначала удалить запись в таблице ролей, а потом только из таблицы пользоватлей*/
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) throws Exception {
@@ -91,22 +85,5 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return username -> {
-            if(userRepository.findByUsername(username).isPresent()) {
-                User user = userRepository.findByUsername(username).get();
-                return org.springframework.security.core.userdetails.User
-                        .withUsername(user.getUsername())
-                        .password(user.getPassword())
-                        .roles(user.getRoles().stream()
-                                .map(Enum::name)
-                                .map(role -> role.replace("ROLE_", ""))
-                                .toArray(String[]::new))
-                        .build();
-            }else{
-                throw new UsernameNotFoundException("User not found");
-            }
-        };
-    }
+    
 }
