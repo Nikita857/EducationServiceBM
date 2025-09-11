@@ -2,9 +2,10 @@
 <html lang="ru" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="_csrf" content=""${_csrf.token}"/>
+    <meta name="_csrf" content="${_csrf.token}"/>
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -23,8 +24,12 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a class="text-light text-decoration-underline" href="/">Главная</a></li>
-                <li class="breadcrumb-item"><a class="text-light text-decoration-underline" href="/course/${selectedCourseSlug.slug}">${selectedCourseSlug.title}/</a></li>
-                <li class="breadcrumb-item"><a class="text-light text-decoration-underline" href="/course/${selectedCourseSlug.slug}/module/${moduleData.slug}">${moduleData.title}/</a></li>
+                <li class="breadcrumb-item"><a class="text-light text-decoration-underline"
+                                               href="/course/${selectedCourseSlug.slug}">${selectedCourseSlug.title}
+                        /</a></li>
+                <li class="breadcrumb-item"><a class="text-light text-decoration-underline"
+                                               href="/course/${selectedCourseSlug.slug}/module/${moduleData.slug}">${moduleData.title}
+                        /</a></li>
                 <li class="breadcrumb-item active text-light">${lessonData.title}</li>
             </ol>
         </nav>
@@ -83,7 +88,8 @@
                 <ul class="dropdown-menu">
                     <#list lessonIds as ids>
                         <li class="lessonNav">
-                            <a class="dropdown-item text-dark" href="/course/${selectedCourseSlug.slug}/module/${moduleData.slug}/lesson/${ids.id}">
+                            <a class="dropdown-item text-dark"
+                               href="/course/${selectedCourseSlug.slug}/module/${moduleData.slug}/lesson/${ids.id}">
                                 <i class="bi bi-play-circle me-2"></i>
                                 Урок ${ids.id}: ${ids.title}
                             </a>
@@ -104,7 +110,8 @@
                     <i class="bi bi-patch-question me-2"></i>
                     Тест по теме: "${lessonData.title}"
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
             </div>
 
             <div class="modal-body" id="quizContent">
@@ -141,14 +148,10 @@
 
 
 <script>${lessonData.testCode?no_esc}</script>
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
-<script src="${springMacroRequestContext.contextPath}/webjars/github-com-popperjs-popper-core/2.4.0/popper.js"></script>
-<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/modalTest.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 <script>
     // Анимация элементов при загрузке
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Анимация карточек действий
         const actionCards = document.querySelectorAll('.action-card');
         actionCards.forEach((card, index) => {

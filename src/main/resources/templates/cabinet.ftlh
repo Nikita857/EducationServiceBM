@@ -383,9 +383,6 @@
 </div>
 <script src="${springMacroRequestContext.contextPath}/js/changePassword.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/formCatcher.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
-<!-- Bootstrap 5 JS -->
-<script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script>
     document.getElementById('newOffer').onclick = function () {
         $('#offerModal').modal('show');
@@ -414,6 +411,5 @@
         });
     });
 </script>
-<script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>
 </body>
 </html>
