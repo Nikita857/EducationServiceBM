@@ -15,10 +15,10 @@ function initModulesView() {
     renderModuleControls(container);
 
     // 2. Populate the filter with data
-    loadCoursesForFilter();
+    void loadCoursesForFilter();
 
     // 3. Load the initial set of data
-    loadModules(1);
+    void loadModules(1);
 }
 
 // --- NEW: Renders the static controls (header, filters) only once ---
@@ -66,10 +66,18 @@ async function loadCoursesForFilter() {
 
     try {
         const response = await fetch('/admin/courses/all');
-        if (!response.ok) throw new Error('Failed to load courses');
+        if (!response.ok) {
+            console.error(new Error('Failed to load courses'));
+            return null;
+        }
         const json = await response.json();
         
-        json['courses'].forEach(course => {
+        if (!json.success || !json.data) {
+            console.error(new Error('Invalid data format for courses'));
+            return null;
+        }
+
+        json.data.forEach(course => {
             const option = document.createElement('option');
             option.value = course.id;
             option.textContent = course.title;
@@ -99,17 +107,20 @@ async function loadModules(page = 1) {
         }
 
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
-        
         const data = await response.json();
-        if (!data.success || !data.modules) throw new Error("Неверный формат данных");
 
-        currentModulesPage = data.currentPage || page;
-        totalModulesPages = data.totalPages || 1;
-        totalModulesItems = data.totalItems || data.modules.length;
+        if (response.ok && data.success && data.data && typeof data.data.content !== 'undefined') {
+            const paginatedModules = data.data;
 
-        renderModuleRows(data.modules); // Renders only the rows
-        renderModulesPagination();
+            currentModulesPage = paginatedModules["currentPage"] || page;
+            totalModulesPages = paginatedModules["totalPages"] || 1;
+            totalModulesItems = paginatedModules["totalItems"] || 0;
+
+            renderModuleRows(paginatedModules.content);
+            renderModulesPagination();
+        } else {
+            showErrorModules(data.message || "Получены неверные данные от сервера.");
+        }
 
     } catch (error) {
         console.error('Ошибка загрузки модулей:', error);
@@ -155,21 +166,21 @@ function renderModuleRows(modules) {
             <div class="table-row">
                 <div class="table-cell text-muted">#${module.moduleId || 'N/A'}</div>
                 <div class="table-cell">
-                    <div class="fw-bold">${escapeHtml(module.moduleTitle || 'Без названия')}</div>
+                    <div class="fw-bold">${escapeHtml(module["moduleTitle"] || 'Без названия')}</div>
                 </div>
                 <div class="table-cell">
-                    <span class="text-muted">${escapeHtml(module.courseName || 'N/A')}</span>
+                    <span class="text-muted">${escapeHtml(module["courseName"] || 'N/A')}</span>
                 </div>
                 <div class="table-cell">
-                    <span class="badge ${module.moduleStatus === 'ACTIVE' ? 'bg-success' : 'bg-secondary'}" style="cursor: pointer" onclick="adminUpdateModuleStatus(${module.moduleId}, '${module.moduleStatus}')">
-                        ${escapeHtml(adaptiveModuleStatus(module.moduleStatus))}
+                    <span class="badge ${module["moduleStatus"] === 'ACTIVE' ? 'bg-success' : 'bg-secondary'}" style="cursor: pointer" onclick="adminUpdateModuleStatus(${module.moduleId}, '${module["moduleStatus"]}')">
+                        ${escapeHtml(adaptiveModuleStatus(module["moduleStatus"]))}
                     </span>
                 </div>
                 <div class="table-cell action-buttons">
                     <button class="btn btn-primary btn-icon btn-sm edit-module-btn" title="Редактировать" data-module-id="${module.moduleId}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteModule(${module.moduleId}, '${escapeHtml(module.moduleTitle)}')">
+                    <button class="btn btn-danger btn-icon btn-sm" title="Удалить" onclick="deleteModule(${module.moduleId}, '${escapeHtml(module["moduleTitle"])}')">
                         <i class="bi bi-trash"></i>
                     </button>
                     <button class="btn btn-info btn-icon btn-sm" title="Уроки модуля" onclick="loadModuleLessons(${module.moduleId})">
@@ -251,12 +262,12 @@ function renderModulesPagination() {
 
 function changeModulesPage(page) {
     if (page < 1 || page > totalModulesPages || page === currentModulesPage) return;
-    loadModules(page);
+     void loadModules(page);
 }
 
 function changeModulesPerPage(perPage) {
     modulesPerPage = parseInt(perPage) || 10;
-    loadModules(1);
+    void loadModules(1);
 }
 
 function showLoadingModules(isLoading) {

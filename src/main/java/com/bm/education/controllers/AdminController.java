@@ -1,28 +1,22 @@
 package com.bm.education.controllers;
 
-import com.bm.education.dto.CourseCreateRequest;
 import com.bm.education.dto.OfferDto;
 import com.bm.education.dto.OfferResponseDto;
 import com.bm.education.models.*;
 import com.bm.education.services.*;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PrePersist;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;

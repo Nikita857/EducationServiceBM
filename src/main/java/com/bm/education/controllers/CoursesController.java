@@ -26,8 +26,6 @@ public class CoursesController {
     private final LessonService lessonService;
     private final UserService userService;
 
-    /*TODO крч я удалил Tasks сущность, теперь надо фиксить все и тестить, в принципе приложуха компилируется, но возникла ошибка при прохождении курсов, крч разбираться надо*/
-
     @GetMapping("/")
     public String index(Model model, Authentication auth) {
         model.addAttribute("user", userService.getUserByUsername(auth.getName()));

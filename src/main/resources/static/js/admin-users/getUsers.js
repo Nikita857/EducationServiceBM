@@ -6,6 +6,7 @@ let usersPerPage = 10; // Default page size
 let roleFilter = 'ALL'; // Default role filter
 
 async function loadUsers(page = 1, size = usersPerPage, role = roleFilter) {
+    console.log("Refresh button clicked. Calling loadUsers."); // Added for debugging
     try {
         console.log(`Загрузка пользователей: страница ${page}, размер ${size}, роль ${role}`);
         const response = await fetch(`/admin/users?page=${page}&size=${size}&role=${role}`);
@@ -178,7 +179,7 @@ function renderUsersTable(users) {
     
     <!-- Кнопка обновления -->
     <div class="text-center mt-3">
-        <button class="btn btn-primary" onclick="loadUsers(currentPageUsers, usersPerPage, roleFilter)">
+        <button class="btn btn-primary" onclick="refreshUsersTable()">
             <i class="bi bi-arrow-repeat"></i> Обновить список
         </button>
     </div>
@@ -347,13 +348,14 @@ async function openEnrollModal(userId, userName) {
     try {
         const response = await fetch('/admin/courses');
         const data = await response.json();
+        console.log(data)
 
-        if (data.success && data.courses) {
+        if (data.success && data.data && data.data.content) {
             courseSelect.innerHTML = ''; // Очищаем
-            if (data.courses.length === 0) {
+            if (data.data.content.length === 0) {
                 courseSelect.innerHTML = '<option>Нет доступных курсов</option>';
             } else {
-                data.courses.forEach(course => {
+                data.data.content.forEach(course => {
                     const option = document.createElement('option');
                     option.value = course.id;
                     option.textContent = course.title;
@@ -422,13 +424,20 @@ async function openViewCoursesModal(userId, userName) {
     const modal = new bootstrap.Modal(document.getElementById('viewUserCoursesModal'));
     modal.show();
 
-    try{
+    await refreshUserCoursesList(userId, userName);
+}
+
+async function refreshUserCoursesList(userId, userName) {
+    const userCoursesList = document.getElementById('userCoursesList');
+    userCoursesList.innerHTML = '<li class="list-group-item">Загрузка курсов...</li>';
+
+    try {
         const response = await fetch(`/admin/user/${userId}/courses`);
         const data = await response.json();
 
-        if(data.success && data.courses) {
+        if (data.success && data.courses) {
             userCoursesList.innerHTML = '';
-            if(data.courses.length === 0) {
+            if (data.courses.length === 0) {
                 userCoursesList.innerHTML = '<li class="list-group-item">Пользователь не записан ни на один курс.</li>';
             } else {
                 data.courses.forEach(course => {
@@ -446,7 +455,7 @@ async function openViewCoursesModal(userId, userName) {
                     listItem.appendChild(unenrollButton);
 
                     userCoursesList.append(listItem);
-                })
+                });
             }
         } else {
             userCoursesList.innerHTML = '<li class="list-group-item text-danger">Ошибка загрузки курсов.</li>';
@@ -483,7 +492,7 @@ async function unenrollRequest(userId, courseId, userName) {
         if (response.ok && result.success) {
             alert(result.message);
             // Обновляем список курсов в модальном окне
-            await openViewCoursesModal(userId, userName);
+            await refreshUserCoursesList(userId, userName);
         } else {
             showAlert(`Ошибка: ${result.message || 'Не удалось отписать пользователя.'}`, 'error');
         }
@@ -515,3 +524,6 @@ window.changeUsersPage = changeUsersPage;
 window.currentPageUsers = currentPageUsers;
 window.rowsInUserTable = rowsInUserTable;
 window.filterByUserRole = filterByUserRole;
+window.refreshUsersTable = function() {
+    loadUsers(currentPageUsers, usersPerPage, roleFilter);
+};

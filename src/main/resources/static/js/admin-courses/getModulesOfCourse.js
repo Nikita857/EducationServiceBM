@@ -9,13 +9,26 @@ async function openCourseModulesModal(courseId) {
 
         // Загружаем модули курса
         const response = await fetch(`/admin/courses/${courseId}/modules`);
-        if (!response.ok) throw new Error('Ошибка загрузки модулей курса');
+        if (!response.ok) {
+            if (response.status === 404) {
+                showAlert('В этом модуле нет курсов', 'info');
+            } else {
+                showAlert('Ошибка загрузки модулей курса', 'error');
+            }
+            return;
+        }
 
         const data = await response.json();
-        if (!data.success) showAlert(data.message || 'Модулей нет', 'info');
+        if (!data.success || !Array.isArray(data.data)) { // Проверяем, что data.data - это массив
+            showAlert(data.message || 'Модулей нет', 'info');
+            courseModules = []; // Устанавливаем пустой массив, если данные неверны
+            currentCourse = { id: courseId, name: "Неизвестный курс" }; // Устанавливаем дефолтное имя
+            return; // Выходим из функции, так как нет данных
+        }
 
-        courseModules = data.modules || [];
-        currentCourse = { id: courseId, name: data.modules[0].courseName};
+        courseModules = data.data || []; // Теперь data.data - это сам массив модулей
+        // Проверяем, что courseModules не пустой, прежде чем обращаться к первому элементу
+        currentCourse = { id: courseId, name: courseModules.length > 0 ? courseModules[0].courseName : "Неизвестный курс" };
 
         // Рендерим модальное окно
         renderCourseModulesModal();
@@ -23,10 +36,12 @@ async function openCourseModulesModal(courseId) {
         // Показываем модальное окно
         const modalElement = document.getElementById('courseModulesModal');
         if (!modalElement) {
-            throw new Error('Модальное окно модулей не найдено');
+            console.log(new Error('Модальное окно модулей не найдено'));
+            return null;
         }
 
         const modal = new bootstrap.Modal(modalElement);
+        // noinspection JSUnresolvedReference
         modal.show();
 
     } catch (error) {

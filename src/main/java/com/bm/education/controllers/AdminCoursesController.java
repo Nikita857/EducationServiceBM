@@ -25,73 +25,61 @@ import java.util.stream.Collectors;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminCoursesController {
 
     private final CoursesService coursesService;
 
     @GetMapping("/admin/courses")
-    public ResponseEntity<?> sendUsersJson(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "10") int size,
-                                           @RequestParam(defaultValue = "0") int courseId) {
+    public ResponseEntity<ApiResponse<?>> sendUsersJson(@RequestParam(defaultValue = "1") int page,
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(defaultValue = "0") int courseId) {
         try {
-            Map<String, Object> response = new HashMap<>();
-
-            Page<CourseResponseDTO> courseResponseDTOS  = coursesService.getCoursesForDTO(page, size, courseId);
-
-            response.put("success", true);
-            response.put("courses", courseResponseDTOS.getContent());
-            response.put("currentPage", courseResponseDTOS.getNumber() + 1); // Spring Data pages are 0-based
-            response.put("totalPages", courseResponseDTOS.getTotalPages());
-            response.put("totalItems", courseResponseDTOS.getTotalElements());
-            response.put("pageSize", size);
-
-            return ResponseEntity.ok(response);
+            Page<CourseResponseDTO> courseResponseDTOS = coursesService.getCoursesForDTO(page, size, courseId);
+            return ResponseEntity.ok(ApiResponse.paginated(courseResponseDTOS));
         } catch (Exception e) {
             log.error("Error getting courses: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("success", false, "error", "Internal server error"));
+                    .body(ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage())));
         }
     }
 
     @GetMapping("/admin/courses/{id}/modules")
     public ResponseEntity<?> getCourseModules(@PathVariable int id) {
         try {
-            Map<String, Object> response = new HashMap<>();
             List<ModuleResponseDTO> modules = coursesService.getModulesOfCourse(id);
             if(modules != null && !modules.isEmpty()) {
-                response.put("success", true);
-                response.put("modules", modules);
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(
+                        ApiResponse.success(
+                                "modules", modules));
             }else{
-                response.put("success", false);
-                response.put("error", "Modules not found");
-                return ResponseEntity.ok(response);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Modules not found")
+                );
             }
         }catch (Exception e) {
             return ResponseEntity.internalServerError().body(
-                    Map.of(
-                            "success", false,
-                            "error", e.getMessage()
-                    )
+                    ApiResponse.error(
+                            String.format("Internal server error: %s", e.getMessage()))
             );
         }
     }
     @GetMapping("/admin/courses/all")
     public ResponseEntity<?> getCourses() {
-        Map<String, Object> response = new HashMap<>();
         try {
             List<CourseResponseDTO> courses = coursesService.findCoursesAndWriteDTO();
             if(courses != null && !courses.isEmpty()) {
-                response.put("success", true);
-                response.put("courses", courses);
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(
+                        ApiResponse.success("courses", courses));
             }else {
-                response.put("success", false);
-                response.put("error", "Courses not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Courses not found")
+                );
             }
         }catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of(String.format("error %s", e.getLocalizedMessage()), e.getMessage()));
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Error: %s", e.getMessage()))
+            );
         }
     }
 
@@ -118,10 +106,9 @@ public class AdminCoursesController {
     }
 
     @PostMapping("/admin/course/create")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createCourse(@Valid @ModelAttribute CourseCreateRequest courseRequest,
-                                          BindingResult bindingResult,
-                                          @RequestParam("image") MultipartFile imageFile) {
+    public ResponseEntity<ApiResponse<?>> createCourse(@Valid @ModelAttribute CourseCreateRequest courseRequest,
+                                                       BindingResult bindingResult,
+                                                       @RequestParam("image") MultipartFile imageFile) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
@@ -131,44 +118,38 @@ public class AdminCoursesController {
                                     "сообщение об ошибке не указано"
                             )
                     ));
-            return ResponseEntity.badRequest().body(Map.of("success", false, "errors", errors));
+            return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
         }
 
         try {
             Course savedCourse = coursesService.createCourse(courseRequest, imageFile);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("success", true, "course", savedCourse));
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Курс успешно создан", savedCourse));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         } catch (IOException e) {
             log.error("File upload failed for course: {}", courseRequest.getTitle(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body(Map.of("success", false, "error", "Ошибка при загрузке файла."));
+                    .body(ApiResponse.error("Ошибка при загрузке файла."));
         }
     }
 
     @PostMapping("/admin/courses/update")
-    public ResponseEntity<?> updateCourse(@ModelAttribute CourseUpdateRequest courseUpdateRequest) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<?>> updateCourse(@ModelAttribute CourseUpdateRequest courseUpdateRequest) {
         try {
             Course updatedCourse = coursesService.updateCourse(courseUpdateRequest);
-            response.put("success", true);
-            response.put("courseId", updatedCourse.getId());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ApiResponse.success("Курс успешно обновлен", Map.of("courseId", updatedCourse.getId())));
         } catch (IOException e) {
             log.error("File upload error during course update: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("error", "Ошибка при загрузке файла.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Ошибка при загрузке файла."));
         } catch (IllegalArgumentException e) {
             log.warn("Invalid data for course update: {}", e.getMessage());
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Error updating course: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("error", "Внутренняя ошибка сервера.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Внутренняя ошибка сервера."));
         }
     }
 

@@ -29,16 +29,16 @@ async function loadCourses(page = 1) {
         }
         
         const data = await response.json();
-        if (!data.success || !data["courses"]) {
+        if (!data.success || !data.data || !data.data.content) {
             console.error(new Error("Неверный формат данных от AdminCoursesController"));
             return null;
         }
 
-        currentPage = data["currentPage"] || page;
-        totalPages = data["totalPages"] || 1;
-        totalItems = data["totalItems"] || data["courses"].length;
+        currentPage = data.data["currentPage"] || page;
+        totalPages = data.data["totalPages"] || 1;
+        totalItems = data.data["totalItems"] || data.data.content.length;
 
-        renderCoursesTable(data["courses"]);
+        renderCoursesTable(data.data.content);
         renderPagination();
 
     } catch (e) {

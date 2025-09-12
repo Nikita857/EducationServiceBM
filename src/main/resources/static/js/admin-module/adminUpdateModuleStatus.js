@@ -20,20 +20,21 @@ function adminUpdateModuleStatus(moduleID, status) {
         }
     })
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message);
-                });
-            }
-            return response.json();
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.message || 'Ошибка при обновлении статуса');
+                }
+                return data;
+            });
         })
         .then(data => {
-            // Успешное удаление
+            // Успешное обновление
             showAlert(data.message, 'success');
 
-            // Опционально: обновляем страницу или удаляем элемент из DOM
-            location.reload(); // Перезагрузка страницы
-            // Или: document.getElementById(`module-${id}`).remove();
+            // Обновляем таблицу модулей без перезагрузки страницы
+            if (typeof loadModules === 'function') {
+                void loadModules(window.currentModulesPage || 1);
+            }
         })
         .catch(error => {
             // Обработка ошибок

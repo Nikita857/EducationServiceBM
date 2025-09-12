@@ -1,12 +1,11 @@
 package com.bm.education.controllers;
 
+import com.bm.education.api.ApiResponse;
 import com.bm.education.dto.LessonRequestDTO;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.dto.ModuleUpdateRequest;
 import com.bm.education.models.ModuleStatus;
-import com.bm.education.repositories.CoursesRepository;
-import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
 import jakarta.validation.Valid;
@@ -28,80 +27,70 @@ import java.util.Map;
 public class AdminModuleController {
 
     private final ModuleService moduleService;
-    private final CoursesRepository coursesRepository;
     private final LessonService lessonService;
-    private final ModuleRepository moduleRepository;
-
     @GetMapping("/admin/modules")
     public ResponseEntity<?> getModulesWithPagination(@RequestParam(defaultValue = "1") int page,
                                                       @RequestParam(defaultValue = "10") int size,
                                                       @RequestParam(defaultValue = "0") int courseId)
     {
-        Map<String, Object> response = new HashMap<>();
         try {
             Page<ModuleResponseDTO> modules = moduleService.putModulesInDTO(page, size, courseId);
-
-            response.put("success", true);
-            response.put("modules", modules.getContent());
-            response.put("currentPage", modules.getNumber() + 1);
-            response.put("totalPages", modules.getTotalPages());
-            response.put("totalItems", modules.getTotalElements());
-            response.put("pageSize", size);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ApiResponse.paginated(modules));
         }catch (Exception e){
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
+            );
         }
     }
 
     @GetMapping("/admin/modules/json")
     public ResponseEntity<?> sendModulesJson() {
-        Map<String, Object> response = new HashMap<>();
         try {
             List<ModuleResponseDTO> modules = moduleService.getAllModulesByDTO();
-            response.put("success", true);
-            response.put("modules", modules);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    ApiResponse.success("success", modules)
+            );
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage()))
+            );
         }
     }
 
     @GetMapping("/admin/module/{id}")
     public ResponseEntity<?> getModuleById(@PathVariable("id") int id) {
-        Map<String, Object> response = new HashMap<>();
         try {
             ModuleResponseDTO module = moduleService.findModuleById(id);
             if(module != null) {
-                response.put("success", true);
-                response.put("module", module);
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(
+                        ApiResponse.success("module", module)
+                );
             }
-            response.put("success", false);
-            response.put("module", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error(String.format("Module not found: %s", id))
+            );
         }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage()))
+            );
         }
     }
 
     @PostMapping("/admin/modules/updateStatus/{id}/{status}")
     public ResponseEntity<?> updateModuleStatus(@PathVariable Integer id, @PathVariable ModuleStatus status) {
-        Map<String, String> response = new HashMap<>();
         try {
             if(moduleService.updateModuleStatus(id, status)) {
-                response.put("message", String.format("Статус модуля %d обновлен на %s", id, status));
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(
+                        ApiResponse.success(String.format("Статус модуля %d обновлен на %s", id, status))
+                );
             }
-            response.put("message", String.format("Ошибка обновления статуса для модуля %d", id));
-            response.put("error", "Модуля с таким id не существует");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(String.format("Ошибка обновления статуса для модуля %d", id))
+            );
         }catch (Exception e){
-            response.put("error", e.getMessage());
-            response.put("message", String.format("Ошибка обновления статуса для модуля %d", id));
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
+            );
         }
     }
 
@@ -109,48 +98,42 @@ public class AdminModuleController {
 
     @PostMapping("/admin/module/{id}/delete")
     ResponseEntity<?> deleteModule(@PathVariable Integer id) {
-
-        Map<String, String> response = new HashMap<>();
-
         try{
             moduleService.deleteModule(id);
-            response.put("message", String.format("Модуль %s успешно удален", id));
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    ApiResponse.success(String.format("Модуль %d успешно удален", id))
+            );
         }catch (Exception e){
-            response.put("success", "false");
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ApiResponse.error(String.format("Не удалось удалить модуль. Ошибка %s", e.getMessage()))
+            );
         }
     }
 
     @PostMapping("/admin/modules/create")
     public ResponseEntity<?> addModule(@Valid @RequestBody ModuleCreateRequest mcr, BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
-
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(fieldError -> {
-                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-            });
-            response.put("success", false);
-            response.put("message", "Ошибка валидации");
-            response.put("errors", errors);
-            return ResponseEntity.badRequest().body(response);
+            bindingResult.getFieldErrors().forEach(fieldError ->
+                    errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
+
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.validationError(errors)
+            );
         }
 
         try {
             ModuleResponseDTO createdModule = moduleService.createModule(mcr);
 
-            response.put("success", true);
-            response.put("message", "Модуль успешно создан");
-            response.put("module", createdModule);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResponse.success("module", createdModule)
+            );
 
         } catch (Exception e) {
             log.error("Ошибка при создании модуля: {}", e.getMessage());
-            response.put("success", false);
-            response.put("message", "Не удалось создать модуль: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
+            );
         }
     }
 
@@ -160,52 +143,47 @@ public class AdminModuleController {
             List<LessonRequestDTO> moduleLessons = lessonService.getModuleLessons(Integer.parseInt(id));
             if(!moduleLessons.isEmpty()) {
                 return ResponseEntity.ok(
-                        Map.of(
-                                "status", "success",
-                                "moduleLessons", moduleLessons
-                        )
+                       ApiResponse.success("moduleLessons", moduleLessons)
                 );
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        Map.of(
-                                "status", "not_found"
-                        )
+                        ApiResponse.error("Lessons not found")
                 );
             }
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
+            );
         }
     }
 
     @PostMapping("/admin/modules/update")
     public ResponseEntity<?> updateModule(@Valid @RequestBody ModuleUpdateRequest request,
                                           BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
-
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(fieldError -> {
-                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-            });
-            response.put("success", "false");
-            response.put("errors", errors);
-            return ResponseEntity.badRequest().body(response);
+            bindingResult.getFieldErrors().forEach(fieldError ->
+                    errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ApiResponse.validationError(errors)
+            );
         }
         try {
             boolean success = moduleService.updateModule(request);
             if (success) {
-                response.put("success", true);
-                response.put("message", "Module updated successfully");
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(
+                        ApiResponse.success("Module successfully updated")
+                );
             } else {
-                response.put("success", false);
-                response.put("error", "Failed to update module");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                        ApiResponse.error("Error updating module update")
+                );
             }
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
+            );
         }
     }
 }

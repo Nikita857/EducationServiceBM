@@ -1,11 +1,14 @@
 package com.bm.education.controllers;
 
+import com.bm.education.api.ApiResponse;
+import com.bm.education.dto.LessonDto;
 import com.bm.education.dto.LessonResponseDTO;
 import com.bm.education.models.Lesson;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.services.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,22 +25,15 @@ public class AdminLessonController {
     public ResponseEntity<?> getLessonsWithPagination(@RequestParam(defaultValue = "1") int page,
                                                       @RequestParam(defaultValue = "10") int size,
                                                       @RequestParam(defaultValue = "0") int moduleId){
-        Map<String, Object> response = new HashMap<>();
         try {
             Page<LessonResponseDTO> lessons = lessonService.putLessonsInDTO(page, size, moduleId);
-
-            response.put("success", true);
-            response.put("lessons", lessons.getContent());
-            response.put("currentPage", lessons.getNumber() + 1); // Spring Data pages are 0-based
-            response.put("totalPages", lessons.getTotalPages());
-            response.put("totalItems", lessons.getTotalElements());
-            response.put("pageSize", size);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    ApiResponse.paginated(lessons)
+            );
         }catch (Exception e){
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage()))
+            );
         }
     }
 
@@ -45,22 +41,21 @@ public class AdminLessonController {
     public ResponseEntity<?> deleteLesson(@PathVariable int id){
         if(!lessonRepository.existsById(id))
             return ResponseEntity.notFound().build();
-
-        Map<String, Object> response = new HashMap<>();
         try {
             lessonRepository.deleteById(id);
             boolean isDelete = lessonRepository.existsById(id);
             if(!isDelete) {
-                response.put("success", true);
-                return ResponseEntity.ok().body(response);
+                return ResponseEntity.ok().body(
+                        ApiResponse.success(null)
+                );
             }
-            response.put("success", false);
-            response.put("error", "lesson not found");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error(String.format("lesson not found for id %d", id))
+            );
         }catch (Exception e){
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Error: %s", e.getMessage()))
+            );
         }
     }
 
@@ -70,30 +65,30 @@ public class AdminLessonController {
             Lesson lesson = lessonRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + id));
 
-            com.bm.education.dto.LessonDto lessonDto = new com.bm.education.dto.LessonDto();
+            LessonDto lessonDto = new LessonDto();
             lessonDto.setTitle(lesson.getTitle());
             lessonDto.setTextContent(lesson.getDescription());
             lessonDto.setVideoUrl(lesson.getVideo());
 
-            return ResponseEntity.ok(lessonDto);
+            return ResponseEntity.ok(
+                    ApiResponse.success(lessonDto));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Error: %s", e.getMessage())));
         }
     }
 
     @PutMapping("/api/admin/lessons/{id}")
-    public ResponseEntity<?> updateLesson(@PathVariable int id, @RequestBody com.bm.education.dto.LessonDto lessonDto) {
+    public ResponseEntity<?> updateLesson(@PathVariable int id, @RequestBody LessonDto lessonDto) {
         try {
             lessonService.updateLesson(id, lessonDto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Lesson updated successfully"));
+            return ResponseEntity.ok(
+                    ApiResponse.success(String.format("Lesson successfully updated with id %d", id))
+            );
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage()))
+            );
         }
     }
 }

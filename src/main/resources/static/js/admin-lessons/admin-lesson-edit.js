@@ -29,10 +29,15 @@ document.addEventListener('DOMContentLoaded', function () {
             // 1. Получаем данные урока с бэкенда
             try {
                 const response = await fetch(`/api/admin/lessons/${lessonId}`);
-                if (!response.ok) {
-                    throw new Error('Не удалось загрузить данные урока.');
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    const errorMsg = result.message || 'Не удалось загрузить данные урока.';
+                    console.error(new Error(errorMsg));
+                    showAlert(errorMsg, 'error');
+                    return;
                 }
-                const lessonData = await response.json();
+                const lessonData = result.data; // Data is in result.data
 
                 // 2. Заполняем форму
                 document.getElementById('editLessonId').value = lessonId;
@@ -79,14 +84,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify(lessonDto)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Произошла ошибка при сохранении.');
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                const errorMessage = result.message || 'Произошла ошибка при сохранении.';
+                throw new Error(errorMessage);
             }
 
             // Успех
             editLessonModal.hide();
-            showAlert('Урок успешно обновлен!', 'success');
+            showAlert(result.message || 'Урок успешно обновлен!', 'success');
+            // Обновляем таблицу уроков, чтобы увидеть изменения
+            if (typeof loadLessons === 'function') {
+                loadLessons();
+            }
 
         } catch (error) {
             console.error('Ошибка при сохранении урока:', error);

@@ -15,20 +15,23 @@ function deleteModule(id) {
         }
     })
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Ошибка при удалении модуля');
-                });
-            }
-            return response.json();
+            // Всегда пытаемся парсить JSON, даже для "плохих" ответов
+            return response.json().then(data => {
+                if (!response.ok) {
+                    // Если ответ не "ok", создаем ошибку с сообщением от сервера
+                    throw new Error(data.message || 'Ошибка при удалении модуля');
+                }
+                return data; // Возвращаем данные, если все в порядке
+            });
         })
         .then(data => {
             // Успешное удаление
             showAlert(data.message || 'Модуль успешно удален', 'success');
 
-            // Опционально: обновляем страницу или удаляем элемент из DOM
-            location.reload(); // Перезагрузка страницы
-            // Или: document.getElementById(`module-${id}`).remove();
+            // Обновляем таблицу модулей без перезагрузки страницы
+            if (typeof loadModules === 'function') {
+                void loadModules(window.currentModulesPage || 1);
+            }
         })
         .catch(error => {
             // Обработка ошибок

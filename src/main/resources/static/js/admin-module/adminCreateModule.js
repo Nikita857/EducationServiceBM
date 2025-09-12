@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     const courseSelectAdminCreateModule = document.getElementById('moduleCourseId');
-    loadCoursesIntoSelect(courseSelectAdminCreateModule, null)
+    void loadCoursesIntoSelect(courseSelectAdminCreateModule, null)
 
     // Load courses when the tab is shown
     const createModuleTab = document.querySelector('a[data-tab="create-module-tab"]');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Also load courses if the tab is already active on page load
     if (document.getElementById('create-module-tab')?.classList.contains('active')) {
-        loadCourses();
+        void loadCourses();
     }
 
 
@@ -52,13 +52,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(formData)
                 });
 
-                if (response.ok) {
-                    showAlert('Модуль успешно создан!', 'success');
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    showAlert(result.message || 'Модуль успешно создан!', 'success');
                     form.reset();
+                    // Optionally, switch back to the modules list tab
+                    const modulesTab = document.querySelector('a[data-tab="modules-edit-tab"]');
+                    if (modulesTab) {
+                        modulesTab.click();
+                    }
                 } else {
-                    const errorData = await response.json();
-                    showAlert(errorData.message || "Ошибка при создании модуля", 'error');
-                    console.error('Server error:', errorData.errors);
+                    if (result.errors) {
+                        const errorMessages = Object.values(result.errors).join('\n');
+                        showAlert('Ошибка валидации:\n' + errorMessages, 'error');
+                    } else {
+                        showAlert(result.message || "Ошибка при создании модуля", 'error');
+                    }
+                    console.error('Server error:', result.message || result.errors);
                 }
 
             } catch (error) {

@@ -4,12 +4,12 @@ async function loadModuleLessons(moduleId) {
 
         // Case 1: Success (200 OK)
         if (response.ok) {
-            const data = await response.json();
-            if (data.status === 'success' && data.moduleLessons) {
-                showLessonsModal(data.moduleLessons);
+            const result = await response.json();
+            if (result.status === 'success' && result.data && result.data.moduleLessons) {
+                showLessonsModal(result.data.moduleLessons);
             } else {
                 // Handle cases where status is 200 but body is unexpected
-                showAlert('Получен неожиданный ответ от сервера.', 'warning');
+                showAlert(result.message || 'Получен неожиданный ответ от сервера.', 'warning');
             }
             return;
         }

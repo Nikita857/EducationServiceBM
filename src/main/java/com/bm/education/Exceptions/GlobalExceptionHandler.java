@@ -36,12 +36,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        ErrorResponse error = new ErrorResponse("Internal server error"+ex);
+        // Логирование исключения для отладки на сервере
+        ex.printStackTrace();
+        ErrorResponse error = new ErrorResponse("Произошла внутренняя ошибка сервера.");
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public String handleMaxSizeException(Model model) {
-        model.addAttribute("error", "Размер файла превышает допустимый лимит (5MB)");
-        return "admin";
+    public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        ErrorResponse error = new ErrorResponse("Размер файла превышает допустимый лимит (5MB)");
+        return new ResponseEntity<>(error, HttpStatus.PAYLOAD_TOO_LARGE); // 413 Payload Too Large
     }
 }

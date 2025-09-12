@@ -13,7 +13,7 @@ async function loadModulesForFilter() {
             return null;
         }
         const data = await response.json();
-        if (data.success && data.modules) {
+        if (data.success && data.data) {
             const select = document.getElementById('moduleFilterSelect');
             if (!select) return;
 
@@ -21,7 +21,7 @@ async function loadModulesForFilter() {
             const currentFilter = select.value;
 
             select.innerHTML = '<option value="">Все модули</option>'; // Reset and add default option
-            data.modules.forEach(module => {
+            data.data.forEach(module => {
                 const option = document.createElement('option');
                 option.value = module.moduleId;
                 option.textContent = `${module["moduleTitle"]}`;
@@ -57,19 +57,19 @@ async function loadLessons(page = 1) {
         const response = await fetch(url);
 
         if (response.ok) {
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.success && data["lessons"]) {
-                currentLessonsPage = data["currentPage"] || page;
-                totalLessonsPages = data["totalPages"] || 1;
-                totalLessonsItems = data["totalItems"] || data["lessons"].length;
+            if (result.success && result.data) {
+                const paginatedData = result.data;
+                currentLessonsPage = paginatedData.currentPage || page;
+                totalLessonsPages = paginatedData.totalPages || 1;
+                totalLessonsItems = paginatedData.totalItems || 0;
 
-                renderLessonsTable(data["lessons"]);
-                renderLessonsPagination(data["lessons"]);
+                renderLessonsTable(paginatedData.content);
+                renderLessonsPagination(paginatedData.content);
             } else {
-                 console.error(new Error("Неверный формат данных"));
-                 showAlert('Неверный формат данных', 'error')
-                return null;
+                 console.error(new Error(result.message || "Неверный формат данных"));
+                 showAlert(result.message || 'Неверный формат данных', 'error');
             }
         } else {
             // Handle cases like 404 when no lessons are found for a filter
@@ -312,12 +312,13 @@ async function deleteLesson(lessonId, lessonTitle) {
 
         const result = await response.json().catch(() => ({})); // Handle empty response
 
-        if (response.ok) {
-            showAlert(result.message || `Урок ${lessonTitle} успешно удален`, 'success');
+        if (response.ok && result.success) {
+            showAlert(`Урок "${lessonTitle}" успешно удален.`, 'success');
             void loadLessons(currentLessonsPage || 1);
         } else {
-            console.error(new Error(result.message || `Ошибка сервера: ${response.status}`));
-            return null;
+            const errorMessage = result.message || `Ошибка удаления: ${response.status}`;
+            showAlert(errorMessage, 'error');
+            console.error(new Error(errorMessage));
         }
 
     } catch (error) {

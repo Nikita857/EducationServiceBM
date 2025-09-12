@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const editButton = event.target.closest('.edit-module-btn');
         if (editButton) {
             const moduleId = editButton.dataset.moduleId;
-            openEditModuleModal(moduleId);
+            void openEditModuleModal(moduleId);
         }
     });
 
@@ -23,25 +23,30 @@ async function openEditModuleModal(moduleId) {
     try {
         // 1. Получаем данные модуля
         const response = await fetch(`/admin/module/${moduleId}`);
-        const data = await response.json();
-        const module = data.module;
+        const result = await response.json();
 
+        if (response.ok && result.success && result.data) {
+            const module = result.data;
 
-        // 2. Заполняем поля формы
-        document.getElementById('editModuleId').value = module.moduleId;
-        document.getElementById('editModuleTitle').value = module.moduleTitle;
-        document.getElementById('editModuleSlug').value = module.moduleSlug;
+            // 2. Заполняем поля формы
+            document.getElementById('editModuleId').value = module.moduleId;
+            document.getElementById('editModuleTitle').value = module["moduleTitle"];
+            document.getElementById('editModuleSlug').value = module["moduleSlug"];
 
-        // 3. Загружаем и устанавливаем курс
-        const courseSelect = document.getElementById('editModuleCourseId');
-        await loadCoursesIntoSelect(courseSelect, module.courseName);
+            // 3. Загружаем и устанавливаем курс
+            const courseSelect = document.getElementById('editModuleCourseId');
+            await loadCoursesIntoSelect(courseSelect, module["courseName"]);
 
-        // 4. Показываем модальное окно
-        const modal = new bootstrap.Modal(document.getElementById('editModuleModal'));
-        modal.show();
+            // 4. Показываем модальное окно
+            const modal = new bootstrap.Modal(document.getElementById('editModuleModal'));
+            modal.show();
+        } else {
+            showAlert(result.message || 'Не удалось получить данные модуля.', 'error');
+        }
 
     } catch (error) {
         console.error('Ошибка при открытии модального окна:', error);
+        showAlert('Критическая ошибка при загрузке данных модуля.', 'error');
     }
 }
 
@@ -69,19 +74,21 @@ async function submitEditModuleForm() {
 
         const result = await response.json();
 
-        if (response.ok && result.success) {
-            showAlert('Модуль успешно обновлен!', 'success');
+        if (response.ok && result.status === 'success') {
+            showAlert(result.message || 'Модуль успешно обновлен!', 'success');
             modal.hide();
             // Обновляем таблицу модулей
             if (typeof loadModules === 'function') {
-                loadModules(currentModulesPage || 1);
+                void loadModules(window.currentModulesPage || 1);
             }
         } else {
+            // Обработка ошибок валидации или других сообщений об ошибках
             if (result.errors) {
                 const errorMessages = Object.values(result.errors).join('\n');
                 showAlert('Ошибка валидации:\n' + errorMessages, 'error');
             } else {
-                throw new Error(result.message || 'Не удалось обновить модуль.');
+                showAlert(result.message || 'Не удалось обновить модуль.', 'error');
+                console.error(new Error(result.message || 'Не удалось обновить модуль.'));
             }
         }
     } catch (error) {
@@ -95,10 +102,10 @@ async function loadCoursesIntoSelect(selectElement, selectedCourseTitle) {
     try {
         const response = await fetch('/admin/courses/all');
         if (!response.ok) {
-            throw new Error('Не удалось загрузить список курсов.');
+            console.error(new Error('Не удалось загрузить список курсов.'));
         }
         const data = await response.json();
-        const courses = data.courses;
+        const courses = data.data; // Corrected: data is in data.data
 
         selectElement.innerHTML = '<option value="">Выберите курс</option>';
         courses.forEach(course => {

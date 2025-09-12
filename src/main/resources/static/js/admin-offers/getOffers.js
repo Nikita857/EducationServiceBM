@@ -169,10 +169,18 @@ function renderOffersTable(offers) {
  * Renders the pagination controls for the offers table.
  */
 function renderOfferPagePagination() {
-    const offerPaginationContainer = document.querySelector('.pagination-container-edit-offers');
+    let offerPaginationContainer = document.querySelector('.pagination-container-edit-offers');
     if (!offerPaginationContainer) {
-        console.error('Контейнер для пагинации не найден');
-        return;
+        const mainContainer = document.querySelector('#requests-tab .card-body');
+        if (mainContainer) {
+            const paginationDiv = document.createElement('div');
+            paginationDiv.className = 'pagination-container-edit-offers mt-3';
+            mainContainer.appendChild(paginationDiv);
+            offerPaginationContainer = paginationDiv;
+        } else {
+            console.error('Основной контейнер для таблицы заявок не найден, пагинация не будет отображена.');
+            return;
+        }
     }
 
     if (totalOfferPages <= 1) {
