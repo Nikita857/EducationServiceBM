@@ -1,6 +1,5 @@
 package com.bm.education.security;
 
-import com.bm.education.models.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         // Можно добавить дополнительную логику
         if (response.isCommitted()) {
-            log.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+            log.debug("Response has already been committed. Unable to redirect to {}", targetUrl);
             return;
         }
 

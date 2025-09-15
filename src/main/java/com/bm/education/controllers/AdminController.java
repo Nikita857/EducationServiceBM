@@ -1,5 +1,6 @@
 package com.bm.education.controllers;
 
+import com.bm.education.api.ApiResponse;
 import com.bm.education.dto.OfferDto;
 import com.bm.education.dto.OfferResponseDto;
 import com.bm.education.models.*;
@@ -19,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.springframework.security.authorization.AuthorityReactiveAuthorizationManager.hasRole;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final UserService userService;
@@ -55,12 +56,11 @@ public class AdminController {
     }
 
     @GetMapping("admin/offers/{offerId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId, Authentication auth) {
+    public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId) {
         try {
             OfferDto offerDto = offerService.getOfferById(offerId);
-            log.debug(ResponseEntity.ok(offerDto).toString());
-            return ResponseEntity.ok(offerDto);
+            return ResponseEntity.ok(
+                    ApiResponse.success(offerDto).data());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -70,7 +70,6 @@ public class AdminController {
 
     // Обновление ответа и статуса
     @PostMapping("admin/updateOffer")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateOffer(
             @Valid @RequestBody OfferResponseDto updateDto,
             BindingResult bindingResult) {
@@ -84,7 +83,7 @@ public class AdminController {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
                             FieldError::getField,
-                            fieldError -> fieldError.getDefaultMessage()
+                            fieldError -> Objects.requireNonNull(fieldError.getDefaultMessage()).isEmpty()?fieldError.getDefaultMessage() : ""
                     ));
 
             response.put("success", false);
@@ -123,13 +122,11 @@ public class AdminController {
     }
 
     @GetMapping("/admin/modules/create")
-    @PreAuthorize("hasRole('ADMIN')")
     public String addModule() {
         return "admin/addModule";
     }
 
     @GetMapping("/admin/video/{name}")
-    @PreAuthorize("hasRole('ADMIN')")
     public String watchVideoUrl (@PathVariable String name, Model model) {
         Lesson lesson = lessonService.getLessonByVideoName(name);
         if (lesson == null) {

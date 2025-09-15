@@ -28,7 +28,7 @@ async function openCourseModulesModal(courseId) {
 
         courseModules = data.data || []; // Теперь data.data - это сам массив модулей
         // Проверяем, что courseModules не пустой, прежде чем обращаться к первому элементу
-        currentCourse = { id: courseId, name: courseModules.length > 0 ? courseModules[0].courseName : "Неизвестный курс" };
+        currentCourse = { id: courseId, name: courseModules.length > 0 ? courseModules[0]["courseName"] : "Неизвестный курс" };
 
         // Рендерим модальное окно
         renderCourseModulesModal();
@@ -84,8 +84,8 @@ function renderModulesList() {
         <div class="module-item" data-module-id="${module.moduleId}">
             <div class="module-header d-flex justify-content-between align-items-center">
                 <div class="module-info">
-                    <h6 class="module-title mb-1">${module.order || index + 1}. ${escapeHtml(module.moduleTitle || 'Без названия')}</h6>
-                    <small class="text-muted">ID: ${module.moduleId} • ${module.lessonsCount || 0} уроков</small>
+                    <h6 class="module-title mb-1">${module.order || index + 1}. ${escapeHtml(module["moduleTitle"] || 'Без названия')}</h6>
+                    <small class="text-muted">ID: ${module.moduleId} • ${module["lessonsCount"] || 0} уроков</small>
                 </div>
                 <div class="module-actions">
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editModule(${module.id})">
@@ -179,7 +179,7 @@ function manageCourse(courseId) {
 
 // Обновляем функцию в основном скрипте для вызова модального окна
 function showCourseModules(courseId, courseName) {
-    openCourseModulesModal(courseId, courseName);
+    void openCourseModulesModal(courseId, courseName);
 }
 
 // Инициализация при загрузке страницы

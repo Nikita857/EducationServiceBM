@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Страница не найдена | BM Education</title>
     <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -98,7 +98,6 @@
             padding: 1rem 2rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            margin: 0 0.5rem 1rem;
         }
 
         .btn-primary:hover {
@@ -114,7 +113,6 @@
             padding: 1rem 2rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            margin: 0 0.5rem 1rem;
         }
 
         .btn-outline:hover {
@@ -211,12 +209,11 @@
 
             .btn-primary, .btn-outline {
                 padding: 0.875rem 1.5rem;
-                margin: 0.25rem;
-                width: 100%;
             }
 
             .button-group {
                 flex-direction: column;
+                gap: 0.5rem;
             }
         }
 
@@ -296,12 +293,9 @@
             Возможно, она была удалена или вы ввели неправильный адрес.
         </p>
 
-        <div class="d-flex flex-wrap justify-content-center button-group">
-            <a href="${springMacroRequestContext.contextPath}/" class="btn btn-primary">
+        <div class="d-flex flex-wrap justify-content-center gap-3 button-group">
+            <a href="${springMacroRequestContext.contextPath}/" class="btn btn-primary me-2">
                 <i class="bi bi-house me-2"></i>На главную
-            </a>
-            <a href="mailto:support@bmeducation.ru" class="btn btn-outline">
-                <i class="bi bi-envelope me-2"></i>Написать в поддержку
             </a>
             <button onclick="history.back()" class="btn btn-outline">
                 <i class="bi bi-arrow-left me-2"></i>Вернуться назад
@@ -309,12 +303,10 @@
         </div>
 
         <div class="search-suggestion">
-            <h6>Возможно, вы искали:</h6>
+            <h4>Возможно, вы искали:</h4>
             <ul class="suggestion-list">
-                <li><a href="${springMacroRequestContext.contextPath}/courses">Каталог курсов</a></li>
+                <li><a href="${springMacroRequestContext.contextPath}/">Каталог курсов</a></li>
                 <li><a href="${springMacroRequestContext.contextPath}/about">О платформе</a></li>
-                <li><a href="${springMacroRequestContext.contextPath}/help">Помощь и поддержка</a></li>
-                <li><a href="${springMacroRequestContext.contextPath}/contact">Контакты</a></li>
             </ul>
         </div>
     </div>

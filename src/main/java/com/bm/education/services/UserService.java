@@ -207,18 +207,24 @@ public class UserService {
         try {
             User user = userRepository.findById(userUpdateRequestDTO.getUserId()).orElse(null);
 
-            user.setDepartment(userUpdateRequestDTO.getDepartment());
+            Objects.requireNonNull(user).setDepartment(userUpdateRequestDTO.getDepartment());
             user.setJobTitle(userUpdateRequestDTO.getJobTitle());
             user.setQualification(userUpdateRequestDTO.getQualification());
 
-
-            if (userUpdateRequestDTO.getRole() != null) {
-                if (user.getRoles().toArray()[0].toString() == Role.ROLE_USER.toString()) {
-                    user.setRoles(Set.of(Role.ROLE_USER));
-                } else {
-                    user.setRoles(Set.of(Role.ROLE_ADMIN));
+            try {
+                Role newRole = null;
+                if (userUpdateRequestDTO.getRole().isEmpty()) {
+                    newRole = user.getRoles().stream().findFirst().get();
+                }else {
+                    Role.valueOf(userUpdateRequestDTO.getRole());
                 }
+                user.setRoles(Set.of(Objects.requireNonNull(newRole)));
+                log.info("User {} role updated to: {}", user.getUsername(), newRole);
+            } catch (IllegalArgumentException e) {
+                log.warn("Attempted to set an invalid role: {}. Error: {}", userUpdateRequestDTO.getRole(), e.getMessage());
+                throw new ApiException("Неверно указана роль: " + userUpdateRequestDTO.getRole(), HttpStatus.BAD_REQUEST);
             }
+
             return true;
         } catch (Exception e) {
             log.error(e.getMessage());
