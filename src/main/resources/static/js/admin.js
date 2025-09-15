@@ -14,7 +14,7 @@ async function getOfferDescription(offerId) {
 
         const offerData = await response.json();
 
-        console.log(offerData)
+        
         populateModal(offerData);
 
     } catch (error) {

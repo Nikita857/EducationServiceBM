@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -66,6 +67,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
         ErrorResponse error = new ErrorResponse("Размер файла превышает допустимый лимит (5MB)");
         return new ResponseEntity<>(error, HttpStatus.PAYLOAD_TOO_LARGE); // 413 Payload Too Large
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDeniedException(AccessDeniedException ex, Model model) {
+        model.addAttribute("status", HttpStatus.FORBIDDEN.value());
+        model.addAttribute("error", "Доступ запрещен");
+        model.addAttribute("message", "У вас нет прав для доступа к этой странице.");
+        return "error/403";
     }
 }
 

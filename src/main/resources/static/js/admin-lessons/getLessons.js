@@ -9,7 +9,6 @@ async function loadModulesForFilter() {
     try {
         const response = await fetch('/admin/modules/json');
         if (!response.ok) {
-            console.error(new Error('Failed to load modules for filter'));
             return null;
         }
         const data = await response.json();
@@ -34,11 +33,9 @@ async function loadModulesForFilter() {
             }
 
         } else {
-            console.error(new Error('Invalid data format for modules'), 'error');
             return null;
         }
     } catch (error) {
-        console.error('Error loading modules for filter:', error);
         showAlert('Не удалось загрузить фильтр модулей.', 'warning');
     }
 }
@@ -68,7 +65,6 @@ async function loadLessons(page = 1) {
                 renderLessonsTable(paginatedData.content);
                 renderLessonsPagination(paginatedData.content);
             } else {
-                 console.error(new Error(result.message || "Неверный формат данных"));
                  showAlert(result.message || 'Неверный формат данных', 'error');
             }
         } else {
@@ -77,12 +73,10 @@ async function loadLessons(page = 1) {
                 renderLessonsTable([]);
                 renderLessonsPagination([]);
             } else {
-                console.error(new Error(`Ошибка сервера: ${response.status}`), 'error');
                 return null;
             }
         }
     } catch (error) {
-        console.error('Ошибка загрузки уроков:', error);
         showAlert(error.message, 'error');
     } finally {
         showLoading(false);
@@ -93,7 +87,6 @@ async function loadLessons(page = 1) {
 function renderLessonsTable(lessons) {
     const container = document.getElementById('lessonsContainer');
     if (!container) {
-        console.error('Контейнер уроков не найден');
         return;
     }
 
@@ -190,7 +183,6 @@ function renderLessonsTable(lessons) {
 function renderLessonsPagination(lessons) {
     const container = document.getElementById('lessonsPagination');
     if (!container) {
-        console.warn('Контейнер пагинации не найден');
         return;
     }
 
@@ -296,14 +288,9 @@ async function deleteLesson(lessonId, lessonTitle) {
     }
 
     try {
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
         const headers = {
             'Content-Type': 'application/json'
         };
-        if (csrfToken && csrfHeader) {
-            headers[csrfHeader] = csrfToken;
-        }
 
         const response = await fetch(`/admin/lessons/${lessonId}/delete`, {
             method: 'DELETE',
@@ -318,11 +305,9 @@ async function deleteLesson(lessonId, lessonTitle) {
         } else {
             const errorMessage = result.message || `Ошибка удаления: ${response.status}`;
             showAlert(errorMessage, 'error');
-            console.error(new Error(errorMessage));
         }
 
     } catch (error) {
-        console.error('Ошибка удаления урока:', error);
         showAlert(error.message, 'error');
     }
 }

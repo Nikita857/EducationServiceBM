@@ -17,13 +17,10 @@ async function submitOfferForm(event) {
         const response = await fetch('/api/offer', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(offerData)
         });
-
-        console.log(JSON.stringify(offerData));
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -32,7 +29,6 @@ async function submitOfferForm(event) {
         }
 
         const result = await response.json();
-        console.log('Оффер создан:', result);
         showAlert("Предложение отправлено!", 'success');
     } catch (error) {
         showAlert("Не удалосб отправить заявку", 'error');

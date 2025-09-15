@@ -1,83 +1,92 @@
 package com.bm.education.controllers;
 
-import com.bm.education.Exceptions.ApiException;
+import com.bm.education.dto.auth.AuthRequest;
+import com.bm.education.dto.auth.AuthResponse;
+import com.bm.education.models.Role;
 import com.bm.education.models.User;
+import com.bm.education.security.jwt.JwtService;
 import com.bm.education.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @Controller
-@Slf4j
+@RequestMapping
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
-    private final UserDetailsService userDetailsService;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+
+    @PostMapping("/api/auth/register")
+    @ResponseBody // Поскольку контроллер должен возвращать и представления и JSON,
+    // то для методов возвращающих JSON используем эту аннотацию
+    public ResponseEntity<AuthResponse> register(@RequestBody User user) {
+        userService.createUser(user);
+        UserDetails userDetails = userService.getUserByUsername(user.getUsername()); // Получаем UserDetails для генерации токена
+        String jwtToken = jwtService.generateToken(userDetails);
+        return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).build());
+    }
+
+    @PostMapping("/api/auth/login")
+    @ResponseBody
+    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request, HttpServletResponse response) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String jwtToken = jwtService.generateToken(userDetails);
+
+        Cookie cookie = new Cookie("jwt", jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        if(userDetails.getAuthorities().stream()
+                .anyMatch(
+                        grantedAuthority ->
+                                grantedAuthority.getAuthority().equals(Role.ROLE_ADMIN.toString()
+                                )
+                )
+        ) {
+            return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).redirect("/admin").build());
+        }
+        return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).redirect("/").build());
+    }
 
     @GetMapping("/login")
-    public String login(Model model, HttpSession session) {
-
-        if (session.getAttribute("error") != null) {
-            model.addAttribute("error", session.getAttribute("error"));
-            session.removeAttribute("error");
-        }
+    public String login() {
         return "login";
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm() {
+    public String register() {
         return "register";
     }
 
-        @PostMapping("/register")
-    public String createUser(@Valid User user, BindingResult bindingResult, Model model, HttpServletRequest request) {
-
-        if (bindingResult.hasErrors()) {
-            bindingResult.getAllErrors().forEach(objectError ->{
-                    log.info("Поле "+objectError.getObjectName()+" Ошибка: "+objectError.getDefaultMessage());
-                    });
-            model.addAttribute("user", user);
-            model.addAttribute("errorRegistration", bindingResult.getAllErrors());
-            return "register";
-        }
-
-        try {
-            userService.createUser(user);
-
-            // Manually create the Authentication object
-            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-            
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                userDetails, 
-                null, // Credentials can be null as we are already authenticated
-                userDetails.getAuthorities()
-            );
-
-            // Set the authentication in the SecurityContext
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            // Manually update the session
-            request.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
-
-            return "redirect:/";
-
-        } catch (ApiException e) {
-            model.addAttribute("user", user);
-            model.addAttribute("error", e.getMessage());
-            return "register";
-        }
+    @PostMapping("/logout/cookie")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", null);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return ResponseEntity.ok().build();
     }
 }

@@ -22,8 +22,7 @@ async function submitPasswordChange() {
         const response = await fetch('/api/user/change-password', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken() // Если используете CSRF
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
         });
@@ -86,22 +85,7 @@ function isPasswordStrong(password) {
     return strongRegex.test(password);
 }
 
-/**
- * Получение CSRF токена (если используется Spring Security)
- */
-function getCsrfToken() {
-    const metaTag = document.querySelector('meta[name="_csrf"]');
-    if (metaTag) {
-        return metaTag.getAttribute('content');
-    }
 
-    const input = document.querySelector('input[name="_csrf"]');
-    if (input) {
-        return input.value;
-    }
-
-    return '';
-}
 
 
 

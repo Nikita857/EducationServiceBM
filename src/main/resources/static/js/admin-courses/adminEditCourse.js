@@ -9,7 +9,6 @@ function openAddCourseForm() {
     if (tabLink) {
         tabLink.click();
     } else {
-        console.error('Add Course tab link not found!');
         showAlert('Не удалось найти вкладку для добавления курса', 'error');
     }
 }
@@ -24,13 +23,11 @@ async function loadCourses(page = 1) {
     try {
         const response = await fetch(`/admin/courses?page=${page}&size=${coursesPerPage}`);
         if (!response.ok) {
-            console.error(new Error(`Ошибка сервера: ${response.status}`));
             return null;
         }
         
         const data = await response.json();
         if (!data.success || !data.data || !data.data.content) {
-            console.error(new Error("Неверный формат данных от AdminCoursesController"));
             return null;
         }
 
@@ -42,7 +39,6 @@ async function loadCourses(page = 1) {
         renderPagination();
 
     } catch (e) {
-        console.error('Ошибка загрузки курсов:', e);
         showAlert(`Ошибка загрузки курсов ${e}`, 'error')
     }
 }
@@ -53,12 +49,7 @@ async function deleteCourse(courseId, courseTitle) {
     }
 
     try {
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
         const headers = { 'Content-Type': 'application/json' };
-        if (csrfToken && csrfHeader) {
-            headers[csrfHeader] = csrfToken;
-        }
 
         const response = await fetch(`/admin/courses/${courseId}/delete`, {
             method: 'DELETE',
@@ -74,12 +65,10 @@ async function deleteCourse(courseId, courseTitle) {
             }, 1500)
 
         } else {
-            console.error(new Error(result.message || `Ошибка сервера: ${response.status}`));
             return null;
         }
 
     } catch (error) {
-        console.error(`Ошибка удаления: ${error.message}`);
         showAlert(`Ошибка удаления: ${error.message}`, 'error');
     }
 }
@@ -88,7 +77,6 @@ async function deleteCourse(courseId, courseTitle) {
 function renderCoursesTable(courses) {
     const tableContainer = document.querySelector('#courses-edit-tab .card-body');
     if (!tableContainer) {
-        console.error('Контейнер для таблицы курсов не найден');
         return;
     }
 
@@ -221,14 +209,9 @@ async function updateCourseStatus(courseId, currentStatusText, newStatus, newSta
         return;
     }
 
-    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
     const headers = {
         'Content-Type': 'application/json'
     };
-    if (csrfToken && csrfHeader) {
-        headers[csrfHeader] = csrfToken;
-    }
 
     try {
         const response = await fetch(`/admin/courses/update/status`, {
@@ -247,7 +230,6 @@ async function updateCourseStatus(courseId, currentStatusText, newStatus, newSta
             throw new Error(errorMessage);
         }
     } catch (error) {
-        console.error('Ошибка при смене статуса курса:', error);
         showAlert(error.message, 'error');
     }
 }
@@ -455,7 +437,6 @@ function renderEditCourseModal() {
 async function openEditCourseModal(courseId) {
     const modalElement = document.getElementById('editCourseModal');
     if (!modalElement) {
-        console.error('Edit course modal element not found!');
         return;
     }
 
@@ -490,12 +471,7 @@ async function handleCourseUpdate(event) {
     const courseId = formData.get('id');
     const courseTitle = formData.get('title');
 
-    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
     const headers = {};
-    if (csrfToken && csrfHeader) {
-        headers[csrfHeader] = csrfToken;
-    }
 
     try {
         // NOTE: The backend endpoint /admin/courses/update is assumed to exist.
@@ -516,11 +492,9 @@ async function handleCourseUpdate(event) {
         } else {
             // Prefer a server-sent message, otherwise use a generic one.
             const errorMessage = result.error || `Ошибка сервера: ${response.status}`;
-            console.error(new Error(errorMessage));
             return null;
         }
     } catch (error) {
-        console.error('Ошибка обновления курса:', error);
         showAlert(`Ошибка обновления: ${error.message}`, 'error');
     }
 }

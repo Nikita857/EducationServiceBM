@@ -13,13 +13,12 @@ async function loadModules() {
         const response = await fetch('/admin/modules/json');
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.modules) {
-                modulesList = data.modules;
+            if (data.success && data.data) {
+                modulesList = data.data;
                 populateModulesSelect();
             }
         }
     } catch (error) {
-        console.error('Ошибка загрузки модулей:', error);
         showAlert('Не удалось загрузить список модулей', 'error');
     }
 }
@@ -30,15 +29,14 @@ function populateModulesSelect() {
     select.innerHTML = '<option value="">Выберите модуль</option>';
 
     modulesList.forEach(module => {
-        if(module.moduleStatus === "ACTIVE") {
-            const option = document.createElement('option');
-            option.value = module.moduleId;
-            option.textContent = `(Курс: ${module.courseName}) Модуль: ${module.moduleTitle}`;
-            select.appendChild(option);
-        }
         const option = document.createElement('option');
         option.value = module.moduleId;
-        option.textContent = `НЕАКТИВЕН (Курс: ${module.courseName}) Модуль: ${module.moduleTitle}`;
+        if(module.moduleStatus === "ACTIVE") {
+            option.textContent = `(Курс: ${module.courseName}) Модуль: ${module.moduleTitle}`;
+        } else {
+            option.textContent = `НЕАКТИВЕН (Курс: ${module.courseName}) Модуль: ${module.moduleTitle}`;
+            option.disabled = true;
+        }
         select.appendChild(option);
     });
 }
@@ -85,10 +83,7 @@ async function handleLessonSubmit() {
 
         const response = await fetch('/admin/lesson/upload', {
             method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': getCsrfToken()
-            }
+            body: formData
         });
 
         const result = await response.json();
@@ -100,7 +95,6 @@ async function handleLessonSubmit() {
         }
 
     } catch (error) {
-        console.error('Ошибка создания урока:', error);
         showAlert('Произошла ошибка при создании урока', 'error');
     } finally {
         showLoading(false);
@@ -135,9 +129,6 @@ function handleSuccessResponse(result) {
     modal.hide();
 
     void loadLessons()
-
-    // Можно показать дополнительную информацию
-    console.log('Создан урок:', result);
 }
 
 // Обработка ошибки
@@ -195,14 +186,6 @@ function openCreateLessonModal() {
     const modal = new bootstrap.Modal(document.getElementById('createLessonModal'));
     modal.show();
 }
-
-// Получение CSRF токена
-function getCsrfToken() {
-    return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
-}
-
-// Показать уведомление
-
 
 // Инициализация при загрузке документа
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,5 +1,4 @@
 function showAlert(message, status = 'info', duration = 3000) {
-    console.log('showAlert called:', message, status);
     const container = document.getElementById('custom-alert-container');
     if (!container) {
         console.error('custom-alert-container not found');
@@ -38,11 +37,9 @@ function showAlert(message, status = 'info', duration = 3000) {
     });
 
     const closeAlert = () => {
-        console.log('closeAlert called');
         alertDiv.classList.remove('show');
         setTimeout(() => {
             if (alertDiv.parentNode) {
-                console.log('Removing alert from DOM');
                 alertDiv.remove();
             }
         }, 400); // Should match the transform transition duration
@@ -51,7 +48,6 @@ function showAlert(message, status = 'info', duration = 3000) {
     alertDiv.querySelector('.btn-close').addEventListener('click', closeAlert);
 
     if (duration !== null) {
-        console.log(`Setting timeout to close alert in ${duration}ms`);
         setTimeout(closeAlert, duration);
     }
 }

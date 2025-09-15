@@ -24,7 +24,7 @@
                 </div>
             </#if>
 
-            <form action="/register" method="POST" id="registrationForm">
+            <form id="registrationForm">
                 <div class="input-group">
                     <span for="firstName" class="input-group-text bg-transparent">
                         <i class="bi bi-person mx-1"></i>Имя
@@ -96,8 +96,6 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="_csrf" value="${_csrf.token}">
-
                 <button type="submit" class="btn btn-primary" id="submitButton">
                     <i class="bi bi-person-plus me-2"></i>Создать аккаунт
                 </button>
@@ -123,6 +121,7 @@
 </div>
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/registerValidation.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/auth/registerController.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 </body>
 </html>

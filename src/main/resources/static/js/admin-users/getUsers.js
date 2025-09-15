@@ -1,4 +1,3 @@
-
 let currentPageUsers = 1;
 let totalPagesUsers = 1;
 let totalItemsUsers = 0;
@@ -13,12 +12,12 @@ async function loadUsers(page = 1, size = usersPerPage, role = roleFilter) {
 
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.users) {
-                currentPageUsers = data.currentPage || page;
-                totalPagesUsers = data.totalPages || 1;
-                totalItemsUsers = data.totalItems || data.users.length;
+            if (data.success && data.data) {
+                currentPageUsers = data.data.currentPage || page;
+                totalPagesUsers = data.data.totalPages || 1;
+                totalItemsUsers = data.data.totalItems || data.data.content.length;
 
-                renderUsersTable(data.users);
+                renderUsersTable(data.data.content);
             } else {
                 throw new Error("Неверный формат данных от сервера");
             }
@@ -41,21 +40,13 @@ function filterByUserRole(role) {
     loadUsers(1, usersPerPage, roleFilter);
 }
 
-
-function getCsrfToken() {
-    return document.querySelector('meta[name="_csrf"]')?.content ||
-        document.querySelector('input[name="_csrf"]')?.value;
-}
-
-
 async function deleteUsersRequest(userId) {
     try {
         const body = JSON.stringify({ userId: userId });
         const deleteRequest = await fetch(`/admin/users/delete`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
+                'Content-Type': 'application/json'
             },
             body: body
         });
@@ -390,8 +381,7 @@ async function confirmEnrollment() {
         const response = await fetch('/admin/user/enroll', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestData)
         });
@@ -435,12 +425,12 @@ async function refreshUserCoursesList(userId, userName) {
         const response = await fetch(`/admin/user/${userId}/courses`);
         const data = await response.json();
 
-        if (data.success && data.courses) {
+        if (data.success && data.data) {
             userCoursesList.innerHTML = '';
-            if (data.courses.length === 0) {
+            if (data.data.length === 0) {
                 userCoursesList.innerHTML = '<li class="list-group-item">Пользователь не записан ни на один курс.</li>';
             } else {
-                data.courses.forEach(course => {
+                data.data.forEach(course => {
                     const listItem = document.createElement('li');
                     listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
 
@@ -481,8 +471,7 @@ async function unenrollRequest(userId, courseId, userName) {
         const response = await fetch('/admin/user/unenroll', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestData)
         });

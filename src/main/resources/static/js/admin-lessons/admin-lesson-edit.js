@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!response.ok || !result.success) {
                     const errorMsg = result.message || 'Не удалось загрузить данные урока.';
-                    console.error(new Error(errorMsg));
                     showAlert(errorMsg, 'error');
                     return;
                 }
@@ -51,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 editLessonModal.show();
 
             } catch (error) {
-                console.error('Ошибка при загрузке урока:', error);
                 showAlert(error.message, 'error');
             }
         }
@@ -65,8 +63,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const title = document.getElementById('editLessonTitle').value;
         const videoUrl = document.getElementById('editLessonVideoUrl').value;
         const textContent = tinymce.get('editLessonTextContent').getContent();
-        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
         const lessonDto = {
             title,
@@ -78,8 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetch(`/api/admin/lessons/${lessonId}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(lessonDto)
             });
@@ -100,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
         } catch (error) {
-            console.error('Ошибка при сохранении урока:', error);
             showAlert(error.message, 'error');
         }
     });

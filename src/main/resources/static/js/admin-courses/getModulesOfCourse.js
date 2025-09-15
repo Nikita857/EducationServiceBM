@@ -5,8 +5,6 @@ let courseModules = [];
 // Функция открытия модального окна с модулями курса
 async function openCourseModulesModal(courseId) {
     try {
-        console.log(`Загрузка модулей для курса: ${courseId}`);
-
         // Загружаем модули курса
         const response = await fetch(`/admin/courses/${courseId}/modules`);
         if (!response.ok) {
@@ -36,7 +34,6 @@ async function openCourseModulesModal(courseId) {
         // Показываем модальное окно
         const modalElement = document.getElementById('courseModulesModal');
         if (!modalElement) {
-            console.log(new Error('Модальное окно модулей не найдено'));
             return null;
         }
 
@@ -45,7 +42,6 @@ async function openCourseModulesModal(courseId) {
         modal.show();
 
     } catch (error) {
-        console.error('Ошибка открытия модального окна модулей:', error);
     }
 }
 
@@ -162,17 +158,14 @@ function formatDate(dateString) {
 
 // Функции действий (заглушки)
 function addNewModule() {
-    console.log('Добавление нового модуля для курса:', currentCourse?.id);
     alert(`Добавление модуля для курса: ${currentCourse?.name}`);
 }
 
 function editModule(moduleId) {
-    console.log('Редактирование модуля:', moduleId);
     showAlert(`Редактирование модуля: ${moduleId}`, 'info');
 }
 
 function manageCourse(courseId) {
-    console.log('Управление курсом:', courseId);
     // Переход на страницу управления курсом
     window.location.href = `/admin/courses/${courseId}/edit`;
 }

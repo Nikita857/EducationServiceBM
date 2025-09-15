@@ -11,7 +11,7 @@ async function openEditUserModal(userId) {
         const userData = await userResponse.json();
         if (!userData.success) throw new Error(userData.message || 'Ошибка данных пользователя');
 
-        currentEditingUser = userData.user;
+        currentEditingUser = userData.data;
         console.log(currentEditingUser);
 
 
@@ -23,13 +23,14 @@ async function openEditUserModal(userId) {
         // Показываем модальное окно
         const modal = new bootstrap.Modal(modalElement);
 
-        $('#editUserName').text(`${currentEditingUser.firstName} ${currentEditingUser.lastName}`);
+        $('#editUserName').text(`${currentEditingUser["firstName"]} ${currentEditingUser["lastName"]}`);
         $('#editUserUsername').text(`${currentEditingUser.username}`);
         $('#editUserDepartment').val(`${currentEditingUser['department']}`);
         $('#editUserJobTitle').val(`${currentEditingUser['jobTitle']}`);
         $('#editUserQualification').val(`${currentEditingUser['qualification']}`);
         $('#userIdForUpdate').val(`${currentEditingUser['id']}`);
 
+        // noinspection JSUnresolvedReference
         modal.show();
 
     } catch (error) {
@@ -71,7 +72,7 @@ async function saveUserChanges() {
             modal.hide();
 
             // Обновляем таблицу пользователей
-            loadUsers();
+            void loadUsers();
 
         } else {
             // Обработка ошибок валидации
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Обновите функцию editUser в основном скрипте
 function editUser(userId) {
-    openEditUserModal(userId);
+    void openEditUserModal(userId);
 }
 
 window.editUser = editUser;

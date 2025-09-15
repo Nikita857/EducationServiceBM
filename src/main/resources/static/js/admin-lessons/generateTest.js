@@ -151,7 +151,6 @@ function copyToClipboard() {
     navigator.clipboard.writeText(window.generatedCodeForCopy).then(() => {
         showAlert('Код скопирован в буфер обмена!', 'success');
     }).catch(err => {
-        console.error('Ошибка копирования:', err);
         showAlert('Не удалось скопировать код', 'error');
     });
 }

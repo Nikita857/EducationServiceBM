@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет</title>
-    <meta name="_csrf" content="${_csrf.token}"/>
-    <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/cabinet.css">
@@ -86,7 +84,6 @@
                         <button type="submit" class="btn btn-primary btn-sm">
                             <i class="bi bi-upload"></i> Загрузить
                         </button>
-                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                     </form>
 
                     <hr>
@@ -323,10 +320,6 @@
                         <label for="confirmPassword" class="form-label">Подтвердите новый пароль</label>
                         <input type="password" class="form-control" id="confirmPassword" required>
                     </div>
-
-                    <!-- CSRF токен если нужно -->
-                    <input type="hidden" name="_csrf" value="${_csrf.token}"/>
-
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                         <button type="button" form="passwordChangeForm" class="btn btn-primary"

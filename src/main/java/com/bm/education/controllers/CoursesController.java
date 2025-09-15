@@ -38,7 +38,7 @@ public class CoursesController {
         if(coursesService.getSelectedCourseBySlug(name) != null) {
             model.addAttribute("user", userService.getUserByUsername(auth.getName()));
             model.addAttribute("selectedCourseData", coursesService.getSelectedCourseBySlug(name));
-            model.addAttribute("modules", moduleService.getModulesByCourseId(coursesService.getSelectedCourseBySlug(name).getId()));
+            model.addAttribute("modules", coursesService.getModulesOfCourse(coursesService.getSelectedCourseBySlug(name).getId()));
             model.addAttribute("totalLessons", moduleService.totalLessons(coursesService.getSelectedCourseBySlug(name).getId()));
             model.addAttribute("completedLessons", moduleService.completedLessons(
                     coursesService.getSelectedCourseBySlug(name).getId(),

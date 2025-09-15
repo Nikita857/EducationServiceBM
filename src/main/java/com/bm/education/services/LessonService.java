@@ -89,9 +89,9 @@ public class LessonService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Lesson> lessons;
         if(moduleId == 0) {
-            lessons = lessonRepository.findAll(pageable);
+            lessons = lessonRepository.findAllWithModule(pageable);
         }else{
-            lessons = lessonRepository.findByModuleId(moduleId, pageable);
+            lessons = lessonRepository.findByModuleIdWithModule(moduleId, pageable);
         }
         return lessons.map(this::convertToLessonResponseDTO);
     }

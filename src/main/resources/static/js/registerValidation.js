@@ -67,28 +67,7 @@ document.getElementById('password').addEventListener('input', function() {
     }
 });
 
-// Валидация формы
-document.getElementById('registrationForm').addEventListener('submit', function(e) {
-    const password = document.getElementById('password').value;
 
-    if (password.length < 8) {
-        e.preventDefault();
-        alert('Пароль должен содержать минимум 8 символов');
-        return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-        e.preventDefault();
-        alert('Пароль должен содержать хотя бы одну заглавную букву');
-        return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-        e.preventDefault();
-        showAlert('Пароль должен содержать хотя бы одну цифру', 'error');
-        return;
-    }
-});
 
 // Анимация элементов при загрузке
 document.addEventListener('DOMContentLoaded', function() {

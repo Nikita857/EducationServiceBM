@@ -16,7 +16,10 @@ import java.util.Optional;
 
 @Repository
 public interface ModuleRepository extends JpaRepository<Module, Integer> {
-    @Query(value = "SELECT * FROM modules WHERE course_id = :courseId AND modules.status = 'ACTIVE' ;", nativeQuery = true)
+    @Query("SELECT m FROM Module m JOIN FETCH m.course")
+    List<Module> findAllWithCourse();
+
+    @Query("SELECT m FROM Module m JOIN FETCH m.course WHERE m.course.id = :courseId AND m.status = 'ACTIVE'")
     List<Module> getModulesByCourseId(@Param("courseId") Integer courseId);
 
     Optional<Module> getModuleBySlugAndStatus(String slug, ModuleStatus status);

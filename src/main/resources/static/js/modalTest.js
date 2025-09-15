@@ -43,8 +43,6 @@ function checkAnswer(index) {
 // Saving user progress function. It collects data from modal quiz hidden inputs and send to rest controller which insert that into database
 
 function saveUserProgress() {
-    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
     const progressData = {
         userId: document.getElementById('userId').value,
@@ -53,18 +51,14 @@ function saveUserProgress() {
         courseId: document.getElementById('courseId').value
     };
 
-    console.log('Sending progress data:', progressData);
-
     fetch('/api/progress', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            [csrfHeader]: csrfToken
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(progressData)
     })
         .then(response => {
-            console.log('Response status:', response.status);
             if (!response.ok) {
                 return response.text().then(text => {
                     throw new Error(text || 'Server error');
@@ -73,7 +67,6 @@ function saveUserProgress() {
             return response.text();
         })
         .then(data => {
-            console.log('Success:', data);
             showAlert('Урок пройден!', 'success');
         })
         .catch(error => {
@@ -93,5 +86,3 @@ function showResult() {
         }
     answersElement.innerHTML = '';
 }
-
-

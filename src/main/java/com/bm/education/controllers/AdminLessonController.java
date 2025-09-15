@@ -50,11 +50,12 @@ public class AdminLessonController {
                 );
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    ApiResponse.error(String.format("lesson not found for id %d", id))
+                    ApiResponse.error(
+                            String.format("Урок с ID: %d не найден", id))
             );
         }catch (Exception e){
             return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(String.format("Error: %s", e.getMessage()))
+                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage()))
             );
         }
     }
@@ -63,7 +64,8 @@ public class AdminLessonController {
     public ResponseEntity<?> getLessonForEdit(@PathVariable int id) {
         try {
             Lesson lesson = lessonRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + id));
+                    .orElseThrow(() -> new RuntimeException(
+                            String.format("Урок с ID: %d не найден", id)));
 
             LessonDto lessonDto = new LessonDto();
             lessonDto.setTitle(lesson.getTitle());
@@ -83,7 +85,7 @@ public class AdminLessonController {
         try {
             lessonService.updateLesson(id, lessonDto);
             return ResponseEntity.ok(
-                    ApiResponse.success(String.format("Lesson successfully updated with id %d", id))
+                    ApiResponse.success(String.format("Урок: %d успешно обновлен", id))
             );
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(

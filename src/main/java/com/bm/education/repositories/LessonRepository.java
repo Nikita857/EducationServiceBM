@@ -13,6 +13,14 @@ import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
+    @Query(value = "SELECT l FROM Lesson l JOIN FETCH l.module",
+           countQuery = "SELECT count(l) FROM Lesson l")
+    Page<Lesson> findAllWithModule(Pageable pageable);
+
+    @Query(value = "SELECT l FROM Lesson l JOIN FETCH l.module WHERE l.module.id = :moduleId",
+           countQuery = "SELECT count(l) FROM Lesson l WHERE l.module.id = :moduleId")
+    Page<Lesson> findByModuleIdWithModule(@Param("moduleId") Integer moduleId, Pageable pageable);
+
     Optional<Lesson> findLessonByIdAndModuleId(Integer id, Integer moduleId);
 
     List<Lesson> findLessonsByModuleId(Integer moduleId);

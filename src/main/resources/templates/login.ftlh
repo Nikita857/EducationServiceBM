@@ -240,7 +240,7 @@
         </div>
 
         <div class="card-body">
-            <form action="/login" method="POST">
+            <form id="loginForm">
                 <div class="mb-4">
                     <label for="username" class="form-label">Логин или Email</label>
                     <div class="input-group">
@@ -263,35 +263,11 @@
                     <div class="form-text">Минимум 8 символов, включая цифры и буквы</div>
                 </div>
 
-<#--                <div class="form-check mb-4">-->
-<#--                    <input class="form-check-input" type="checkbox" id="rememberMe" name="remember-me">-->
-<#--                    <label class="form-check-label" for="rememberMe">-->
-<#--                        Запомнить меня-->
-<#--                    </label>-->
-<#--                    <a href="/forgot-password" class="float-end auth-link" style="font-size: 0.875rem;">-->
-<#--                        Забыли пароль?-->
-<#--                    </a>-->
-<#--                </div>-->
-
-                <input type="hidden" name="_csrf" value="${_csrf.token}">
-
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Войти в систему
                 </button>
 
-                <#-- Показ ошибок аутентификации -->
-                <#if error??>
-                    <div class="alert alert-danger mt-2">
-                        <i class="bi bi-exclamation-octagon me-2"></i>${error}<br>
-                    </div>
-                </#if>
-
-                <#-- Сообщение о выходе -->
-                <#if RequestParameters.logout??>
-                    <div class="alert alert-success mt-2">
-                        <i class="bi bi-exclamation-octagon me-2"></i>Вы успешно вышли из системы<br>
-                    </div>
-                </#if>
+                <div id="authMessage" class="alert mt-2" style="display: none;"></div>
 
             </form>
 
@@ -306,43 +282,6 @@
     </div>
 </div>
 <script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
-<script>
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
-        const toggleIcon = document.querySelector('.password-toggle i');
-
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('bi-eye');
-            toggleIcon.classList.add('bi-eye-slash');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('bi-eye-slash');
-            toggleIcon.classList.add('bi-eye');
-        }
-    }
-
-    // Добавляем анимацию при фокусе на инпуты
-    document.querySelectorAll('.form-control').forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.style.transform = 'translateY(-2px)';
-        });
-
-        input.addEventListener('blur', function() {
-            this.parentElement.style.transform = 'translateY(0)';
-        });
-    });
-
-    // Валидация формы
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-
-        if (!username || !password) {
-            e.preventDefault();
-            alert('Пожалуйста, заполните все обязательные поля');
-        }
-    });
-</script>
+<script src="${springMacroRequestContext.contextPath}/js/auth/loginController.js"></script>
 </body>
 </html>

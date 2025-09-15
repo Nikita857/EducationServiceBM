@@ -110,7 +110,7 @@ public class ModuleService {
     }
 
     public List<ModuleResponseDTO> getAllModulesByDTO() {
-        List<Module> modules = moduleRepository.findAll();
+        List<Module> modules = moduleRepository.findAllWithCourse();
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
                 .collect(Collectors.toList());

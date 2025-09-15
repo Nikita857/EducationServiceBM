@@ -5,8 +5,6 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="_csrf" content="${_csrf.token}"/>
-    <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
@@ -98,8 +96,8 @@
 
                 <div class="module-list">
                     <#list modules as module>
-                        <a href="/course/${selectedCourseData.slug}/module/${module.slug}" class="module-btn">
-                            <h6 class="module-title">${module.title}</h6>
+                        <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}" class="module-btn">
+                            <h6 class="module-title">${module.moduleSlug}</h6>
                             <small class="text-muted">Модуль ${module?index + 1}</small>
                         </a>
                     </#list>
