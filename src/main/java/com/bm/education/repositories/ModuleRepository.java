@@ -2,8 +2,8 @@ package com.bm.education.repositories;
 
 import com.bm.education.models.ModuleStatus;
 import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.bm.education.models.Module;
 import org.springframework.data.jpa.repository.Modifying;
@@ -23,11 +23,11 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
     List<Module> getModulesByCourseId(@Param("courseId") Integer courseId);
 
     Optional<Module> getModuleBySlugAndStatus(String slug, ModuleStatus status);
-    Optional<Module> findById(Integer id);
+    @NotNull Optional<Module> findById(@NotNull Integer id);
 
-    List<Module> findAll();
+    @NotNull List<Module> findAll();
 
-    void deleteById(Integer id);
+    void deleteById(@NotNull Integer id);
 
     @Modifying
     @Transactional

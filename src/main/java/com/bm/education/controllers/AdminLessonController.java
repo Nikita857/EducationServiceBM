@@ -12,15 +12,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Controller for handling admin-related lesson requests.
+ */
 @RestController
 @RequiredArgsConstructor
 public class AdminLessonController {
     private final LessonService lessonService;
     private final LessonRepository lessonRepository;
 
+    /**
+     * Gets a paginated list of lessons.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param moduleId The ID of the module to filter by, or 0 to retrieve all lessons.
+     * @return A response entity containing the paginated list of lessons.
+     */
     @GetMapping("/admin/lessons")
     public ResponseEntity<?> getLessonsWithPagination(@RequestParam(defaultValue = "1") int page,
                                                       @RequestParam(defaultValue = "10") int size,
@@ -37,6 +45,12 @@ public class AdminLessonController {
         }
     }
 
+    /**
+     * Deletes a lesson by its ID.
+     *
+     * @param id The ID of the lesson to delete.
+     * @return A response entity indicating that the lesson was deleted successfully, or an error if the lesson was not found.
+     */
     @DeleteMapping("/admin/lessons/{id}/delete")
     public ResponseEntity<?> deleteLesson(@PathVariable int id){
         if(!lessonRepository.existsById(id))
@@ -60,6 +74,12 @@ public class AdminLessonController {
         }
     }
 
+    /**
+     * Gets a lesson for editing.
+     *
+     * @param id The ID of the lesson to get.
+     * @return A response entity containing the lesson to edit.
+     */
     @GetMapping("/api/admin/lessons/{id}")
     public ResponseEntity<?> getLessonForEdit(@PathVariable int id) {
         try {
@@ -80,6 +100,13 @@ public class AdminLessonController {
         }
     }
 
+    /**
+     * Updates a lesson.
+     *
+     * @param id The ID of the lesson to update.
+     * @param lessonDto The DTO containing the updated lesson details.
+     * @return A response entity indicating that the lesson was updated successfully.
+     */
     @PutMapping("/api/admin/lessons/{id}")
     public ResponseEntity<?> updateLesson(@PathVariable int id, @RequestBody LessonDto lessonDto) {
         try {

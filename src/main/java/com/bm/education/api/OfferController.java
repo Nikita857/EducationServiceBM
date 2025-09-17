@@ -7,7 +7,7 @@ import com.bm.education.repositories.UserRepository;
 import com.bm.education.services.OfferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,21 +21,31 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for handling offer-related requests.
+ */
 @RequiredArgsConstructor
 @RestController
-@Slf4j
+
 @RequestMapping("/api/offer")
 public class OfferController {
 
     private final OfferService offerService;
     private final UserRepository userRepository;
 
+    /**
+     * Submits a new offer.
+     *
+     * @param offerDto The DTO containing the offer details.
+     * @param result The result of the validation.
+     * @return A response entity indicating that the offer was submitted successfully.
+     */
     @PostMapping
     public ResponseEntity<Map<String, Object>> submitOffer(
             @Valid @RequestBody OfferDto offerDto,
             BindingResult result) {
 
-        log.debug("Submit offer request: {}", offerDto);
+        
 
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
@@ -46,7 +56,7 @@ public class OfferController {
                                     : "Validation error"
                     ));
 
-            log.warn("Validation failed: {}", errors);
+            
 
             return ResponseEntity.badRequest()
                     .body(Map.of(
@@ -79,7 +89,7 @@ public class OfferController {
             ));
 
         } catch (Exception e) {
-            log.error("Error processing offer: {}", e.getMessage(), e);
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "success", false,

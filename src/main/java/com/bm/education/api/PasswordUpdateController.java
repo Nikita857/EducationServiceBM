@@ -2,7 +2,7 @@ package com.bm.education.api;
 
 import com.bm.education.services.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
+/**
+ * Controller for handling password update requests.
+ */
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -18,6 +20,13 @@ public class PasswordUpdateController {
 
     private final UserService userService;
 
+    /**
+     * Changes the password of the authenticated user.
+     *
+     * @param userDetails The authentication object for the current user.
+     * @param request The request object containing the current and new passwords.
+     * @return A response entity indicating that the password was changed successfully, or an error if the password could not be changed.
+     */
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(Authentication userDetails,
                                             @RequestBody PasswordChangeRequest request) {
@@ -35,14 +44,16 @@ public class PasswordUpdateController {
             );
 
         } catch (Exception e) {
-            log.error("Ошибка при изменении пароля: {}", e.getMessage());
+            
             return ResponseEntity.badRequest().body(
                     new PasswordChangeResponse("error", e.getMessage())
             );
         }
     }
 
-    // DTO для запроса
+    /**
+     * Data transfer object for a password change request.
+     */
     public static class PasswordChangeRequest {
         private String currentPassword;
         private String newPassword;
@@ -57,7 +68,9 @@ public class PasswordUpdateController {
         public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
     }
 
-    // DTO для ответа
+    /**
+     * Data transfer object for a password change response.
+     */
     public static class PasswordChangeResponse {
         private String status;
         private String message;

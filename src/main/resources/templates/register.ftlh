@@ -18,59 +18,60 @@
         </div>
 
         <div class="card-body">
-            <#if error??>
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>${error}
-                </div>
-            </#if>
+            <div id="generalError" class="alert alert-danger d-none"></div>
 
-            <form id="registrationForm">
-                <div class="input-group">
-                    <span for="firstName" class="input-group-text bg-transparent">
+            <form id="registrationForm" novalidate>
+                <div class="input-group has-validation">
+                    <span class="input-group-text bg-transparent">
                         <i class="bi bi-person mx-1"></i>Имя
                     </span>
                     <input type="text" class="form-control" id="firstName" name="firstName"
                            placeholder="Введите ваше имя" required>
+                    <div id="firstNameError" class="invalid-feedback"></div>
                 </div>
 
-                <div class="input-group">
-                    <span for="lastName" class="input-group-text bg-transparent">
+                <div class="input-group has-validation">
+                    <span class="input-group-text bg-transparent">
                         <i class="bi bi-person-badge mx-1"></i>Фамилия
                     </span>
                     <input type="text" class="form-control" id="lastName" name="lastName"
                            placeholder="Введите вашу фамилию" required>
+                    <div id="lastNameError" class="invalid-feedback"></div>
                 </div>
 
-                <div class="input-group">
-                    <span for="department" class="input-group-text bg-transparent">
+                <div class="input-group has-validation">
+                    <span class="input-group-text bg-transparent">
                         <i class="bi bi-bank mx-1"></i>Отдел
                     </span>
-                    <input type="text" class="form-control" id="depratment" name="department"
+                    <input type="text" class="form-control" id="department" name="department"
                            placeholder="Введите ваш отдел" required>
+                    <div id="departmentError" class="invalid-feedback"></div>
                 </div>
 
-                <div class="input-group">
-                    <span for="jobTitle" class="input-group-text bg-transparent">
+                <div class="input-group has-validation">
+                    <span class="input-group-text bg-transparent">
                         <i class="bi bi-emoji-smile mx-1"></i></i>Должность
                     </span>
                     <input type="text" class="form-control" id="jobTitle" name="jobTitle"
-                           placeholder="Введите ваш отдел" required>
+                           placeholder="Введите вашу должность" required>
+                    <div id="jobTitleError" class="invalid-feedback"></div>
                 </div>
 
-                <div class="d-flex flex-column mb-3">
+                <div class="d-flex flex-column mb-3 has-validation">
                     <div class="input-group mb-0">
-                        <span for="username" class="input-group-text bg-transparent">
+                        <span class="input-group-text bg-transparent">
                             <i class="bi bi-at mx-1"></i>Логин
                         </span>
                         <input type="text" class="form-control" id="username" name="username"
                                placeholder="Придумайте уникальный логин" required>
+                        <div id="usernameError" class="invalid-feedback w-100"></div>
                     </div>
                     <div class="form-text">От 5 до 50 символов, только буквы и цифры</div>
                 </div>
 
-                <div class="d-flex flex-column mb-3">
+                <div class="d-flex flex-column mb-3 has-validation">
                     <div class="input-group mb-0">
-                        <span for="password" class="input-group-text bg-transparent">
+                        <span class="input-group-text bg-transparent">
                             <i class="bi bi-lock mx-1"></i>Пароль
                         </span>
                         <input type="password" class="form-control" id="password" name="password"
@@ -78,7 +79,7 @@
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="bi bi-eye"></i>
                         </button>
-
+                        <div id="passwordError" class="invalid-feedback w-100"></div>
                         <div class="password-strength">
                             <div class="password-strength-bar" id="passwordStrengthBar"></div>
                         </div>
@@ -99,14 +100,6 @@
                 <button type="submit" class="btn btn-primary" id="submitButton">
                     <i class="bi bi-person-plus me-2"></i>Создать аккаунт
                 </button>
-
-                <#if errorRegistration??>
-                    <div class="alert alert-danger">
-                        <#list errorRegistration as error>
-                            <i class="bi bi-exclamation-octagon me-2"></i>${error.defaultMessage}<br>
-                        </#list>
-                    </div>
-                </#if>
             </form>
 
             <div class="auth-footer">

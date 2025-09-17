@@ -5,15 +5,17 @@ import com.bm.education.models.*;
 import com.bm.education.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * Service for managing user progress.
+ */
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class UserProgressService {
 
@@ -23,6 +25,16 @@ public class UserProgressService {
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
 
+    /**
+     * Saves the progress of a user for a lesson.
+     *
+     * @param userId The ID of the user.
+     * @param courseId The ID of the course.
+     * @param moduleId The ID of the module.
+     * @param lessonId The ID of the lesson.
+     * @throws EntityNotFoundException if the user, course, module, or lesson is not found.
+     * @throws RuntimeException if there is an error while saving the progress.
+     */
     @Transactional
     public void saveProgress(Integer userId, Integer courseId, Integer moduleId, Integer lessonId) {
         try {
@@ -44,13 +56,7 @@ public class UserProgressService {
                     .findByUserIdAndLessonId(userId, lessonId);
 
             UserProgress progress;
-            if (existingProgress.isPresent()) {
-                progress = existingProgress.get();
-                log.info("Updating existing progress record: {}", progress.getId());
-            } else {
-                progress = new UserProgress();
-                log.info("Creating new progress record");
-            }
+            progress = existingProgress.orElseGet(UserProgress::new);
 
             progress.setUser(user);
             progress.setCourse(course);
@@ -58,11 +64,11 @@ public class UserProgressService {
             progress.setLesson(lesson);
             progress.setCompletedAt(Instant.now());
 
-            UserProgress savedProgress = userProgressRepository.save(progress);
-            log.info("Progress saved with ID: {}", savedProgress.getId());
+            userProgressRepository.save(progress);
+            
 
         } catch (Exception e) {
-            log.error("Error in saveProgress: ", e);
+            
             throw new RuntimeException("Error in saveProgress: ", e);
         }
     }

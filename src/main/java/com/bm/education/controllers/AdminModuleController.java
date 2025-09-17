@@ -10,6 +10,7 @@ import com.bm.education.services.LessonService;
 import com.bm.education.services.ModuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -21,13 +22,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+/**
+ * Controller for handling admin-related module requests.
+ */
 @Slf4j
+@RestController
+
 @RequiredArgsConstructor
 public class AdminModuleController {
 
     private final ModuleService moduleService;
     private final LessonService lessonService;
+
+    /**
+     * Gets a paginated list of modules.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param courseId The ID of the course to filter by, or 0 to retrieve all modules.
+     * @return A response entity containing the paginated list of modules.
+     */
     @GetMapping("/admin/modules")
     public ResponseEntity<?> getModulesWithPagination(@RequestParam(defaultValue = "1") int page,
                                                       @RequestParam(defaultValue = "10") int size,
@@ -43,6 +57,11 @@ public class AdminModuleController {
         }
     }
 
+    /**
+     * Gets all modules as a JSON response.
+     *
+     * @return A response entity containing a list of all modules.
+     */
     @GetMapping("/admin/modules/json")
     public ResponseEntity<?> sendModulesJson() {
         try {
@@ -57,6 +76,12 @@ public class AdminModuleController {
         }
     }
 
+    /**
+     * Gets a module by its ID.
+     *
+     * @param id The ID of the module to get.
+     * @return A response entity containing the module.
+     */
     @GetMapping("/admin/module/{id}")
     public ResponseEntity<?> getModuleById(@PathVariable("id") int id) {
         try {
@@ -76,6 +101,13 @@ public class AdminModuleController {
         }
     }
 
+    /**
+     * Updates the status of a module.
+     *
+     * @param id The ID of the module to update.
+     * @param status The new status of the module.
+     * @return A response entity indicating that the module status was updated successfully.
+     */
     @PostMapping("/admin/modules/updateStatus/{id}/{status}")
     public ResponseEntity<?> updateModuleStatus(@PathVariable Integer id, @PathVariable ModuleStatus status) {
         try {
@@ -96,6 +128,12 @@ public class AdminModuleController {
 
 
 
+    /**
+     * Deletes a module by its ID.
+     *
+     * @param id The ID of the module to delete.
+     * @return A response entity indicating that the module was deleted successfully.
+     */
     @PostMapping("/admin/module/{id}/delete")
     ResponseEntity<?> deleteModule(@PathVariable Integer id) {
         try{
@@ -110,6 +148,13 @@ public class AdminModuleController {
         }
     }
 
+    /**
+     * Adds a new module.
+     *
+     * @param mcr The request object containing the module details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity containing the created module.
+     */
     @PostMapping("/admin/modules/create")
     public ResponseEntity<?> addModule(@Valid @RequestBody ModuleCreateRequest mcr, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -130,20 +175,27 @@ public class AdminModuleController {
             );
 
         } catch (Exception e) {
-            log.error("Ошибка при создании модуля: {}", e.getMessage());
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ApiResponse.error(String.format("Internal server error %s", e.getMessage()))
             );
         }
     }
 
+    /**
+     * Gets all lessons for a module.
+     *
+     * @param id The ID of the module.
+     * @return A response entity containing a list of all lessons for the module.
+     */
     @GetMapping("/admin/modules/{id}/lessons")
     ResponseEntity<?> getModuleLessons(@PathVariable String id) {
         try {
             List<LessonRequestDTO> moduleLessons = lessonService.getModuleLessons(Integer.parseInt(id));
+            log.debug("Module lessons {}", moduleLessons);
             if(!moduleLessons.isEmpty()) {
                 return ResponseEntity.ok(
-                       ApiResponse.success("moduleLessons", moduleLessons)
+                       ApiResponse.success(moduleLessons)
                 );
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -157,6 +209,13 @@ public class AdminModuleController {
         }
     }
 
+    /**
+     * Updates a module.
+     *
+     * @param request The request object containing the updated module details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the module was updated successfully.
+     */
     @PostMapping("/admin/modules/update")
     public ResponseEntity<?> updateModule(@Valid @RequestBody ModuleUpdateRequest request,
                                           BindingResult bindingResult) {

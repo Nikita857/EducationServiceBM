@@ -8,7 +8,7 @@ import com.bm.education.services.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,8 +23,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for handling admin-related requests.
+ */
 @Controller
-@Slf4j
+
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
@@ -35,6 +38,13 @@ public class AdminController {
     private final LessonService lessonService;
     private final OfferService offerService;
 
+    /**
+     * Displays the admin dashboard.
+     *
+     * @param auth The authentication object for the current user.
+     * @param model The model to add attributes to.
+     * @return The name of the admin view, or a redirect to the index or login page.
+     */
     @GetMapping("/admin")
     public String admin(Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
@@ -55,6 +65,12 @@ public class AdminController {
         return "redirect:/login";
     }
 
+    /**
+     * Gets an offer by its ID.
+     *
+     * @param offerId The ID of the offer to get.
+     * @return A response entity containing the offer.
+     */
     @GetMapping("admin/offers/{offerId}")
     public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId) {
         try {
@@ -68,13 +84,20 @@ public class AdminController {
         }
     }
 
+    /**
+     * Updates an offer.
+     *
+     * @param updateDto The DTO containing the updated offer details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the offer was updated successfully.
+     */
     // Обновление ответа и статуса
     @PostMapping("admin/updateOffer")
     public ResponseEntity<Map<String, Object>> updateOffer(
             @Valid @RequestBody OfferResponseDto updateDto,
             BindingResult bindingResult) {
 
-        log.debug("Received offer update: {}", updateDto);
+        
 
         Map<String, Object> response = new HashMap<>();
 
@@ -88,7 +111,7 @@ public class AdminController {
 
             response.put("success", false);
             response.put("errors", errors);
-            log.warn("Validation failed: {}", errors);
+            
 
             return ResponseEntity.badRequest().body(response);
         }
@@ -104,7 +127,7 @@ public class AdminController {
                     "status", updatedOffer.getStatus()
             ));
 
-            log.info("Offer {} updated successfully", updateDto.getOfferId());
+            
 
             return ResponseEntity.ok(response);
 
@@ -116,16 +139,28 @@ public class AdminController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Ошибка при обновлении заявки");
-            log.error("Error updating offer: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
+    /**
+     * Displays the add module page.
+     *
+     * @return The name of the add module view.
+     */
     @GetMapping("/admin/modules/create")
     public String addModule() {
         return "admin/addModule";
     }
 
+    /**
+     * Displays the video page.
+     *
+     * @param name The name of the video.
+     * @param model The model to add attributes to.
+     * @return The name of the video view.
+     */
     @GetMapping("/admin/video/{name}")
     public String watchVideoUrl (@PathVariable String name, Model model) {
         Lesson lesson = lessonService.getLessonByVideoName(name);

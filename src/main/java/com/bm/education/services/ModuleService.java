@@ -10,7 +10,7 @@ import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.repositories.UserProgressRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Service for managing modules.
+ */
 @Service
-@Slf4j
+
 @RequiredArgsConstructor
 public class ModuleService {
     private final ModuleRepository moduleRepository;
@@ -31,43 +33,90 @@ public class ModuleService {
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
 
+    /**
+     * Gets all modules for a course.
+     *
+     * @param courseId The ID of the course.
+     * @return A list of modules for the course.
+     */
     @Transactional(readOnly = true)
     public List<Module> getModulesByCourseId(Integer courseId) {
         return moduleRepository.getModulesByCourseId(courseId);
     }
 
+    /**
+     * Gets a module by its slug.
+     *
+     * @param moduleSlug The slug of the module.
+     * @return The module with the specified slug, or null if not found.
+     */
     @Transactional(readOnly = true)
     public Module getModuleBySlug(String moduleSlug) {
         return moduleRepository.getModuleBySlugAndStatus(moduleSlug, ModuleStatus.ACTIVE).orElse(null);
     }
+
+    /**
+     * Gets the total number of lessons in a course.
+     *
+     * @param courseId The ID of the course.
+     * @return The total number of lessons in the course.
+     */
     @Transactional(readOnly = true)
     public int totalLessons(Integer courseId) {
         return lessonRepository.countByModuleCourseId(courseId);
     }
 
+    /**
+     * Gets the number of completed lessons in a course for a user.
+     *
+     * @param courseId The ID of the course.
+     * @param userId The ID of the user.
+     * @return The number of completed lessons in the course for the user.
+     */
     @Transactional(readOnly = true)
     public int completedLessons(Integer courseId, Integer userId) {
         return userProgressRepository.totalCompletedLessonByUserId(userId, courseId);
     }
 
+    /**
+     * Calculates the percentage of completed lessons.
+     *
+     * @param completedLessons The number of completed lessons.
+     * @param totalLessons The total number of lessons.
+     * @return The percentage of completed lessons.
+     */
     public int countPercentOfLearning(Integer completedLessons, Integer totalLessons) {
         if(totalLessons == 0) return 0;
         return (completedLessons * 100) / totalLessons;
     }
 
-    public List<Module> getAllModules() {return moduleRepository.findAll();}
-
+    /**
+     * Gets the total number of modules.
+     *
+     * @return The total number of modules.
+     */
     @Transactional(readOnly = true)
     public long getModulesCount() {return moduleRepository.count();}
 
+    /**
+     * Deletes a module by its ID.
+     *
+     * @param moduleId The ID of the module to delete.
+     */
     @Transactional
-    public boolean deleteModule(Integer moduleId) {
+    public void deleteModule(Integer moduleId) {
         if (moduleRepository.findById(moduleId).isPresent()) {
             moduleRepository.deleteById(moduleId);
-            return true;
-        }else return false;
+        }
     }
 
+    /**
+     * Updates the status of a module.
+     *
+     * @param moduleId The ID of the module to update.
+     * @param moduleStatus The new status of the module.
+     * @return true if the module status was updated successfully, false otherwise.
+     */
     @Transactional
     public boolean updateModuleStatus(Integer moduleId, ModuleStatus moduleStatus) {
         if(moduleRepository.findById(moduleId).isEmpty()){
@@ -77,6 +126,14 @@ public class ModuleService {
         return true;
     }
 
+    /**
+     * Creates a new module.
+     *
+     * @param moduleCreateRequest The request object containing the module details.
+     * @return The created module as a DTO.
+     * @throws IllegalStateException if the module with the same slug already exists.
+     * @throws jakarta.persistence.EntityNotFoundException if the course is not found.
+     */
     @Transactional
     public ModuleResponseDTO createModule(ModuleCreateRequest moduleCreateRequest) {
         // 1. Check for slug uniqueness
@@ -99,6 +156,12 @@ public class ModuleService {
         return convertToModuleResponseDTO(savedModule);
     }
 
+    /**
+     * Converts a module to a ModuleResponseDTO.
+     *
+     * @param module The module to convert.
+     * @return The converted ModuleResponseDTO.
+     */
     private ModuleResponseDTO convertToModuleResponseDTO(Module module) {
         return new ModuleResponseDTO(
                 module.getId(),
@@ -109,6 +172,11 @@ public class ModuleService {
         );
     }
 
+    /**
+     * Gets all modules as a list of DTOs.
+     *
+     * @return A list of all modules as DTOs.
+     */
     public List<ModuleResponseDTO> getAllModulesByDTO() {
         List<Module> modules = moduleRepository.findAllWithCourse();
         return modules.stream()
@@ -116,6 +184,14 @@ public class ModuleService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Gets a paginated list of modules as DTOs.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param courseId The ID of the course to filter by, or null to retrieve all modules.
+     * @return A paginated list of modules as DTOs.
+     */
     @Transactional
     public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size, Integer courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
@@ -130,11 +206,24 @@ public class ModuleService {
         return modules.map(this::convertToModuleResponseDTO);
     }
 
+    /**
+     * Finds a module by its ID.
+     *
+     * @param id The ID of the module.
+     * @return The module with the specified ID as a DTO, or null if not found.
+     */
+    @Transactional(readOnly = true)
     public ModuleResponseDTO findModuleById(Integer id) {
         Module module = moduleRepository.findById(id).orElse(null);
         return module!=null? convertToModuleResponseDTO(module): null;
     }
 
+    /**
+     * Updates a module.
+     *
+     * @param request The request object containing the updated module details.
+     * @return true if the module was updated successfully, false otherwise.
+     */
     public boolean updateModule(com.bm.education.dto.ModuleUpdateRequest request) {
         try {
             Module module = moduleRepository.findById(request.getModuleId()).orElseThrow(
@@ -154,7 +243,7 @@ public class ModuleService {
             moduleRepository.save(module);
             return true;
         } catch (Exception e) {
-            log.error("Error updating module: {}", e.getMessage(), e);
+            
             return false;
         }
     }

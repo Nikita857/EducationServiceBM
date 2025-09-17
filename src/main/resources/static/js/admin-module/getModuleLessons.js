@@ -5,10 +5,9 @@ async function loadModuleLessons(moduleId) {
         // Case 1: Success (200 OK)
         if (response.ok) {
             const result = await response.json();
-            if (result.status === 'success' && result.data && result.data.moduleLessons) {
-                showLessonsModal(result.data.moduleLessons);
+            if (result.success) {
+                showLessonsModal(result.data);
             } else {
-                // Handle cases where status is 200 but body is unexpected
                 showAlert(result.message || 'Получен неожиданный ответ от сервера.', 'warning');
             }
             return;

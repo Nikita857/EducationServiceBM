@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (registrationForm) {
         registrationForm.addEventListener('submit', async function (event) {
             event.preventDefault();
+            clearErrors();
 
             const formData = new FormData(registrationForm);
             const requestData = Object.fromEntries(formData.entries());
@@ -20,21 +21,64 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = await response.json();
 
                 if (response.ok) {
-                    showAlert('Регистрация прошла успешно!', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 2000);
+                    // Успех: сервер вернул 200 OK, делаем редирект
+                    window.location.href = result.redirect || '/';
                 } else {
-                    if (result.errors) {
-                        const errorMessages = Object.values(result.errors).join('\n');
-                        showAlert('Ошибка валидации:\n' + errorMessages, 'error');
+                    // Ошибка: сервер вернул 4xx или 5xx
+                    if (response.status === 400 && result) {
+                        // Ошибки валидации от сервера
+                        displayErrors(result);
                     } else {
-                        showAlert(result.message || 'Ошибка при регистрации', 'error');
+                        // Другие ошибки (например, 500)
+                        showGeneralError(result.message || 'Произошла непредвиденная ошибка');
                     }
                 }
             } catch (error) {
-                showAlert('Произошла ошибка при отправке данных', 'error');
+                showGeneralError('Не удалось связаться с сервером. Проверьте ваше интернет-соединение.');
             }
         });
+    }
+
+    function clearErrors() {
+        const invalidInputs = registrationForm.querySelectorAll('.is-invalid');
+        invalidInputs.forEach(input => input.classList.remove('is-invalid'));
+
+        const errorFeedbacks = registrationForm.querySelectorAll('.invalid-feedback');
+        errorFeedbacks.forEach(feedback => feedback.textContent = '');
+
+        const generalError = document.getElementById('generalError');
+        if(generalError) {
+            generalError.classList.add('d-none');
+            generalError.textContent = '';
+        }
+    }
+
+    function displayErrors(errorData) {
+        // ИСПРАВЛЕНО: Проверяем, вложены ли ошибки в другой объект (например, fieldErrors)
+        const errors = errorData.fieldErrors || errorData;
+
+        for (const fieldName in errors) {
+            const input = document.getElementById(fieldName);
+            const errorFeedback = document.getElementById(fieldName + 'Error');
+
+            if (input) {
+                input.classList.add('is-invalid');
+            }
+
+            if (errorFeedback) {
+                errorFeedback.textContent = errors[fieldName];
+            } else {
+                // Если для поля нет своего блока, показываем в общем
+                showGeneralError(`${fieldName}: ${errors[fieldName]}`);
+            }
+        }
+    }
+
+    function showGeneralError(message) {
+        const generalError = document.getElementById('generalError');
+         if(generalError) {
+            generalError.textContent = message;
+            generalError.classList.remove('d-none');
+        }
     }
 });

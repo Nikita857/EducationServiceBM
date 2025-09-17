@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Controller for handling lesson upload requests.
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
@@ -34,6 +37,13 @@ public class UploadLessonController {
                         .toString();
     private final LessonService lessonService;
 
+    /**
+     * Creates a new lesson.
+     *
+     * @param request The request object containing the lesson details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the lesson was created successfully.
+     */
     @PostMapping(value = "/admin/lesson/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createLesson(@Valid @ModelAttribute LessonUploadRequest request,
                                           BindingResult bindingResult) {

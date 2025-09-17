@@ -5,7 +5,7 @@ import com.bm.education.models.Offer;
 import com.bm.education.models.OfferStatus;
 import com.bm.education.repositories.OfferRepository;
 import com.bm.education.services.OfferService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,17 +13,34 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller for handling admin-related offer requests.
+ */
 @RestController
-@Slf4j
+
 public class AdminOfferController {
     private final OfferService offerService;
     private final OfferRepository offerRepository;
 
+    /**
+     * Constructs a new AdminOfferController object.
+     *
+     * @param offerService The offer service.
+     * @param offerRepository The offer repository.
+     */
     public AdminOfferController(OfferService offerService, OfferRepository offerRepository) {
         this.offerService = offerService;
         this.offerRepository = offerRepository;
     }
 
+    /**
+     * Gets a paginated list of offers.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param status The status to filter by, or "all" to retrieve all offers.
+     * @return A response entity containing the paginated list of offers.
+     */
     @GetMapping("/admin/offers")
     public ResponseEntity<?> getOffersJson(@RequestParam(defaultValue = "1") int page,
                                            @RequestParam(defaultValue = "10") int size,
@@ -65,13 +82,19 @@ public class AdminOfferController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("Error getting offers: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(
                     Map.of("error", "Internal server error")
             );
         }
     }
 
+    /**
+     * Deletes an offer by its ID.
+     *
+     * @param id The ID of the offer to delete.
+     * @return A response entity indicating that the offer was deleted successfully, or an error if the offer was not found or could not be deleted.
+     */
     @PostMapping("/admin/offers/delete/{id}")
     ResponseEntity<?> deleteOffer(@PathVariable("id") int id) {
         try {

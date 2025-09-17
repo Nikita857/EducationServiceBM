@@ -19,6 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuration for Spring Security.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -28,6 +31,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http The HttpSecurity object to configure.
+     * @return The configured security filter chain.
+     * @throws Exception If an error occurs while configuring the security filter chain.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -38,21 +48,16 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
                                 "/login",
                                 "/api/auth/**",
                                 "/register",
                                 "/logout",
                                 "/logout/cookie",
-                                "/error",
-                                "/actuator/health"
+                                "/error"
                         ).permitAll()
                         .requestMatchers(
                                 "/css/**", "/js/**", "/webjars/**", "/images/**",
                                 "/videos/**", "/favicon.ico", "/avatars/**", "/img/**", "/static/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -66,11 +71,21 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Creates a password encoder.
+     *
+     * @return The password encoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Creates an authentication provider.
+     *
+     * @return The authentication provider.
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -79,6 +94,11 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    /**
+     * Creates an authentication manager.
+     *
+     * @return The authentication manager.
+     */
     @Bean
     public AuthenticationManager authenticationManager() {
         return new ProviderManager(authenticationProvider());

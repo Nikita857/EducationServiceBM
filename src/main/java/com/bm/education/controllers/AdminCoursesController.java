@@ -8,7 +8,7 @@ import com.bm.education.services.CoursesService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +22,25 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for handling admin-related course requests.
+ */
 @RestController
-@Slf4j
+
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCoursesController {
 
     private final CoursesService coursesService;
 
+    /**
+     * Gets a paginated list of courses.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param courseId The ID of the course to filter by, or 0 to retrieve all courses.
+     * @return A response entity containing the paginated list of courses.
+     */
     @GetMapping("/admin/courses")
     public ResponseEntity<ApiResponse<?>> sendUsersJson(@RequestParam(defaultValue = "1") int page,
                                                         @RequestParam(defaultValue = "10") int size,
@@ -38,12 +49,18 @@ public class AdminCoursesController {
             Page<CourseResponseDTO> courseResponseDTOS = coursesService.getCoursesForDTO(page, size, courseId);
             return ResponseEntity.ok(ApiResponse.paginated(courseResponseDTOS));
         } catch (Exception e) {
-            log.error("Error getting courses: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage())));
         }
     }
 
+    /**
+     * Gets all modules for a course.
+     *
+     * @param id The ID of the course.
+     * @return A response entity containing a list of all modules for the course.
+     */
     @GetMapping("/admin/courses/{id}/modules")
     public ResponseEntity<?> getCourseModules(@PathVariable int id) {
         try {
@@ -64,6 +81,12 @@ public class AdminCoursesController {
             );
         }
     }
+
+    /**
+     * Gets all courses.
+     *
+     * @return A response entity containing a list of all courses.
+     */
     @GetMapping("/admin/courses/all")
     public ResponseEntity<?> getCourses() {
         try {
@@ -83,6 +106,12 @@ public class AdminCoursesController {
         }
     }
 
+    /**
+     * Deletes a course by its ID.
+     *
+     * @param id The ID of the course to delete.
+     * @return A response entity indicating that the course was deleted successfully, or an error if the course was not found.
+     */
     @DeleteMapping("/admin/courses/{id}/delete")
     public ResponseEntity<?> deleteCourse(@PathVariable int id) {
         Map<String, Object> response = new HashMap<>();
@@ -97,7 +126,7 @@ public class AdminCoursesController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         }catch (Exception e) {
-            log.error("Error deleting course id {}: {}", id, e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
                     "error", "An internal server error occurred."
@@ -105,6 +134,14 @@ public class AdminCoursesController {
         }
     }
 
+    /**
+     * Creates a new course.
+     *
+     * @param courseRequest The request object containing the course details.
+     * @param bindingResult The result of the validation.
+     * @param imageFile The image file for the course.
+     * @return A response entity containing the created course.
+     */
     @PostMapping("/admin/course/create")
     public ResponseEntity<ApiResponse<?>> createCourse(@Valid @ModelAttribute CourseCreateRequest courseRequest,
                                                        BindingResult bindingResult,
@@ -127,32 +164,45 @@ public class AdminCoursesController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         } catch (IOException e) {
-            log.error("File upload failed for course: {}", courseRequest.getTitle(), e);
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Ошибка при загрузке файла."));
         }
     }
 
+    /**
+     * Updates a course.
+     *
+     * @param courseUpdateRequest The request object containing the updated course details.
+     * @return A response entity indicating that the course was updated successfully.
+     */
     @PostMapping("/admin/courses/update")
     public ResponseEntity<ApiResponse<?>> updateCourse(@ModelAttribute CourseUpdateRequest courseUpdateRequest) {
         try {
             Course updatedCourse = coursesService.updateCourse(courseUpdateRequest);
             return ResponseEntity.ok(ApiResponse.success("Курс успешно обновлен", Map.of("courseId", updatedCourse.getId())));
         } catch (IOException e) {
-            log.error("File upload error during course update: {}", e.getMessage(), e);
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Ошибка при загрузке файла."));
         } catch (IllegalArgumentException e) {
-            log.warn("Invalid data for course update: {}", e.getMessage());
+            
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            log.error("Error updating course: {}", e.getMessage(), e);
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Внутренняя ошибка сервера."));
         }
     }
 
+    /**
+     * Updates the status of a course.
+     *
+     * @param dto The DTO containing the updated course status.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the course status was updated successfully.
+     */
     @PostMapping("/admin/courses/update/status")
     public ResponseEntity<ApiResponse<?>> updateCourseStatus(
             @Valid @RequestBody CourseUpdateStatusRequest dto,
@@ -187,18 +237,18 @@ public class AdminCoursesController {
                         .body(ApiResponse.success("Статус успешно обновлен",
                                 Map.of("status", dto.getStatus())));
             } else {
-                log.warn("Course status not updated for courseId: {}", dto.getCourseId());
+                
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ApiResponse.error("Статус не был изменен"));
             }
 
         } catch (EntityNotFoundException e) {
-            log.warn("Course not found: {}", dto.getCourseId());
+            
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Курс не найден"));
 
         } catch (Exception e) {
-            log.error("Error updating course status for courseId: {}", dto.getCourseId(), e);
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Внутренняя ошибка сервера"));
         }

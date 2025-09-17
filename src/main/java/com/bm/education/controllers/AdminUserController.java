@@ -10,7 +10,7 @@ import com.bm.education.services.NotificationService;
 import com.bm.education.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +20,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller for handling admin-related user requests.
+ */
 @RequiredArgsConstructor
-@Slf4j
+
 @RestController
 public class AdminUserController {
     private final UserService userService;
     private final NotificationService notificationService;
     private final CoursesService coursesService;
 
+    /**
+     * Gets a paginated list of all users.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param role The role to filter by, or "ALL" to retrieve all users.
+     * @return A response entity containing the paginated list of all users.
+     */
     @GetMapping("/admin/users")
     public ResponseEntity<ApiResponse<?>> getAllUsers(
             @RequestParam(defaultValue = "1") int page,
@@ -37,29 +48,41 @@ public class AdminUserController {
             Page<UserResponseDTO> usersPage = userService.getAllUsersByDTO(page, size, role);
             return ResponseEntity.ok(ApiResponse.paginated(usersPage));
         } catch (Exception e) {
-            log.error("Error getting users: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(ApiResponse.error("Internal server error"));
         }
     }
 
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param request The request body containing the user ID.
+     * @return A response entity indicating that the user was deleted successfully.
+     */
     @PostMapping("/admin/users/delete")
     public ResponseEntity<ApiResponse<Void>> deleteUserById(@RequestBody Map<String, Integer> request) {
         try {
             Integer userId = request.get("userId");
-            log.debug("Deleting user: {}", userId);
+            
             boolean isDelete = userService.deleteUser(userId);
-            log.debug("User deleted: {}", isDelete);
+            
             if (isDelete) {
                 return ResponseEntity.ok(ApiResponse.success(String.format("Пользователь %d успешно удален", userId)));
             } else {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Ошибка удаления пользователя"));
             }
         } catch (Exception e) {
-            log.error("Error deleting user: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(ApiResponse.error(e.getMessage()));
         }
     }
 
+    /**
+     * Gets a user by their ID.
+     *
+     * @param id The ID of the user to get.
+     * @return A response entity containing the user.
+     */
     @GetMapping("/admin/user/{id}")
     public ResponseEntity<ApiResponse<?>> getUserById(@PathVariable Integer id) {
         try {
@@ -76,16 +99,29 @@ public class AdminUserController {
         }
     }
 
+    /**
+     * Gets all courses for a user.
+     *
+     * @param id The ID of the user.
+     * @return A response entity containing a list of all courses for the user.
+     */
     @GetMapping("/admin/user/{id}/courses")
     public ResponseEntity<ApiResponse<?>> getUserCourses(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(ApiResponse.success(userService.getUserCourses(id)));
         } catch (Exception e) {
-            log.error("Error getting user courses: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(ApiResponse.error(String.format("Internal server error: %s", e.getMessage())));
         }
     }
 
+    /**
+     * Updates a user by their ID.
+     *
+     * @param updateRequestDTO The request object containing the updated user details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the user was updated successfully.
+     */
     @PostMapping("/admin/user/update")
     public ResponseEntity<ApiResponse<?>> updateUserById(@Valid @RequestBody UserUpdateRequestDTO updateRequestDTO,
                                                                                 BindingResult bindingResult) {
@@ -105,13 +141,20 @@ public class AdminUserController {
                 );
             }
         } catch (Exception e) {
-            log.error("Error updating user: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(
                     ApiResponse.error(String.format("Internal server error: %s", e.getMessage()))
             );
         }
     }
 
+    /**
+     * Enrolls a user in a course.
+     *
+     * @param request The request object containing the user and course IDs.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the user was enrolled successfully.
+     */
     @PostMapping("/admin/user/enroll")
     public ResponseEntity<ApiResponse<Void>> enrollUserInCourse(@Valid @RequestBody UserEnrollmentRequestDTO request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -135,11 +178,18 @@ public class AdminUserController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Пользователь уже записан на этот курс или произошла ошибка."));
             }
         } catch (Exception e) {
-            log.error("Error enrolling user: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(ApiResponse.error(e.getMessage()));
         }
     }
 
+    /**
+     * Unenrolls a user from a course.
+     *
+     * @param request The request object containing the user and course IDs.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the user was unenrolled successfully.
+     */
     @PostMapping("/admin/user/unenroll")
     public ResponseEntity<ApiResponse<Void>> unenrollUserFromCourse(@Valid @RequestBody UserEnrollmentRequestDTO request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -157,7 +207,7 @@ public class AdminUserController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Произошла ошибка. Возможно, пользователь не был записан на этот курс."));
             }
         } catch (Exception e) {
-            log.error("Error unenrolling user: {}", e.getMessage(), e);
+            
             return ResponseEntity.internalServerError().body(ApiResponse.error(e.getMessage()));
         }
     }

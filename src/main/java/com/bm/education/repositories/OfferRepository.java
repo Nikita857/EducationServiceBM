@@ -2,6 +2,7 @@ package com.bm.education.repositories;
 
 import com.bm.education.models.Offer;
 import com.bm.education.models.OfferStatus;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,11 +19,8 @@ public interface OfferRepository extends JpaRepository<Offer, Integer> {
             " o.status, o.updated_at, o.response, u.first_name, u.last_name, u.department" +
             " FROM offers o JOIN users u ON o.user_id = u.id WHERE o.status = :status;", nativeQuery = true)
     List<Offer> findByStatus(@Param("status") String status);
-    List<Offer> findAll();
-    Optional<Offer> findById(Integer id);
-
-    @Query("SELECT o FROM Offer o LEFT JOIN FETCH o.user WHERE o.id = :id")
-    Optional<Offer> findByIdWithUser(@Param("id") Integer id);
+    @NotNull List<Offer> findAll();
+    @NotNull Optional<Offer> findById(@NotNull Integer id);
 
     Page<Offer> findByStatus(OfferStatus status, Pageable pageable);
     long count();

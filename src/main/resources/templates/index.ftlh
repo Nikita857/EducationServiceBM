@@ -56,7 +56,13 @@
                                 Начать обучение <i class="bi bi-arrow-right ms-1"></i>
                             </a>
                             <div class="progress" style="width: 60px; height: 6px;">
-                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     style="width: ${course.progress}%;"
+                                     aria-valuenow="${course.progress}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
                             </div>
                         </div>
                     </div>

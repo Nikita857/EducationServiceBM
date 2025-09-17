@@ -8,13 +8,13 @@ import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
 import com.bm.education.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,12 +26,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing courses.
+ */
 @Service
-@Slf4j
+
 @RequiredArgsConstructor
 public class CoursesService {
 
@@ -41,29 +43,53 @@ public class CoursesService {
     private final ModuleService moduleService;
     private final LessonService lessonService;
 
-    public List<Course> getAllCourses() {return coursesRepository.findAll();}
+    /**
+     * Gets the total number of courses.
+     *
+     * @return The total number of courses.
+     */
     public long getCoursesCount() {return coursesRepository.count();}
-    public Course getSelectedCourseBySlug(String slug) {
+
+    /**
+     * Gets a course by its slug.
+     *
+     * @param slug The slug of the course.
+     * @return The course with the specified slug, or null if not found.
+     */
+    public Course getSelectedCourseBySlug(@NotNull String slug) {
         if (!slug.isEmpty()) {
             return coursesRepository.findBySlugAndStatus(slug, CourseStatus.ACTIVE);
         }
         return null;
     }
-    public Optional<Course> getSelectedCourseById(int id) {
-        return coursesRepository.findById(id);
-    }
 
+    /**
+     * Gets all courses for a user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of courses for the user.
+     */
     public List<Course> getUserCourses(Integer userId) {
         return userRepository.findById(userId).map(user -> {
             if (user.getRoles().contains(Role.ROLE_ADMIN)) {
-                log.info("Права пользователя определены как Администратор");
+                
                 return coursesRepository.findAll();
             }
-            log.info("Права пользователя определены как ROLE_USER");
+            
             return coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
         }).orElse(null); // или orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
     }
-    public Course createCourse(CourseCreateRequest courseRequest, MultipartFile imageFile) throws IOException {
+
+    /**
+     * Creates a new course.
+     *
+     * @param courseRequest The request object containing the course details.
+     * @param imageFile The image file for the course.
+     * @return The created course.
+     * @throws IOException if there is an error while saving the image file.
+     * @throws IllegalArgumentException if the course with the same slug already exists or the image file is invalid.
+     */
+    public Course createCourse(@NotNull CourseCreateRequest courseRequest, MultipartFile imageFile) throws IOException {
         // Проверяем уникальность slug
         if (coursesRepository.existsBySlug(courseRequest.getSlug())) {
             throw new IllegalArgumentException("Курс с таким URL уже существует");
@@ -95,38 +121,60 @@ public class CoursesService {
         return coursesRepository.save(course);
     }
 
-    private String saveImage(MultipartFile file) throws IOException {
+    /**
+     * Saves an image file.
+     *
+     * @param file The image file to save.
+     * @return The name of the saved image file.
+     * @throws IOException if there is an error while saving the image file.
+     */
+    private @NotNull String saveImage(MultipartFile file) throws IOException {
         // Создаем директорию, если не существует
-        log.info("Курс сервис создание директории при ее отсутствии");
+        
         if (!Files.exists(rootLocation)) {
-            log.info("Директории нет -> создаем");
+            
             Files.createDirectories(rootLocation);
         }
 
         // Генерируем уникальное имя файла
-        log.info("генерации имени файла");
+        
         String originalFilename = file.getOriginalFilename();
         String fileExtension = originalFilename != null ?
                 originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
         String filename = UUID.randomUUID() + fileExtension;
-        log.info("Уникальное имя файла "+filename);
+        
 
         // Сохраняем файл
-        log.info("Сохранение файла");
+        
         Path destinationFile = rootLocation.resolve(Paths.get(filename))
                 .normalize().toAbsolutePath();
-        log.info("Маршрут сохранения "+destinationFile);
+        
 
         Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
-        log.info("Файл сохранен");
+        
         return filename;
     }
 
+    /**
+     * Finds a course by its ID.
+     *
+     * @param courseId The ID of the course.
+     * @return The course with the specified ID.
+     * @throws IllegalArgumentException if the course is not found.
+     */
     public Course findCourseById(Integer courseId) {
         return coursesRepository.findById(courseId).orElseThrow(IllegalArgumentException::new);
     }
 
-    public Course updateCourse(CourseUpdateRequest request) throws IOException {
+    /**
+     * Updates a course.
+     *
+     * @param request The request object containing the updated course details.
+     * @return The updated course.
+     * @throws IOException if there is an error while saving the image file.
+     * @throws IllegalArgumentException if the course is not found or the course with the same slug already exists.
+     */
+    public Course updateCourse(@NotNull CourseUpdateRequest request) throws IOException {
         Course existingCourse = coursesRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Курс с id " + request.getId() + " не найден"));
 
@@ -152,7 +200,14 @@ public class CoursesService {
         return coursesRepository.save(existingCourse);
     }
 
-    private CourseResponseDTO convertToCourseResponseDto(Course course) {
+    /**
+     * Converts a course to a CourseResponseDTO.
+     *
+     * @param course The course to convert.
+     * @return The converted CourseResponseDTO.
+     */
+    @Contract("_ -> new")
+    private @NotNull CourseResponseDTO convertToCourseResponseDto(@NotNull Course course) {
         return new CourseResponseDTO(
                 course.getId(),
                 course.getTitle(),
@@ -165,6 +220,14 @@ public class CoursesService {
         );
     }
 
+    /**
+     * Gets a paginated list of courses.
+     *
+     * @param page The page number.
+     * @param size The page size.
+     * @param courseId The ID of the course to retrieve, or 0 to retrieve all courses.
+     * @return A paginated list of courses.
+     */
     public Page<CourseResponseDTO> getCoursesForDTO(Integer page, Integer size, Integer courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         //Пиздатый подход, потому что сразу выделяем память под объект а только потом устанавливаем ему значение
@@ -177,7 +240,13 @@ public class CoursesService {
         return courses.map(this::convertToCourseResponseDto);
     }
 
-    public ModuleResponseDTO convertToModuleResponseDTO(Module module) {
+    /**
+     * Converts a module to a ModuleResponseDTO.
+     *
+     * @param module The module to convert.
+     * @return The converted ModuleResponseDTO.
+     */
+    public ModuleResponseDTO convertToModuleResponseDTO(@NotNull Module module) {
         return new ModuleResponseDTO(
                 module.getId(),
                 module.getCourse().getTitle(),
@@ -187,12 +256,25 @@ public class CoursesService {
         );
     }
 
+    /**
+     * Gets all modules for a course.
+     *
+     * @param courseId The ID of the course.
+     * @return A list of modules for the course.
+     */
     public List<ModuleResponseDTO> getModulesOfCourse(Integer courseId) {
         List<Module> modules = moduleService.getModulesByCourseId(courseId);
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Gets all courses with progress for a user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of courses with progress for the user.
+     */
     public List<CourseWithProgressDTO> getCoursesWithProgress(Integer userId) {
         try {
             List<Course> userCourses = coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
@@ -205,11 +287,17 @@ public class CoursesService {
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Error getting courses with progress for user: {}", userId, e);
-            return Collections.emptyList(); // Возвращаем пустой список вместо null
+            return Collections.emptyList();
         }
     }
 
+    /**
+     * Calculates the progress of a course for a user.
+     *
+     * @param courseId The ID of the course.
+     * @param userId The ID of the user.
+     * @return The progress of the course for the user.
+     */
     private Integer calculateCourseProgress(Integer courseId, Integer userId) {
         try {
             Integer totalLessons = lessonService.countByModuleCourseId(courseId);
@@ -220,10 +308,16 @@ public class CoursesService {
             double progressPercentage = (completedLessons.doubleValue() / totalLessons.doubleValue()) * 100;
             return (int) Math.round(progressPercentage);
         } catch (Exception e) {
-            log.warn("Error calculating progress for course: {} and user: {}", courseId, userId, e);
+            
             return 0;
         }
     }
+
+    /**
+     * Finds all courses and converts them to a list of CourseResponseDTOs.
+     *
+     * @return A list of all courses as CourseResponseDTOs.
+     */
     public List<CourseResponseDTO> findCoursesAndWriteDTO() {
         List<Course> courses = coursesRepository.findAll();
         return courses
@@ -232,7 +326,13 @@ public class CoursesService {
                 .collect(Collectors.toList());
     }
 
-    public CourseWithProgressDTO convertToCourseWithProgressDTO(Course course) {
+    /**
+     * Converts a course to a CourseWithProgressDTO.
+     *
+     * @param course The course to convert.
+     * @return The converted CourseWithProgressDTO.
+     */
+    public CourseWithProgressDTO convertToCourseWithProgressDTO(@NotNull Course course) {
         CourseWithProgressDTO cwp = new CourseWithProgressDTO();
         cwp.setId(course.getId());
         cwp.setTitle(course.getTitle());
@@ -242,7 +342,13 @@ public class CoursesService {
         return cwp;
     }
 
-    public CourseResponseDTO convertToCoursesDto(Course course) {
+    /**
+     * Converts a course to a CourseResponseDTO.
+     *
+     * @param course The course to convert.
+     * @return The converted CourseResponseDTO.
+     */
+    public CourseResponseDTO convertToCoursesDto(@NotNull Course course) {
         return new CourseResponseDTO(
                 course.getId(),
                 course.getTitle(),
@@ -255,6 +361,12 @@ public class CoursesService {
                 );
     }
 
+    /**
+     * Deletes a course by its ID.
+     *
+     * @param courseId The ID of the course to delete.
+     * @return true if the course was deleted successfully, false otherwise.
+     */
     public boolean deleteCourseById(Integer courseId) {
         if(coursesRepository.existsById(courseId)) {
             coursesRepository.deleteById(courseId);
@@ -264,15 +376,23 @@ public class CoursesService {
         }
     }
 
+    /**
+     * Updates the status of a course.
+     *
+     * @param status The new status of the course.
+     * @param courseId The ID of the course to update.
+     * @return true if the course status was updated successfully, false otherwise.
+     * @throws IllegalArgumentException if the course is not found.
+     */
     @Transactional
     public boolean updateCourseStatus(String status, Integer courseId) {
         Course course = coursesRepository.findById(courseId).orElseThrow(
                 () -> new IllegalArgumentException("Course not found")
         );
         course.setStatus(CourseStatus.valueOf(status));
-        log.info("Setting status to Course {} {}", course.getId().toString(), status);
+        
         Course updatedCourse = coursesRepository.save(course);
-        log.info("Status of updatedCourse: {}", updatedCourse.getStatus());
+        
         return updatedCourse.getStatus() == CourseStatus.valueOf(status);
     }
 }

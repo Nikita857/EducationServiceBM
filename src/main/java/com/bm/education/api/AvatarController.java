@@ -3,7 +3,7 @@ package com.bm.education.api;
 import com.bm.education.services.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
+/**
+ * Controller for handling avatar-related requests.
+ */
 @Controller
 @RequiredArgsConstructor
 public class AvatarController {
@@ -34,6 +36,9 @@ public class AvatarController {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private Path staticAvatarsPath;
 
+    /**
+     * Initializes the controller by creating the directory for storing avatars if it does not exist.
+     */
     @PostConstruct
     public void init() {
         try {
@@ -45,17 +50,21 @@ public class AvatarController {
             // Создаем директорию если не существует
             if (!Files.exists(staticAvatarsPath)) {
                 Files.createDirectories(staticAvatarsPath);
-                log.info("Создана директория для аватаров: {}", staticAvatarsPath);
             }
 
-            log.info("Директория аватаров: {}", staticAvatarsPath);
-
         } catch (IOException e) {
-            log.error("Ошибка при создании директории: {}", e.getMessage());
             throw new RuntimeException("Не удалось создать директорию для аватаров", e);
         }
     }
 
+    /**
+     * Uploads an avatar for the authenticated user.
+     *
+     * @param user The authentication object for the current user.
+     * @param file The avatar file to upload.
+     * @param redirectAttributes The redirect attributes to add flash attributes to.
+     * @return A redirect to the user's cabinet page.
+     */
     @PostMapping("/profile/avatar/upload")
     public String uploadAvatar(Authentication user,
                                @RequestParam("avatar") MultipartFile file,
@@ -70,7 +79,7 @@ public class AvatarController {
             String fileExtension = getFileExtension(originalFileName);
             String fileName = UUID.randomUUID() + fileExtension;
 
-            Files.deleteIfExists(staticAvatarsPath.resolve(userService.getUserByUsername(user.getName()).getAvatar().toString()));
+            Files.deleteIfExists(staticAvatarsPath.resolve(userService.getUserByUsername(user.getName()).getAvatar()));
 
             // Сохраняем файл в static/avatars/
             Path filePath = staticAvatarsPath.resolve(fileName);
@@ -79,20 +88,25 @@ public class AvatarController {
             // Сохраняем путь в БД (только имя файла)
             userService.updateUserAvatar(userService.getUserByUsername(user.getName()).getId(), fileName);
 
-            log.info("Аватар сохранен: {}", filePath);
+            
             redirectAttributes.addFlashAttribute("success", "Аватар успешно обновлен");
 
         } catch (IOException e) {
-            log.error("Ошибка при загрузке файла: {}", e.getMessage());
+            
             redirectAttributes.addFlashAttribute("error", "Ошибка при загрузке файла");
-        } catch (Exception e) {
-            log.error("Ошибка: {}", e.getMessage());
+        
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/cabinet/";
     }
 
+    /**
+     * Serves an avatar.
+     *
+     * @param filename The name of the avatar file to serve.
+     * @return A response entity containing the avatar.
+     */
     // Endpoint для получения аватара (если нужен программный доступ)
     @GetMapping("/avatars/{filename:.+}")
     @ResponseBody
@@ -115,6 +129,11 @@ public class AvatarController {
         }
     }
 
+    /**
+     * Validates an avatar file.
+     *
+     * @param file The avatar file to validate.
+     */
     // Валидация файла
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
@@ -131,6 +150,12 @@ public class AvatarController {
         }
     }
 
+    /**
+     * Gets the extension of a file.
+     *
+     * @param fileName The name of the file.
+     * @return The extension of the file.
+     */
     // Получение расширения файла
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
@@ -139,6 +164,12 @@ public class AvatarController {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
+    /**
+     * Determines the content type of a file.
+     *
+     * @param filename The name of the file.
+     * @return The content type of the file.
+     */
     // Определение content type
     private String determineContentType(String filename) {
         if (filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".jpeg")) {
