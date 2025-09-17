@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function displayErrors(errorData) {
         // ИСПРАВЛЕНО: Проверяем, вложены ли ошибки в другой объект (например, fieldErrors)
-        const errors = errorData.fieldErrors || errorData;
+        const errors = errorData["fieldErrors"] || errorData;
 
         for (const fieldName in errors) {
             const input = document.getElementById(fieldName);

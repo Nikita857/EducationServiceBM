@@ -1,5 +1,6 @@
 package com.bm.education.security;
 
+import com.bm.education.security.filters.IpBlockingFilter;
 import com.bm.education.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final IpBlockingFilter ipBlockingFilter;
 
     /**
      * Configures the security filter chain.
@@ -53,6 +55,7 @@ public class SecurityConfig {
                                 "/register",
                                 "/logout",
                                 "/logout/cookie",
+                                "/blocked",
                                 "/error"
                         ).permitAll()
                         .requestMatchers(
@@ -66,6 +69,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationManager(authenticationManager())
+                .addFilterBefore(ipBlockingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

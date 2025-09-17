@@ -1,24 +1,29 @@
 package com.bm.education.controllers;
 
+import com.bm.education.api.ApiResponse;
 import com.bm.education.dto.auth.AuthRequest;
 import com.bm.education.dto.auth.AuthResponse;
 import com.bm.education.dto.auth.RegisterRequest;
 import com.bm.education.models.Role;
-import com.bm.education.models.User;
 import com.bm.education.security.jwt.JwtService;
+import com.bm.education.services.LoginAttemptService;
 import com.bm.education.services.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +42,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final LoginAttemptService loginAttemptService;
 
     /**
      * Registers a new user.
@@ -67,7 +73,6 @@ public class AuthController {
         String jwtToken = jwtService.generateToken(userDetails);
 
         setCookie(jwtToken, response);
-        /*TODO Сделал автологин после регистрации, но не редиректится, надо разобраться */
 
         return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).redirect(determineRoleAndRouting(userDetails)).build());
     }
@@ -81,8 +86,16 @@ public class AuthController {
      */
     @PostMapping("/api/auth/login")
     @ResponseBody
-    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request, HttpServletResponse response) {
-        return performAuthenticationAndSetCookie(request.getUsername(), request.getPassword(), response);
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request, HttpServletRequest httpServletRequest, HttpServletResponse response) {
+        try {
+            return performAuthenticationAndSetCookie(request.getUsername(), request.getPassword(), response);
+        } catch (BadCredentialsException e) {
+            String ip = getClientIP(httpServletRequest);
+            loginAttemptService.loginFailed(ip);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.error("Неверный логин или пароль")
+            );
+        }
     }
 
     private @NotNull ResponseEntity<AuthResponse> performAuthenticationAndSetCookie(String username, String password, HttpServletResponse response) {
@@ -102,6 +115,14 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         response.addCookie(cookie);
+    }
+
+    private String getClientIP(@NotNull HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null || xfHeader.isEmpty()) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0].trim();
     }
 
     private @NotNull String determineRoleAndRouting(@NotNull UserDetails userDetails) {
@@ -150,5 +171,11 @@ public class AuthController {
         cookie.setPath("/");
         response.addCookie(cookie);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/blocked")
+    public String blockedPage(Model model) {
+        model.addAttribute("banDuration", loginAttemptService.getBanDuration() * 60);
+        return "error/blocked";
     }
 }

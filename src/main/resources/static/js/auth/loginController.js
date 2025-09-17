@@ -60,7 +60,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         });
 
         const responseText = await response.text();
-        console.log('Response text:', responseText);
         const data = JSON.parse(responseText);
 
         console.log(data);
@@ -72,6 +71,11 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             // Перенаправление на главную страницу или страницу админки
             window.location.href = data.redirect ; // Или куда-то еще
         } else {
+            // Проверяем, не заблокирован ли пользователь
+            if (response.status === 429 && data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+                return;
+            }
             // Ошибка аутентификации
             showAuthMessage(data.message || 'Неверный логин или пароль', 'error');
         }
