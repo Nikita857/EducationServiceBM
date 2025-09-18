@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  app:
+    image: nikita857/education-service:latest
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile
+    ports:
+      - "8443:8443"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./dist:/static
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/db_spring?useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_WEB_RESOURCES_STATIC_LOCATIONS: "classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:/static/"
+
+  db:
+    image: mariadb:10.4.32
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: "db_spring"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./src/main/resources/static/db:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+volumes:
+  db-data:

@@ -42,8 +42,7 @@ public class UserProgress {
     private Lesson lesson;
 
     @NotNull
-    @ColumnDefault("current_timestamp()")
-    @Column(name = "completed_at", nullable = false)
+    @Column(name = "completed_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Instant completedAt;
 
 }

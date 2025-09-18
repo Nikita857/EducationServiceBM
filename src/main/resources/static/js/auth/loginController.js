@@ -81,7 +81,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         }
     } catch (error) {
         console.error('Ошибка при аутентификации:', error);
-        showAuthMessage('Произошла ошибка сети. Попробуйте позже.', 'error');
+        showAuthMessage('Проверьте подключение к сети. Попробуйте позже.', 'error');
     }
 });
 

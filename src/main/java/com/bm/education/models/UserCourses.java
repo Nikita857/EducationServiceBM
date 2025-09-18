@@ -32,8 +32,7 @@ public class UserCourses {
     private Course course;
 
     @NotNull
-    @ColumnDefault("current_timestamp()")
-    @Column(name = "enrolled_at", nullable = false)
+    @Column(name = "enrolled_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Instant enrolledAt;
 
     @PrePersist

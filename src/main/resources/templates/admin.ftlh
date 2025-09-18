@@ -14,7 +14,7 @@
     <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.min.js"></script>
-    <script type="module" src="${springMacroRequestContext.contextPath}/js/admin-bundle.js"></script>
+    <script type="module" src="${springMacroRequestContext.contextPath}/js/index.js"></script>
 
     <title>Панель управления</title>
     <style>
