@@ -82,7 +82,7 @@ public class AdminOfferController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            
+
             return ResponseEntity.internalServerError().body(
                     Map.of("error", "Internal server error")
             );
@@ -106,9 +106,9 @@ public class AdminOfferController {
                     response.put("success", true);
                     return ResponseEntity.ok().body(response);
                 }
-                    response.put("success", false);
-                    response.put("error", String.format("Заявка со статусом: %s не может быть удалена", offer.getStatus()));
-                    return ResponseEntity.badRequest().body(response);
+                response.put("success", false);
+                response.put("error", String.format("Заявка со статусом: %s не может быть удалена", offer.getStatus()));
+                return ResponseEntity.badRequest().body(response);
             }
             response.put("success", false);
             response.put("error", "offer is not present");

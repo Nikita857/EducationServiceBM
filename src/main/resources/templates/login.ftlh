@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Вход в систему</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
 </head>
@@ -245,7 +246,7 @@
                     <label for="username" class="form-label">Логин или Email</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="username" name="username" placeholder="Введите ваш логин или email" required>
-                        <span class="input-group-text bg-transparent border-0">
+                        <span class="input-group-text">
                             <i class="bi bi-person"></i>
                         </span>
                     </div>
@@ -254,7 +255,7 @@
 
                 <div class="mb-4">
                     <label for="password" class="form-label">Пароль</label>
-                    <div class="input-group" style="position: relative;">
+                    <div style="position: relative;">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Введите ваш пароль" required>
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="bi bi-eye"></i>

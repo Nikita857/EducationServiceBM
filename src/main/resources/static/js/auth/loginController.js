@@ -81,7 +81,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         }
     } catch (error) {
         console.error('Ошибка при аутентификации:', error);
-        showAuthMessage('Проверьте подключение к сети. Попробуйте позже.', 'error');
+        showAuthMessage('Произошла ошибка сети. Попробуйте позже.', 'error');
     }
 });
 
@@ -89,5 +89,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('logout')) {
     showAuthMessage('Вы успешно вышли из системы', 'success');
-
+}else if(urlParams.has('expired')) {
+    showAuthMessage('Время вашей сессии истекло', 'error')
 }

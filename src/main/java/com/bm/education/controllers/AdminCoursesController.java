@@ -67,8 +67,7 @@ public class AdminCoursesController {
             List<ModuleResponseDTO> modules = coursesService.getModulesOfCourse(id);
             if(modules != null && !modules.isEmpty()) {
                 return ResponseEntity.ok(
-                        ApiResponse.success(
-                                "modules", modules));
+                        ApiResponse.success(modules));
             }else{
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Modules not found")
@@ -93,7 +92,7 @@ public class AdminCoursesController {
             List<CourseResponseDTO> courses = coursesService.findCoursesAndWriteDTO();
             if(courses != null && !courses.isEmpty()) {
                 return ResponseEntity.ok(
-                        ApiResponse.success("courses", courses));
+                        ApiResponse.success(courses));
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Courses not found")
@@ -113,24 +112,17 @@ public class AdminCoursesController {
      * @return A response entity indicating that the course was deleted successfully, or an error if the course was not found.
      */
     @DeleteMapping("/admin/courses/{id}/delete")
-    public ResponseEntity<?> deleteCourse(@PathVariable int id) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable int id) {
         try {
             boolean success = coursesService.deleteCourseById(id);
             if(success) {
-                response.put("success", true);
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(ApiResponse.success("Курс успешно удален"));
             }else {
-                response.put("success", false);
-                response.put("error", "Курс с id " + id + " не найден");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Курс с id " + id + " не найден"));
             }
         }catch (Exception e) {
             
-            return ResponseEntity.internalServerError().body(Map.of(
-                    "success", false,
-                    "error", "An internal server error occurred."
-            ));
+            return ResponseEntity.internalServerError().body(ApiResponse.error("An internal server error occurred."));
         }
     }
 
@@ -177,8 +169,23 @@ public class AdminCoursesController {
      * @return A response entity indicating that the course was updated successfully.
      */
     @PostMapping("/admin/courses/update")
-    public ResponseEntity<ApiResponse<?>> updateCourse(@ModelAttribute CourseUpdateRequest courseUpdateRequest) {
+    public ResponseEntity<ApiResponse<?>> updateCourse(@Valid @ModelAttribute CourseUpdateRequest courseUpdateRequest,
+                                                       BindingResult bindingResult,
+                                                       @RequestParam(value = "image", required = false) MultipartFile imageFile) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            fieldError -> Objects.requireNonNullElse(
+                                    fieldError.getDefaultMessage(),
+                                    "сообщение об ошибке не указано"
+                            )
+                    ));
+            return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
+        }
+
         try {
+            courseUpdateRequest.setImage(imageFile);
             Course updatedCourse = coursesService.updateCourse(courseUpdateRequest);
             return ResponseEntity.ok(ApiResponse.success("Курс успешно обновлен", Map.of("courseId", updatedCourse.getId())));
         } catch (IOException e) {
@@ -190,9 +197,8 @@ public class AdminCoursesController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Внутренняя ошибка сервера."));
+                    .body(ApiResponse.error("Внутренняя ошибка сервера: " + e.getMessage()));
         }
     }
 

@@ -65,7 +65,14 @@ body {
 .lesson-description {
     color: #94a3b8;
     margin-bottom: 1.5rem;
-    line-height: 1.5;
+    }
+}
+
+.empty-state-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
 }
 
 .btn-primary {

@@ -33,7 +33,7 @@ public class CourseUpdateRequest {
      * The description of the course.
      */
     @NotBlank(message = "Описание не может быть пустым")
-    @Size(min = 2, max = 100, message = "Длина описания должна быть в пределах 2-100 символов")
+    @Size(min = 2, max = 120, message = "Длина описания должна быть в пределах 2-100 символов")
     private String description;
 
     /**

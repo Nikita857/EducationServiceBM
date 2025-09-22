@@ -305,8 +305,8 @@
         <div class="search-suggestion">
             <h4>Возможно, вы искали:</h4>
             <ul class="suggestion-list">
-                <li><a href="${springMacroRequestContext.contextPath}/">Каталог курсов</a></li>
-                <li><a href="${springMacroRequestContext.contextPath}/about">О платформе</a></li>
+                <li><a href="${springMacroRequestContext.contextPath}/">Главная</a></li>
+                <li><a href="${springMacroRequestContext.contextPath}/docs">Документация</a></li>
             </ul>
         </div>
     </div>

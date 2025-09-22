@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,10 +20,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 
-/**
- * Configuration for Spring Security.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -34,13 +32,6 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final IpBlockingFilter ipBlockingFilter;
 
-    /**
-     * Configures the security filter chain.
-     *
-     * @param http The HttpSecurity object to configure.
-     * @return The configured security filter chain.
-     * @throws Exception If an error occurs while configuring the security filter chain.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -49,9 +40,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                        .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net;")
-                        )
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(31536000)
@@ -59,17 +47,16 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login",
-                                "/api/auth/**",
-                                "/register",
-                                "/logout",
-                                "/logout/cookie",
-                                "/blocked",
-                                "/error"
+                                "/css/**", "/js/**", "/webjars/**", "/images/**",
+                                "/videos/**", "/favicon.ico", "/avatars/**",
+                                "/img/**", "/static/**", "/error"
                         ).permitAll()
                         .requestMatchers(
-                                "/css/**", "/js/**", "/webjars/**", "/images/**",
-                                "/videos/**", "/favicon.ico", "/avatars/**", "/img/**", "/static/**"
+                                "/login",
+                                "/api/auth/**",
+                                "/api/auth/refresh",
+                                "/register",
+                                "/logout", "/logout/cookie", "/blocked"
                         ).permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -77,28 +64,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authenticationManager(authenticationManager())
+                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 .addFilterBefore(ipBlockingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Creates a password encoder.
-     *
-     * @return The password encoder.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Creates an authentication provider.
-     *
-     * @return The authentication provider.
-     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -107,13 +84,8 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    /**
-     * Creates an authentication manager.
-     *
-     * @return The authentication manager.
-     */
     @Bean
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(authenticationProvider());
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

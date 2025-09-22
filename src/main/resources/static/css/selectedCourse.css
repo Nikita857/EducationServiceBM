@@ -87,7 +87,7 @@ body {
 }
 
 .module-list {
-    max-height: 60vh;
+    max-height: 22rem;
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -107,7 +107,7 @@ body {
 }
 
 .module-btn {
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(99, 102, 241, 0.2);
     border-radius: 12px;
     padding: 1.25rem;

@@ -53,7 +53,7 @@
 <div class="container">
     <div class="lessons-grid">
         <#list moduleLessons as lesson>
-            <div class="lesson-card">
+            <div class="lesson-card" data-completed="${lesson.completed}">
                 <#if lesson.completed == 1>
                     <span class="completed-badge">
                             <i class="bi bi-check-circle me-1"></i>Завершено
@@ -127,6 +127,31 @@
             progressBar.style.transition = 'width 1.5s ease-in-out';
             progressBar.style.width = progressValue;
         }, 500);
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const lessonCards = document.querySelectorAll('.lesson-card');
+
+        for (let i = 1; i < lessonCards.length; i++) {
+            const previousLesson = lessonCards[i - 1];
+            const currentLesson = lessonCards[i];
+
+            const isPreviousCompleted = previousLesson.getAttribute('data-completed') == '1';
+
+            if (!isPreviousCompleted) {
+                const link = currentLesson.querySelector('a.btn');
+                if (link) {
+                    link.classList.add('disabled');
+                    link.removeAttribute('href');
+                    link.style.cursor = 'not-allowed';
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showAlert('Сначала завершите предыдущий урок!', 'warning');
+                    });
+                }
+            }
+        }
     });
 </script>
 </body>

@@ -11,16 +11,16 @@ import org.hibernate.annotations.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Table(name = "offers")
-@Getter
-@Setter
+@Data
 public class Offer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)

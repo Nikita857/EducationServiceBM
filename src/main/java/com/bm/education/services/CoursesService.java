@@ -1,11 +1,10 @@
 package com.bm.education.services;
 
 import com.bm.education.dto.*;
-import com.bm.education.models.Course;
-import com.bm.education.models.CourseStatus;
+import com.bm.education.models.*;
 import com.bm.education.models.Module;
-import com.bm.education.models.Role;
 import com.bm.education.repositories.CoursesRepository;
+import com.bm.education.repositories.DocumentationCategoryRepository;
 import com.bm.education.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +41,7 @@ public class CoursesService {
     private final Path rootLocation = Paths.get("src/main/resources/static/img/course-brand");
     private final ModuleService moduleService;
     private final LessonService lessonService;
+    private final DocumentationCategoryRepository documentationCategoryRepository;
 
     /**
      * Gets the total number of courses.
@@ -58,7 +58,7 @@ public class CoursesService {
      */
     public Course getSelectedCourseBySlug(@NotNull String slug) {
         if (!slug.isEmpty()) {
-            return coursesRepository.findBySlugAndStatus(slug, CourseStatus.ACTIVE);
+            return coursesRepository.findBySlugWithDocumentation(slug, CourseStatus.ACTIVE);
         }
         return null;
     }
@@ -174,6 +174,7 @@ public class CoursesService {
      * @throws IOException if there is an error while saving the image file.
      * @throws IllegalArgumentException if the course is not found or the course with the same slug already exists.
      */
+    @Transactional
     public Course updateCourse(@NotNull CourseUpdateRequest request) throws IOException {
         Course existingCourse = coursesRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Курс с id " + request.getId() + " не найден"));

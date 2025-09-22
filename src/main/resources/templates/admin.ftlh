@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    
+
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
@@ -14,7 +14,7 @@
     <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.min.js"></script>
-    <script type="module" src="${springMacroRequestContext.contextPath}/js/index.js"></script>
+    <script type="module" src="${springMacroRequestContext.contextPath}/js/admin-bundle.js"></script>
 
     <title>Панель управления</title>
     <style>
@@ -164,7 +164,7 @@
                             </div>
                         </div>
                         <div class="stat-content">
-                                <h3>${offersTotal}</h3>
+                            <h3>${offersTotal}</h3>
                             <p class="text-muted">Всего заявок</p>
                         </div>
                     </div>
@@ -375,15 +375,15 @@
         <!-- Уроки -->
         <div class="tab-content" id="lessons-edit-tab">
             <section class="content-section">
-                        <!-- Строки с уроками будут добавляться через JavaScript -->
-                        <div id="lessonsContainer">
-                            <div class="table-row">
-                                <div colspan="7" class="text-center py-4 text-muted">
-                                    <i class="fas fa-spinner fa-spin me-2"></i>
-                                    Загрузка уроков...
-                                </div>
-                            </div>
+                <!-- Строки с уроками будут добавляться через JavaScript -->
+                <div id="lessonsContainer">
+                    <div class="table-row">
+                        <div colspan="7" class="text-center py-4 text-muted">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            Загрузка уроков...
                         </div>
+                    </div>
+                </div>
                 <!-- Пагинация уроков -->
                 <div class="pagination-container mt-3" id="lessonsPagination"></div>
             </section>
@@ -506,7 +506,7 @@
                         <label for="responseDescription">Текст заявки</label>
                         <div class="card">
                             <div class="card-body" id="responseDescription">
-                            <#--Сюда выводится текст заявки-->
+                                <#--Сюда выводится текст заявки-->
                             </div>
                         </div>
                     </div>
@@ -629,7 +629,7 @@
                         <label for="editModuleSlug" class="form-label">URI</label>
                         <input type="text" class="form-control" id="editModuleSlug" name="slug" required>
                     </div>
-                     <div class="mb-3">
+                    <div class="mb-3">
                         <label for="editModuleCourseId" class="form-label">Курс</label>
                         <select class="form-select" id="editModuleCourseId" name="courseId" required>
                             <!-- Courses will be loaded here -->
@@ -682,102 +682,102 @@
 <script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
 <script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Анимация статистики
-            const statNumbers = document.querySelectorAll('.stat-content h3');
-            statNumbers.forEach(stat => {
-                const target = parseInt(stat.textContent);
-                if (isNaN(target)) return;
-                let current = 0;
-                const increment = Math.max(1, target / 30);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Анимация статистики
+        const statNumbers = document.querySelectorAll('.stat-content h3');
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.textContent);
+            if (isNaN(target)) return;
+            let current = 0;
+            const increment = Math.max(1, target / 30);
 
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        stat.textContent = target;
-                        clearInterval(timer);
-                    } else {
-                        stat.textContent = Math.floor(current);
-                    }
-                }, 30);
-            });
-
-            // Mobile menu toggle
-            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            const sidebar = document.querySelector('.admin-sidebar');
-
-            if (mobileMenuBtn && sidebar) {
-                mobileMenuBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('open');
-                });
-            }
-
-            // --- MODIFIED TAB LOGIC WITH LOCALSTORAGE ---
-            const navLinks = document.querySelectorAll('.nav-link[data-tab]');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            function switchTab(tabId) {
-                if (!tabId) return;
-
-                // Hide all tabs and remove active class from links
-                tabContents.forEach(tab => tab.classList.remove('active'));
-                navLinks.forEach(link => link.classList.remove('active'));
-
-                // Show the target tab and set active class on the link
-                const targetTab = document.getElementById(tabId);
-                const targetLink = document.querySelector('.nav-link[data-tab="' + tabId + '"]');
-
-                if (targetTab) {
-                    targetTab.classList.add('active');
-                    targetTab.classList.add('fade-in');
-                    setTimeout(() => {
-                        targetTab.classList.remove('fade-in');
-                    }, 500);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    stat.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    stat.textContent = Math.floor(current);
                 }
-                if (targetLink) {
-                    targetLink.classList.add('active');
-                }
-
-                // Save the active tab to localStorage
-                try {
-                    localStorage.setItem('lastActiveAdminTab', tabId);
-                } catch (e) {
-                    console.error("Could not save tab to localStorage", e);
-                }
-            }
-
-            // Add click event listeners to nav links
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetTabId = this.getAttribute('data-tab');
-                    switchTab(targetTabId);
-                });
-            });
-
-            // On page load, check localStorage for the last active tab
-            let lastTabId = null;
-            try {
-                lastTabId = localStorage.getItem('lastActiveAdminTab');
-            } catch (e) {
-                console.error("Could not read tab from localStorage", e);
-            }
-            
-            if (lastTabId && document.getElementById(lastTabId)) {
-                switchTab(lastTabId);
-            } else {
-                // Default to the first tab if nothing is stored or tab is invalid
-                const firstTab = document.querySelector('.nav-link[data-tab]');
-                if (firstTab) {
-                    switchTab(firstTab.getAttribute('data-tab'));
-                }
-            }
-            
-            // Make switchTab globally available if it's needed elsewhere
-            window.switchTab = switchTab;
+            }, 30);
         });
-    </script>
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const sidebar = document.querySelector('.admin-sidebar');
+
+        if (mobileMenuBtn && sidebar) {
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // --- MODIFIED TAB LOGIC WITH LOCALSTORAGE ---
+        const navLinks = document.querySelectorAll('.nav-link[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function switchTab(tabId) {
+            if (!tabId) return;
+
+            // Hide all tabs and remove active class from links
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            // Show the target tab and set active class on the link
+            const targetTab = document.getElementById(tabId);
+            const targetLink = document.querySelector('.nav-link[data-tab="' + tabId + '"]');
+
+            if (targetTab) {
+                targetTab.classList.add('active');
+                targetTab.classList.add('fade-in');
+                setTimeout(() => {
+                    targetTab.classList.remove('fade-in');
+                }, 500);
+            }
+            if (targetLink) {
+                targetLink.classList.add('active');
+            }
+
+            // Save the active tab to localStorage
+            try {
+                localStorage.setItem('lastActiveAdminTab', tabId);
+            } catch (e) {
+                console.error("Could not save tab to localStorage", e);
+            }
+        }
+
+        // Add click event listeners to nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetTabId = this.getAttribute('data-tab');
+                switchTab(targetTabId);
+            });
+        });
+
+        // On page load, check localStorage for the last active tab
+        let lastTabId = null;
+        try {
+            lastTabId = localStorage.getItem('lastActiveAdminTab');
+        } catch (e) {
+            console.error("Could not read tab from localStorage", e);
+        }
+
+        if (lastTabId && document.getElementById(lastTabId)) {
+            switchTab(lastTabId);
+        } else {
+            // Default to the first tab if nothing is stored or tab is invalid
+            const firstTab = document.querySelector('.nav-link[data-tab]');
+            if (firstTab) {
+                switchTab(firstTab.getAttribute('data-tab'));
+            }
+        }
+
+        // Make switchTab globally available if it's needed elsewhere
+        window.switchTab = switchTab;
+    });
+</script>
 <!-- Форма создания урока -->
 <div class="modal fade" id="createLessonModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">

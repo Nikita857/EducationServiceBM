@@ -93,29 +93,17 @@ public class UserService {
     /**
      * Deletes a user by their ID.
      *
-     * @param userId The ID of the user to delete.
+     * @param id The ID of the user to delete.
      * @return true if the user was deleted successfully, false otherwise.
      * @throws EntityNotFoundException if the user is not found.
      */
-    @Transactional
-    public boolean deleteUser(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User not found with id: " + userId);
-        }
+    public boolean deleteUser(Integer id) {
+        userRepository.deleteById(id);
+        return userRepository.existsById(id);
+    }
 
-        // 1. Delete related entities from child tables
-        notificationRepository.deleteByUser_Id(userId);
-        offerRepository.deleteByUser_Id(userId);
-        userProgressRepository.deleteByUser_Id(userId);
-        userCourseRepository.deleteByUser_Id(userId);
-
-        // 2. Delete from the join table for roles
-        userRepository.deleteUserRolesByUserId(userId);
-
-        // 3. Delete the user itself
-        userRepository.deleteById(userId);
-
-        return !userRepository.existsById(userId);
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
     /**
@@ -247,7 +235,7 @@ public class UserService {
                 user.getQualification(),
                 user.getUsername(),
                 user.getAvatar(),
-                user.getCreatedAt(),
+                user.getCreatedAt().toString(),
                 user.getRoles().toString()
         );
     }

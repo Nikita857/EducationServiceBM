@@ -67,7 +67,7 @@ public class AdminModuleController {
         try {
             List<ModuleResponseDTO> modules = moduleService.getAllModulesByDTO();
             return ResponseEntity.ok(
-                    ApiResponse.success("success", modules)
+                    ApiResponse.success(modules)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
@@ -88,7 +88,7 @@ public class AdminModuleController {
             ModuleResponseDTO module = moduleService.findModuleById(id);
             if(module != null) {
                 return ResponseEntity.ok(
-                        ApiResponse.success("module", module)
+                        ApiResponse.success(module)
                 );
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -171,7 +171,7 @@ public class AdminModuleController {
             ModuleResponseDTO createdModule = moduleService.createModule(mcr);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResponse.success("module", createdModule)
+                    ApiResponse.success(createdModule)
             );
 
         } catch (Exception e) {

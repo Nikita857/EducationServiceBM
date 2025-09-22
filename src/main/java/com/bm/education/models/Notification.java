@@ -3,7 +3,7 @@ package com.bm.education.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -32,6 +32,8 @@ public class Notification {
     @Column(name = "message", nullable = false)
     private String message;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

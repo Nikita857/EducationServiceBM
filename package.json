@@ -2,10 +2,10 @@
   "name": "educationservicebm",
   "version": "1.0.0",
   "description": "",
-  "main": "src/main/resources/static/js/index.js",
+  
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build src/main/resources/static/js/admin-bundle.js --dist-dir dist"
+    "build": "parcel build src/main/resources/static/ts/admin-bundle.ts --dist-dir src/main/resources/static/js --public-url ./"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,14 @@
   },
   "homepage": "https://github.com/Nikita857/EducationServiceBM#readme",
   "devDependencies": {
-    "parcel": "^2.15.4"
+    "parcel": "^2.15.4",
+    "typescript": "^5.4.5",
+    "@types/bootstrap": "^5.2.10",
+    "@types/node": "^20.12.12",
+    "@types/jquery": "^3.5.29"
   },
   "dependencies": {
-    "tinymce": "^8.0.2"
+    "tinymce": "^8.0.2",
+    "bootstrap": "^5.3.3"
   }
 }

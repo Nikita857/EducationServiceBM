@@ -1,10 +1,12 @@
+let questions = [];
 let currentQuestion = 0;
 let score = 0;
 
-function startQuiz(questions) {
+function startQuiz(quizQuestions) {
+    questions = quizQuestions;
     currentQuestion = 0;
     score = 0;
-    showQuestion(questions);
+    showQuestion();
     new bootstrap.Modal(document.getElementById('quizModal')).show();
 }
 
@@ -14,7 +16,7 @@ function showQuestion() {
     const current = questions[currentQuestion];
 
     questionElement.textContent = `${current.question}`;
-    $('#questionCounter').text(`Вопрос ${currentQuestion+1} из 10`);
+    $('#questionCounter').text(`Вопрос ${currentQuestion + 1} из ${questions.length}`);
     $('#score').text(`${score} баллов`);
     answersElement.innerHTML = '';
 
@@ -30,7 +32,7 @@ function showQuestion() {
 function checkAnswer(index) {
     const current = questions[currentQuestion];
     if (current.answers[index].correct) {
-        ++score;
+        score++;
     }
     currentQuestion++;
     if (currentQuestion < questions.length) {
@@ -78,11 +80,14 @@ function saveUserProgress() {
 function showResult() {
     const questionElement = document.getElementById('question');
     const answersElement = document.getElementById('answers');
-        if(score >=8) {
-            questionElement.textContent = `Тест пройден! Ваш результат: ${score} из ${questions.length}`;
-            saveUserProgress();
-        }else{
-            questionElement.textContent = `Тест не пройден! Ваш результат: ${score} из ${questions.length}`;
-        }
+    const questionCounterElement = document.getElementById('questionCounter');
+
+    if (score >= (questions.length * 0.8)) { // Pass if 80% or more correct
+        questionElement.textContent = `Тест пройден! Ваш результат: ${score} из ${questions.length}`;
+        saveUserProgress();
+    } else {
+        questionElement.textContent = `Тест не пройден! Ваш результат: ${score} из ${questions.length}`;
+    }
     answersElement.innerHTML = '';
+    questionCounterElement.textContent = 'Тест завершен';
 }

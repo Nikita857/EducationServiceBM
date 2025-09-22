@@ -88,7 +88,7 @@
 
         <!-- Right Column -->
         <div class="col-lg-6">
-            <div class="module-container">
+            <div class="stats-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0">Модули курса</h4>
                     <span class="badge bg-primary rounded-pill">${modules?size} модулей</span>
@@ -99,6 +99,41 @@
                         <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}" class="module-btn">
                             <h6 class="module-title">${module.moduleSlug}</h6>
                             <small class="text-muted">Модуль ${module?index + 1}</small>
+                        </a>
+                    </#list>
+                </div>
+            </div>
+
+            <!-- Documentation Block -->
+            <div class="stats-card mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Категории документации</h4>
+                </div>
+
+                <div class="module-list">
+                    <#if selectedCourseData.documentation??>
+                        <#if selectedCourseData.documentation.categories?has_content>
+                            <#list selectedCourseData.documentation.categories as category>
+                                <a href="/course/${selectedCourseData.slug}/docs/category/${category.slug}" class="module-btn">${category.name}</a>
+                            </#list>
+                        <#else>
+                            <p class="text-muted">Категории не найдены.</p>
+                        </#if>
+                    <#else>
+                        <p class="text-muted">Документация не найдена.</p>
+                    </#if>
+                </div>
+            </div>
+
+            <div class="stats-card mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Тесты по модулям</h4>
+                </div>
+
+                <div class="module-list">
+                    <#list modules as module>
+                        <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}/test" class="module-btn">
+                            <h6 class="module-title">Тест по модулю: ${module.moduleSlug}</h6>
                         </a>
                     </#list>
                 </div>

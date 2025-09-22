@@ -1,21 +1,24 @@
-    package com.bm.education.models;
+package com.bm.education.models;
 
-    import jakarta.persistence.*;
-    import jakarta.validation.constraints.NotNull;
-    import jakarta.validation.constraints.Size;
-    import lombok.*;
-    import org.hibernate.annotations.OnDelete;
-    import org.hibernate.annotations.OnDeleteAction;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
-    import java.util.LinkedHashSet;
-    import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-    @Entity
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Table(name = "modules")
-    public class Module {
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "modules")
+public class Module {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +26,7 @@
     private Integer id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
@@ -43,9 +46,12 @@
     @Enumerated(EnumType.STRING)
     private ModuleStatus status;
 
+    @JsonManagedReference
+    @ToString.Exclude
     @OneToMany(mappedBy = "module")
     private Set<Lesson> lessons = new LinkedHashSet<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "module")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 

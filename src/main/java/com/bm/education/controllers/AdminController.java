@@ -72,11 +72,11 @@ public class AdminController {
      * @return A response entity containing the offer.
      */
     @GetMapping("admin/offers/{offerId}")
-    public ResponseEntity<OfferDto> getOfferById(@PathVariable Integer offerId) {
+    public ResponseEntity<ApiResponse<OfferDto>> getOfferById(@PathVariable Integer offerId) {
         try {
-            OfferDto offerDto = offerService.getOfferById(offerId);
+            OfferDto offerRequestDTO = offerService.getOfferById(offerId);
             return ResponseEntity.ok(
-                    ApiResponse.success(offerDto).data());
+                    ApiResponse.success(offerRequestDTO));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -93,13 +93,9 @@ public class AdminController {
      */
     // Обновление ответа и статуса
     @PostMapping("admin/updateOffer")
-    public ResponseEntity<Map<String, Object>> updateOffer(
+    public ResponseEntity<ApiResponse<?>> updateOffer(
             @Valid @RequestBody OfferResponseDto updateDto,
             BindingResult bindingResult) {
-
-        
-
-        Map<String, Object> response = new HashMap<>();
 
         // Проверка ошибок валидации
         if (bindingResult.hasErrors()) {
@@ -109,38 +105,23 @@ public class AdminController {
                             fieldError -> Objects.requireNonNull(fieldError.getDefaultMessage()).isEmpty()?fieldError.getDefaultMessage() : ""
                     ));
 
-            response.put("success", false);
-            response.put("errors", errors);
-            
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
         }
 
         try {
             // Обновляем заявку
             Offer updatedOffer = offerService.updateAdminResponse(updateDto);
 
-            response.put("success", true);
-            response.put("message", "Заявка успешно обновлена");
-            response.put("data", Map.of(
+            return ResponseEntity.ok(ApiResponse.success("Заявка успешно обновлена", Map.of(
                     "id", updatedOffer.getId(),
                     "status", updatedOffer.getStatus()
-            ));
-
-            
-
-            return ResponseEntity.ok(response);
+            )));
 
         } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
 
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Ошибка при обновлении заявки");
-            
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("Ошибка при обновлении заявки"));
         }
     }
 

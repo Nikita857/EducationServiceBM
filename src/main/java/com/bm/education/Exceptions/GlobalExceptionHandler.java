@@ -1,29 +1,28 @@
 package com.bm.education.Exceptions;
 
+import com.bm.education.api.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-    /**TODO ну по факту уже почти все готово, можно разобраться с мавеном, установить его локально,
-     я уже закинул мавен в Program Files x86 надо только попросить макса ввести логин пароль админа чтобы добавить мавен в переменную среды
-     попробовать скомпилировать проект и собрать его в .jar. Ну и делать презентацию, ошибок не остлось.
-     А, еще нужно оптимизировать импорты.
-     */
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(@NotNull ApiException ex) {
@@ -83,4 +82,3 @@ public class GlobalExceptionHandler {
         return "error/403";
     }
 }
-

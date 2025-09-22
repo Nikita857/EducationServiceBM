@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "courses")
-@Data
+@Getter
+@Setter
 public class Course {
 
     @Id
@@ -45,11 +47,13 @@ public class Course {
     @OneToMany(mappedBy = "course")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Documentation documentation;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private CourseStatus status;
 
-    @NotNull
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -63,9 +67,5 @@ public class Course {
         status = CourseStatus.INACTIVE;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
 }

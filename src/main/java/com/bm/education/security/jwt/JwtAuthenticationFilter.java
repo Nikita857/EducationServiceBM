@@ -17,9 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * A filter that authenticates requests with a JSON Web Token (JWT).
- */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,21 +24,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    /**
-     * Filters a request to authenticate the user with a JWT.
-     *
-     * @param request The request to filter.
-     * @param response The response to filter.
-     * @param filterChain The filter chain.
-     * @throws ServletException If a servlet error occurs.
-     * @throws IOException If an I/O error occurs.
-     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+        if (path.startsWith("/css/") ||
+                path.startsWith("/js/") ||
+                path.startsWith("/webjars/") ||
+                path.startsWith("/images/") ||
+                path.startsWith("/static/") ||
+                path.startsWith("/login") ||
+                path.startsWith("/api/auth/")
+        ) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String jwt = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -52,14 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        final String username;
-
         if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        username = jwtService.extractUsername(jwt);
+        final String username = jwtService.extractUsername(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);

@@ -53,7 +53,7 @@ public class UserResponseDTO {
     /**
      * The creation date of the user.
      */
-    private Instant createdAt;
+    private String createdAt;
 
     /**
      * The role of the user.
@@ -74,7 +74,7 @@ public class UserResponseDTO {
      * @param createdAt The creation date of the user.
      * @param role The role of the user.
      */
-    public UserResponseDTO(Integer id, String firstName, String lastName, String department, String jobTitle, String qualification, String username, String avatar, Instant createdAt, String role) {
+    public UserResponseDTO(Integer id, String firstName, String lastName, String department, String jobTitle, String qualification, String username, String avatar, String createdAt, String role) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

@@ -16,6 +16,9 @@ public interface CoursesRepository extends JpaRepository<Course, Integer> {
 
     Course findBySlugAndStatus(String courseName, CourseStatus status);
 
+    @Query("SELECT c FROM Course c LEFT JOIN FETCH c.documentation d LEFT JOIN FETCH d.categories WHERE c.slug = :slug AND c.status = :status")
+    Course findBySlugWithDocumentation(@Param("slug") String slug, @Param("status") CourseStatus status);
+
     @Query("SELECT c FROM Course c WHERE c.id IN " +
             "(SELECT uc.course.id FROM UserCourses uc WHERE uc.user.id = :userId AND uc.course.status = :status)")
     List<Course> getAvailableUserCourses(@Param("userId") Integer userId, @Param("status") CourseStatus status);
