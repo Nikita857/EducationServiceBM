@@ -10,6 +10,47 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/tasklist.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
+    <style>
+        .tooltip-css {
+          position: relative;
+        }
+
+        .tooltip-css[data-tooltip]::before,
+        .tooltip-css[data-tooltip]::after {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.2s ease;
+          pointer-events: none;
+          z-index: 1000;
+        }
+
+        .tooltip-css[data-tooltip]::before {
+          content: attr(data-tooltip);
+          background-color: #212529; /* Dark color */
+          color: #fff;
+          padding: 6px 12px;
+          border-radius: .375rem; /* Bootstrap's border-radius */
+          font-size: 0.875em;
+          white-space: nowrap;
+          bottom: 130%;
+        }
+
+        .tooltip-css[data-tooltip]::after {
+          content: '';
+          border: 6px solid transparent;
+          border-top-color: #212529;
+          bottom: calc(130% - 6px);
+        }
+
+        .tooltip-css[data-tooltip]:hover::before,
+        .tooltip-css[data-tooltip]:hover::after {
+          opacity: 1;
+          visibility: visible;
+        }
+    </style>
     <title>Курсы обучения</title>
 </head>
 <body>
@@ -52,39 +93,54 @@
 <!-- Lessons Content -->
 <div class="container">
     <div class="lessons-grid">
+        <#-- First, find the index of the first uncompleted lesson -->
+        <#assign firstUncompletedIndex = -1>
         <#list moduleLessons as lesson>
-            <div class="lesson-card" data-completed="${lesson.completed}">
+            <#if lesson.completed != 1 && firstUncompletedIndex == -1>
+                <#assign firstUncompletedIndex = lesson_index>
+            </#if>
+        </#list>
+
+        <#-- Now, loop through and render, using the index to lock lessons -->
+        <#list moduleLessons as lesson>
+            <div class="lesson-card">
                 <#if lesson.completed == 1>
                     <span class="completed-badge">
-                            <i class="bi bi-check-circle me-1"></i>Завершено
-                        </span>
+                        <i class="bi bi-check-circle me-1"></i>Завершено
+                    </span>
                 </#if>
 
                 <div class="lesson-number">${lesson_index + 1}</div>
-
                 <h3 class="lesson-title">${lesson.title}</h3>
-
                 <p class="lesson-description">${lesson.shortDescription}</p>
 
-                <a href="/course/${selectedCourseData.slug}/module/${selectedModuleData.slug}/lesson/${lesson.id}"
-                   class="btn btn-primary">
-                    <i class="bi bi-play-circle me-2"></i>Начать урок
-                </a>
+                <#if firstUncompletedIndex == -1 || lesson_index <= firstUncompletedIndex>
+                    <#-- This lesson is UNLOCKED -->
+                    <a href="/course/${selectedCourseData.slug}/module/${selectedModuleData.slug}/lesson/${lesson.id}"
+                       class="btn btn-primary">
+                        <i class="bi bi-play-circle me-2"></i>Начать урок
+                    </a>
+                <#else>
+                    <#-- This lesson is LOCKED -->
+                    <span class="btn btn-primary disabled tooltip-css" data-tooltip="Этот урок заблокирован, сначала пройдите предыдущий">
+                        <i class="bi bi-lock-fill me-2"></i>Начать урок
+                    </span>
+                </#if>
 
                 <div class="lesson-status">
                     <#if lesson.completed == 1>
                         <div>
-                                <span class="status-completed">
-                                    <span class="checkmark"></span>
-                                    Урок пройден
-                                </span>
+                            <span class="status-completed">
+                                <span class="checkmark"></span>
+                                Урок пройден
+                            </span>
                             <div class="completed-date">${lesson.formattedCompletedDate}</div>
                         </div>
                         <i class="bi bi-check-circle-fill text-success"></i>
                     <#else>
                         <span class="status-pending">
-                                <i class="bi bi-clock-history me-1"></i>Ожидает изучения
-                            </span>
+                            <i class="bi bi-clock-history me-1"></i>Ожидает изучения
+                        </span>
                         <i class="bi bi-dash-circle text-warning"></i>
                     </#if>
                 </div>
@@ -104,55 +160,5 @@
 </div>
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Анимация карточек при загрузке
-        const lessonCards = document.querySelectorAll('.lesson-card');
-        lessonCards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-
-        // Анимация прогресс-бара
-        const progressBar = document.querySelector('.progress-bar');
-        const progressValue = progressBar.style.width;
-        progressBar.style.width = '0%';
-
-        setTimeout(() => {
-            progressBar.style.transition = 'width 1.5s ease-in-out';
-            progressBar.style.width = progressValue;
-        }, 500);
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const lessonCards = document.querySelectorAll('.lesson-card');
-
-        for (let i = 1; i < lessonCards.length; i++) {
-            const previousLesson = lessonCards[i - 1];
-            const currentLesson = lessonCards[i];
-
-            const isPreviousCompleted = previousLesson.getAttribute('data-completed') == '1';
-
-            if (!isPreviousCompleted) {
-                const link = currentLesson.querySelector('a.btn');
-                if (link) {
-                    link.classList.add('disabled');
-                    link.removeAttribute('href');
-                    link.style.cursor = 'not-allowed';
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        showAlert('Сначала завершите предыдущий урок!', 'warning');
-                    });
-                }
-            }
-        }
-    });
-</script>
 </body>
 </html>

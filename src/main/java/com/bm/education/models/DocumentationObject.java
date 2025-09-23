@@ -26,8 +26,8 @@ public class DocumentationObject {
     @Column(name = "tags")
     private String tags;
 
-    @Column(name = "image")
-    private String image;
+    @Column(name = "file")
+    private String file;
 
     @Lob
     @Column(name = "text")

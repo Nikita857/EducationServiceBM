@@ -1219,7 +1219,72 @@ code {
     color: #e2e8f0;
 }
 
+/* Стили для таблицы уроков */
+.lessons-table { 
+    min-width: 950px; /* Минимальная ширина для скролла */
+}
+.lessons-table .table-row {
+    /* ID, Название, Модуль, Описание, Видео, Действия */
+    grid-template-columns: 60px minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(250px, 2fr) 120px 100px;
+}
+
+.lesson-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+/* Адаптивность */
+@media (max-width: 1600px) {
+    .lessons-table .table-row {
+        grid-template-columns: 50px minmax(180px, 1.5fr) minmax(130px, 1fr) minmax(220px, 2fr) 100px 90px;
+    }
+}
+
+@media (max-width: 1400px) {
+    .lessons-table .table-row {
+        grid-template-columns: 40px minmax(160px, 1.5fr) minmax(120px, 1fr) minmax(200px, 2fr) 90px 80px;
+    }
+
+    .lesson-description {
+        -webkit-line-clamp: 1;
+    }
+}
+
+/* =============================================== */
+/* DOCUMENTS TABLE STYLES */
+/* =============================================== */
+.documents-table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.documents-table {
+    min-width: 900px; /* Adjust as needed for content */
+}
+
+.documents-table .table-row {
+    /* ID, Название, Курс, Категория, Теги, Действия */
+    grid-template-columns: 60px minmax(150px, 1.5fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(150px, 1.5fr) 120px;
+}
+
+@media (max-width: 1600px) {
+    .documents-table .table-row {
+        grid-template-columns: 50px minmax(130px, 1.5fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(130px, 1.5fr) 100px;
+    }
+}
+
+@media (max-width: 1400px) {
+    .documents-table .table-row {
+        grid-template-columns: 40px minmax(110px, 1.5fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(110px, 1.5fr) 90px;
+    }
+}
+
 /* Dropdown visibility fix in tables */
 .courses-table .table-cell {
-    overflow: visible;
 }

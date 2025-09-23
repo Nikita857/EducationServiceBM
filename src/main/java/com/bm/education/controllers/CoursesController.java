@@ -1,7 +1,9 @@
 package com.bm.education.controllers;
 
+import com.bm.education.models.Course;
 import com.bm.education.models.Offer;
 import com.bm.education.models.OfferStatus;
+import com.bm.education.models.User;
 import com.bm.education.services.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class CoursesController {
     private final ModuleService moduleService;
     private final LessonService lessonService;
     private final UserService userService;
+    private final UserProgressService userProgressService;
 
     /**
      * Displays the index page with a list of courses for the authenticated user.
@@ -58,18 +61,22 @@ public class CoursesController {
     @GetMapping("/course/{name}")
     public String getSelectedCourse(@PathVariable String name, Model model, Authentication auth) {
         if(coursesService.getSelectedCourseBySlug(name) != null) {
-            model.addAttribute("user", userService.getUserByUsername(auth.getName()));
-            model.addAttribute("selectedCourseData", coursesService.getSelectedCourseBySlug(name));
-            model.addAttribute("modules", coursesService.getModulesOfCourse(coursesService.getSelectedCourseBySlug(name).getId()));
-            model.addAttribute("totalLessons", moduleService.totalLessons(coursesService.getSelectedCourseBySlug(name).getId()));
+            User user = userService.getUserByUsername(auth.getName());
+            Course course = coursesService.getSelectedCourseBySlug(name);
+            model.addAttribute("user", user);
+            model.addAttribute("selectedCourseData", course);
+            model.addAttribute("modules", coursesService.getModulesOfCourseWithProgress(course.getId(), user.getId()));
+            model.addAttribute("totalLessons", moduleService.totalLessons(course.getId()));
             model.addAttribute("completedLessons", moduleService.completedLessons(
-                    coursesService.getSelectedCourseBySlug(name).getId(),
-                    userService.getUserByUsername(auth.getName()).getId()
-            ));
+                    course.getId(),
+                    user.getId()
+                    )
+            );
             Integer totalLessons = moduleService.totalLessons(coursesService.getSelectedCourseBySlug(name).getId());
             Integer completedLessons = moduleService.completedLessons(coursesService.getSelectedCourseBySlug(name).getId(),
                     userService.getUserByUsername(auth.getName()).getId());
             model.addAttribute("percentageOfLearning", moduleService.countPercentOfLearning(completedLessons, totalLessons));
+            model.addAttribute("progressMap", userProgressService.getCourseProgress(user.getId(), course.getId()));
             return "selectedCourse";
         }else{
             return "404";

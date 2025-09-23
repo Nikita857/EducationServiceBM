@@ -46,10 +46,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     isCompleted.textContent = 'Тест пройден!'
                     resultText.classList.add('text-success');
                     resultText.classList.remove('text-danger');
+                    setTimeout(()=>{
+                        history.back()
+                    },5000)
                 } else {
                     isCompleted.textContent = 'Тест не пройден!'
                     resultText.classList.add('text-danger');
                     resultText.classList.remove('text-success');
+                    setTimeout(()=>{
+                        history.back()
+                    },5000)
                 }
 
                 resultModal.show();

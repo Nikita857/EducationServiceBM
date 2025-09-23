@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<#--    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>-->
     <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.min.js"></script>
     <script type="module" src="${springMacroRequestContext.contextPath}/js/admin-bundle.js"></script>
@@ -128,6 +128,12 @@
                     <a href="#" class="nav-link" data-tab="users-tab" onclick="loadUsers()">
                         <i class="bi bi-people"></i>
                         Пользователи
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" data-tab="docs-tab" onclick="loadDocuments()">
+                        <i class="bi bi-people"></i>
+                        Документация
                     </a>
                 </div>
             </div>
@@ -429,6 +435,54 @@
                 <div class="card">
                     <div class="card-body">
                         <#--Here is injects users table from admin-users/getUsers.js-->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Документация -->
+        <div class="tab-content" id="docs-tab">
+            <section class="content-section">
+                <h2 class="section-title">Управление документацией</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                            <div class="filter-group">
+                                <select class="form-select form-select-sm" id="courseFilterSelect" onchange="loadDocuments(1)">
+                                    <option value="">Все курсы</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <select class="form-select form-select-sm" id="categoryFilterSelect" onchange="loadDocuments(1)">
+                                    <option value="">Все категории</option>
+                                </select>
+                            </div>
+                            <div class="page-size-selector">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Отображать</span>
+                                    <select class="form-select" id="docsPageSizeSelect" onchange="changeDocsPerPage(this.value)">
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openCreateDocumentModal()">
+                                <i class="bi bi-plus-circle me-1"></i>Новый документ
+                            </button>
+                        </div>
+                        <div id="documentsContainer">
+                            <!-- Documents table will be loaded here by JavaScript -->
+                            <div class="table-row">
+                                <div colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                    Загрузка документов...
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pagination for documents -->
+                        <div class="pagination-container mt-3" id="documentsPagination"></div>
                     </div>
                 </div>
             </section>
@@ -899,5 +953,53 @@
         </div>
     </div>
 </div>
+<!-- Create Document Modal -->
+<div class="modal fade" id="createDocumentModal" tabindex="-1" aria-labelledby="createDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createDocumentModalLabel">Создать новый документ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createDocumentForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="docName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="docName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="docTags" class="form-label">Теги (через запятую)</label>
+                        <input type="text" class="form-control" id="docTags" name="tags">
+                    </div>
+                    <div class="mb-3">
+                        <label for="docCourse" class="form-label">Курс</label>
+                        <select class="form-select" id="docCourse" name="courseId" required>
+                            <!-- Courses will be populated here by JS -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="docCategory" class="form-label">Категория</label>
+                        <select class="form-select" id="docCategory" name="categoryId" required>
+                            <!-- Categories will be populated here by JS -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="docTextContent" class="form-label">Краткое описаниме</label>
+                        <textarea class="form-control" id="docTextContent" name="textContent" rows="5"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="docImageFile" class="form-label">Файл</label>
+                        <input class="form-control" type="file" id="docImageFile" name="file">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-primary" form="createDocumentForm">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

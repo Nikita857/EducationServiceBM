@@ -8,9 +8,6 @@ import lombok.ToString;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import lombok.Getter;
-import lombok.Setter;
-
 @Entity
 @Table(name = "documentation_categories")
 @Data

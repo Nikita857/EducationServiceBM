@@ -3,7 +3,6 @@ package com.bm.education.services;
 import com.bm.education.dto.*;
 import com.bm.education.models.Lesson;
 import com.bm.education.models.Module;
-import com.bm.education.models.User;
 import com.bm.education.repositories.LessonRepository;
 import com.bm.education.repositories.ModuleRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +19,6 @@ import org.springframework.validation.BindingResult;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**

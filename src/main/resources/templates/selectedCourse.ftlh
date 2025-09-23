@@ -34,6 +34,11 @@
 
 <!-- Main Content -->
 <div class="container">
+    <#if error??>
+        <div class="alert alert-danger my-3" role="alert">
+            ${error}
+        </div>
+    </#if>
     <div class="row">
         <!-- Left Column -->
         <div class="col-lg-6">
@@ -53,6 +58,10 @@
                     <div class="stat-item">
                         <div class="stat-number">${completedLessons}/10</div>
                         <div class="stat-label">Тестов пройдено</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${progressMap['courseModules']}</div>
+                        <div class="stat-label">Модулей изучено</div>
                     </div>
                 </div>
 
@@ -97,7 +106,12 @@
                 <div class="module-list">
                     <#list modules as module>
                         <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}" class="module-btn">
-                            <h6 class="module-title">${module.moduleSlug}</h6>
+                            <h6 class="module-title">
+                                ${module.moduleSlug}
+                                <#if module.isCompleted()>
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                </#if>
+                            </h6>
                             <small class="text-muted">Модуль ${module?index + 1}</small>
                         </a>
                     </#list>
@@ -132,9 +146,18 @@
 
                 <div class="module-list">
                     <#list modules as module>
-                        <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}/test" class="module-btn">
-                            <h6 class="module-title">Тест по модулю: ${module.moduleSlug}</h6>
-                        </a>
+                        <#if module.isCompleted()>
+                            <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}/test" class="module-btn">
+                                <h6 class="module-title">Тест по модулю: ${module.moduleSlug} <i class="bi bi-unlock-fill text-success"></i></h6>
+                            </a>
+                        <#else>
+                            <span class="module-btn disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Пройдите все уроки в модуле, чтобы разблокировать тест">
+                                <h6 class="module-title text-muted">
+                                    Тест по модулю: ${module.moduleSlug}
+                                    <i class="bi bi-lock-fill"></i>
+                                </h6>
+                            </span>
+                        </#if>
                     </#list>
                 </div>
             </div>
@@ -211,6 +234,12 @@
             // Здесь будет код отправки формы
             alert('Ваше предложение отправлено!');
             bootstrap.Modal.getInstance(document.getElementById('offerModal')).hide();
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
         });
     });
 </script>

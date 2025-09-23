@@ -17,3 +17,4 @@ import './admin-offers/getOffers.js';
 import './admin-offers/reponseOffer.js';
 import './admin-users/editUser.js';
 import './admin-users/getUsers.js';
+import './admin-docs/getDocuments.js'

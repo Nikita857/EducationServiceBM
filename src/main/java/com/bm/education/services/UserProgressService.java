@@ -1,15 +1,20 @@
 package com.bm.education.services;
 
+import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Module;
 import com.bm.education.models.*;
 import com.bm.education.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -17,6 +22,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserProgressService {
 
     private final UserProgressRepository userProgressRepository;
@@ -24,6 +30,10 @@ public class UserProgressService {
     private final CoursesRepository coursesRepository;
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
+    private final ModuleService moduleService;
+    private final ModuleTestService moduleTestService;
+    private final LessonService lessonService;
+    private final CoursesService coursesService;
 
     /**
      * Saves the progress of a user for a lesson.
@@ -71,5 +81,20 @@ public class UserProgressService {
             
             throw new RuntimeException("Error in saveProgress: ", e);
         }
+    }
+
+    @Transactional
+    public Integer numberOfCompletedLessonsOfModule(Integer userId, Integer moduleId) {
+        return userProgressRepository.countByModuleIdAndUserId(moduleId, userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, String> getCourseProgress(Integer userId, Integer courseId) {
+        Map<String, String> progress = new HashMap<>();
+        Integer courseModules = moduleService.getModulesByCourseId(courseId).size();
+
+         Integer completedModuleTests = moduleTestService.getNumberOfCompletedModules(userId);
+         progress.put("courseModules", String.format("%d/%d", completedModuleTests,  courseModules));
+        return progress;
     }
 }

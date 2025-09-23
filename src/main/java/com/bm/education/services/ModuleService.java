@@ -3,6 +3,7 @@ package com.bm.education.services;
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Course;
+import com.bm.education.models.Lesson;
 import com.bm.education.models.Module;
 import com.bm.education.models.ModuleStatus;
 import com.bm.education.repositories.CoursesRepository;
@@ -70,7 +71,7 @@ public class ModuleService {
      * Gets the number of completed lessons in a course for a user.
      *
      * @param courseId The ID of the course.
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @return The number of completed lessons in the course for the user.
      */
     @Transactional(readOnly = true)
@@ -82,11 +83,11 @@ public class ModuleService {
      * Calculates the percentage of completed lessons.
      *
      * @param completedLessons The number of completed lessons.
-     * @param totalLessons The total number of lessons.
+     * @param totalLessons     The total number of lessons.
      * @return The percentage of completed lessons.
      */
     public int countPercentOfLearning(Integer completedLessons, Integer totalLessons) {
-        if(totalLessons == 0) return 0;
+        if (totalLessons == 0) return 0;
         return (completedLessons * 100) / totalLessons;
     }
 
@@ -96,7 +97,9 @@ public class ModuleService {
      * @return The total number of modules.
      */
     @Transactional(readOnly = true)
-    public long getModulesCount() {return moduleRepository.count();}
+    public long getModulesCount() {
+        return moduleRepository.count();
+    }
 
     /**
      * Deletes a module by its ID.
@@ -113,13 +116,13 @@ public class ModuleService {
     /**
      * Updates the status of a module.
      *
-     * @param moduleId The ID of the module to update.
+     * @param moduleId     The ID of the module to update.
      * @param moduleStatus The new status of the module.
      * @return true if the module status was updated successfully, false otherwise.
      */
     @Transactional
     public boolean updateModuleStatus(Integer moduleId, ModuleStatus moduleStatus) {
-        if(moduleRepository.findById(moduleId).isEmpty()){
+        if (moduleRepository.findById(moduleId).isEmpty()) {
             return false;
         }
         moduleRepository.updateStatusById(moduleId, moduleStatus.toString());
@@ -131,7 +134,7 @@ public class ModuleService {
      *
      * @param moduleCreateRequest The request object containing the module details.
      * @return The created module as a DTO.
-     * @throws IllegalStateException if the module with the same slug already exists.
+     * @throws IllegalStateException                       if the module with the same slug already exists.
      * @throws jakarta.persistence.EntityNotFoundException if the course is not found.
      */
     @Transactional
@@ -168,7 +171,8 @@ public class ModuleService {
                 module.getCourse().getTitle(),
                 module.getTitle(),
                 module.getSlug(),
-                module.getStatus().toString()
+                module.getStatus().toString(),
+                false
         );
     }
 
@@ -187,8 +191,8 @@ public class ModuleService {
     /**
      * Gets a paginated list of modules as DTOs.
      *
-     * @param page The page number.
-     * @param size The page size.
+     * @param page     The page number.
+     * @param size     The page size.
      * @param courseId The ID of the course to filter by, or null to retrieve all modules.
      * @return A paginated list of modules as DTOs.
      */
@@ -215,7 +219,7 @@ public class ModuleService {
     @Transactional(readOnly = true)
     public ModuleResponseDTO findModuleById(Integer id) {
         Module module = moduleRepository.findById(id).orElse(null);
-        return module!=null? convertToModuleResponseDTO(module): null;
+        return module != null ? convertToModuleResponseDTO(module) : null;
     }
 
     /**
@@ -243,8 +247,27 @@ public class ModuleService {
             moduleRepository.save(module);
             return true;
         } catch (Exception e) {
-            
+
             return false;
         }
     }
+
+    @Transactional(readOnly = true)
+    public Module getModuleById(Integer id) {
+        return moduleRepository.findById(id).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isModuleCompleted(Module module, Integer userId) {
+        if (module == null || userId == null) {
+            return false;
+        }
+        Integer totalLessons = lessonRepository.findLessonsByModuleId(module.getId()).size();
+        if (totalLessons == 0) {
+            return true; // An empty module is considered complete.
+        }
+        Integer completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
+        return totalLessons.equals(completedLessons);
+    }
+
 }

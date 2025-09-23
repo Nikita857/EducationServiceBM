@@ -23,8 +23,10 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a class="text-light text-decoration-underline" href="/">Главная</a></li>
                 <#if category.documentation.course??>
-                    <li class="breadcrumb-item"><a class="text-light text-decoration-underline"
-                                                   href="/course/${category.documentation.course.slug}">${category.documentation.course.title}</a>
+                    <li class="breadcrumb-item">
+                        <a class="text-light text-decoration-underline" href="/course/${category.documentation.course.slug}">
+                            Открыть
+                        </a>
                     </li>
                 </#if>
                 <li class="breadcrumb-item active text-light">${category.name}</li>
@@ -52,7 +54,7 @@
                         <div class="lesson-description">${object.text}</div>
                     </#if>
 
-                    <a href="#" class="btn btn-primary w-50">Открыть</a>
+                    <a href="/docs/${object.file}" class="btn btn-primary w-50">Открыть</a>
 
                     <#if object.tags?? && object.tags?has_content>
                         <div class="mt-3">

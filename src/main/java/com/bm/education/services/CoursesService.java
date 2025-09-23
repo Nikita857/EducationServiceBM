@@ -3,9 +3,7 @@ package com.bm.education.services;
 import com.bm.education.dto.*;
 import com.bm.education.models.*;
 import com.bm.education.models.Module;
-import com.bm.education.repositories.CoursesRepository;
-import com.bm.education.repositories.DocumentationCategoryRepository;
-import com.bm.education.repositories.UserRepository;
+import com.bm.education.repositories.*;
 import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.Contract;
@@ -41,7 +39,7 @@ public class CoursesService {
     private final Path rootLocation = Paths.get("src/main/resources/static/img/course-brand");
     private final ModuleService moduleService;
     private final LessonService lessonService;
-    private final DocumentationCategoryRepository documentationCategoryRepository;
+    private final UserProgressRepository userProgressRepository;
 
     /**
      * Gets the total number of courses.
@@ -77,7 +75,7 @@ public class CoursesService {
             }
             
             return coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
-        }).orElse(null); // или orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
+        }).orElse(null);
     }
 
     /**
@@ -253,7 +251,8 @@ public class CoursesService {
                 module.getCourse().getTitle(),
                 module.getSlug(),
                 module.getTitle(),
-                module.getStatus().toString()
+                module.getStatus().toString(),
+                false
         );
     }
 
@@ -267,6 +266,35 @@ public class CoursesService {
         List<Module> modules = moduleService.getModulesByCourseId(courseId);
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all modules for a course, including completion status for a user.
+     *
+     * @param courseId The ID of the course.
+     * @param userId The ID of the user.
+     * @return A list of modules for the course.
+     */
+    public List<ModuleResponseDTO> getModulesOfCourseWithProgress(Integer courseId, Integer userId) {
+        List<Module> modules = moduleService.getModulesByCourseId(courseId);
+        return modules.stream()
+                .map(module -> {
+                    Integer totalLessons = lessonService.getLessonIds(module.getId()).size();
+                    boolean isCompleted = false;
+                    if (totalLessons > 0) {
+                        Integer completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
+                        isCompleted = totalLessons.equals(completedLessons);
+                    }
+                    return new ModuleResponseDTO(
+                            module.getId(),
+                            module.getCourse().getTitle(),
+                            module.getSlug(),
+                            module.getTitle(),
+                            module.getStatus().toString(),
+                            isCompleted
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -319,6 +347,7 @@ public class CoursesService {
      *
      * @return A list of all courses as CourseResponseDTOs.
      */
+    @Transactional(readOnly = true)
     public List<CourseResponseDTO> findCoursesAndWriteDTO() {
         List<Course> courses = coursesRepository.findAll();
         return courses
