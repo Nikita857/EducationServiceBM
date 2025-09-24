@@ -125,6 +125,58 @@
     color: white;
 }
 
+/* Notification Dropdown Styles */
+.notification-dropdown {
+    min-width: 320px; /* Increased width */
+    max-height: 400px; /* Allow scrolling for many notifications */
+    overflow-y: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: var(--dark-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-content {
+    flex-grow: 1;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--light-color); /* Changed for dark background */
+}
+
+.notification-content:hover small {
+    color: var(--primary-color);
+}
+
+.notification-actions .btn-mark-read {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.2rem;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.notification-actions .btn-mark-read:hover {
+    color: var(--primary-color);
+}
+
+#mark-all-as-read-btn {
+    font-weight: 500;
+}
+
+
 .badge-notification {
     position: absolute;
     top: -5px;

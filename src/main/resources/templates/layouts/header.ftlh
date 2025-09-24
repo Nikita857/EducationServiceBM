@@ -41,8 +41,15 @@
                         <i class="bi bi-bell fs-5"></i>
                         <span class="badge-notification" style="display: none;"></span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><h6 class="dropdown-header text-dark">Уведомления</h6></li>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                        <li><h6 class="dropdown-header text-light">Уведомления</h6></li>
+                        <!-- Notifications will be injected here by JS -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item text-center text-primary" id="mark-all-as-read-btn" type="button">
+                                Прочитать все
+                            </button>
+                        </li>
                     </ul>
                 </div>
 
@@ -59,6 +66,13 @@
                                     <i class="bi bi-person-circle me-2"></i>Личный кабинет
                                 </a>
                             </li>
+                            <#if isAdmin >
+                                <li>
+                                    <a class="dropdown-item text-dark" href="/admin">
+                                        <i class="bi bi-gear me-2"></i>Админка
+                                    </a>
+                                </li>
+                            </#if>
                             <li>
                                 <a class="dropdown-item text-danger" href="#" id="logoutButton">
                                     <i class="bi bi-box-arrow-right me-2"></i>Выход
@@ -70,6 +84,7 @@
         </div>
     </div>
 </nav>
+<script src="/js/auth/global-fetch-handler.js"></script>
 <script src="/js/notification.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/js/auth/expiredTokenController.js"></script>

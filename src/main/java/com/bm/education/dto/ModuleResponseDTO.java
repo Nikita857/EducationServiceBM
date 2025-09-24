@@ -29,7 +29,8 @@ public class ModuleResponseDTO {
      * The status of the module.
      */
     private String moduleStatus;
-    private boolean completed;
+    private boolean lessonsCompleted;
+    private boolean testPassed;
 
     /**
      * Constructs a new ModuleResponseDTO object.
@@ -39,15 +40,17 @@ public class ModuleResponseDTO {
      * @param moduleTitle The title of the module.
      * @param moduleSlug The slug of the module.
      * @param moduleStatus The status of the module.
-     * @param completed Whether the module is completed.
+     * @param lessonsCompleted Whether all lessons in the module are completed.
+     * @param testPassed Whether the test for the module has been passed.
      */
-    public ModuleResponseDTO(int moduleId, String courseName, String moduleTitle, String moduleSlug, String moduleStatus, boolean completed) {
+    public ModuleResponseDTO(int moduleId, String courseName, String moduleTitle, String moduleSlug, String moduleStatus, boolean lessonsCompleted, boolean testPassed) {
         this.moduleId = moduleId;
         this.courseName = courseName;
         this.moduleTitle = moduleTitle;
         this.moduleSlug = moduleSlug;
         this.moduleStatus = moduleStatus;
-        this.completed = completed;
+        this.lessonsCompleted = lessonsCompleted;
+        this.testPassed = testPassed;
     }
 
 }

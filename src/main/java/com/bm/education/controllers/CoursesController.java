@@ -42,11 +42,12 @@ public class CoursesController {
      */
     @GetMapping("/")
     public String index(Model model, Authentication auth) {
-        model.addAttribute("user", userService.getUserByUsername(auth.getName()));
+        User user = userService.getUserByUsername(auth.getName());
+        model.addAttribute("user", user);
         model.addAttribute("courses", coursesService.getCoursesWithProgress(
-                userService.getUserByUsername(
-                        auth.getName()).getId()
+                user.getId()
         ));
+        model.addAttribute("isAdmin", userService.isAdmin(user));
         return "index";
     }
 
@@ -77,6 +78,8 @@ public class CoursesController {
                     userService.getUserByUsername(auth.getName()).getId());
             model.addAttribute("percentageOfLearning", moduleService.countPercentOfLearning(completedLessons, totalLessons));
             model.addAttribute("progressMap", userProgressService.getCourseProgress(user.getId(), course.getId()));
+            model.addAttribute("isAdmin", userService.isAdmin(user));
+
             return "selectedCourse";
         }else{
             return "404";
@@ -97,10 +100,13 @@ public class CoursesController {
         if(coursesService.getSelectedCourseBySlug(name) == null || moduleService.getModuleBySlug(moduleSlug) == null) {
             return "404";
         }
-        model.addAttribute("user", userService.getUserByUsername(auth.getName()));
+        User user = userService.getUserByUsername(auth.getName());
+        model.addAttribute("user", user);
         model.addAttribute("selectedCourseData", coursesService.getSelectedCourseBySlug(name));
         model.addAttribute("selectedModuleData", moduleService.getModuleBySlug(moduleSlug));
         model.addAttribute("moduleLessons", lessonService.getLessonsWithProgress(auth.getName(), moduleSlug));
+        model.addAttribute("isAdmin", userService.isAdmin(user));
+
         return "tasklist";
     }
 
@@ -123,12 +129,14 @@ public class CoursesController {
                 || lessonService.getLesson(lessonId, moduleService.getModuleBySlug(moduleSlug).getId()) == null) {
             return "error/404";
         }
-        model.addAttribute("user", userService.getUserByUsername(auth.getName()));
+        User user = userService.getUserByUsername(auth.getName());
+        model.addAttribute("user", user);
         model.addAttribute("selectedCourseSlug", coursesService.getSelectedCourseBySlug(name));
         model.addAttribute("moduleData", moduleService.getModuleBySlug(moduleSlug));
         model.addAttribute("lessonData", lessonService.getLesson(lessonId, moduleService.getModuleBySlug(moduleSlug).getId()));
         model.addAttribute("lessonIds", lessonService.getLessonIds(moduleService.getModuleBySlug(moduleSlug).getId()));
         model.addAttribute("courseData", coursesService.getSelectedCourseBySlug(name));
+        model.addAttribute("isAdmin", userService.isAdmin(user));
 
         return "lesson";
     }
@@ -142,12 +150,14 @@ public class CoursesController {
      */
     @GetMapping("cabinet/")
     public String getUserCabinet(Model model, Authentication auth) {
-        Integer userId = userService.getUserByUsername(auth.getName()).getId();
+        User user = userService.getUserByUsername(auth.getName());
+        Integer userId = user.getId();
 
         model.addAttribute("user", userService.getUserByUsername(auth.getName()));
         model.addAttribute("userOffers", offerService.getUserOffers(userId));
         model.addAttribute("availableCourses", coursesService.getCoursesWithProgress(userId));
         model.addAttribute("offerStatus", OfferStatus.values());
+        model.addAttribute("isAdmin", userService.isAdmin(user));
         return "cabinet";
     }
 

@@ -12,6 +12,8 @@ import com.bm.education.repositories.ModuleRepository;
 import com.bm.education.repositories.UserProgressRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -165,13 +167,15 @@ public class ModuleService {
      * @param module The module to convert.
      * @return The converted ModuleResponseDTO.
      */
-    private ModuleResponseDTO convertToModuleResponseDTO(Module module) {
+    @Contract("_ -> new")
+    private @NotNull ModuleResponseDTO convertToModuleResponseDTO(@NotNull Module module) {
         return new ModuleResponseDTO(
                 module.getId(),
                 module.getCourse().getTitle(),
                 module.getTitle(),
                 module.getSlug(),
                 module.getStatus().toString(),
+                false,
                 false
         );
     }

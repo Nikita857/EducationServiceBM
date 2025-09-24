@@ -170,7 +170,7 @@ public class AdminModuleController {
         try {
             ModuleResponseDTO createdModule = moduleService.createModule(mcr);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResponse.success(createdModule)
             );
 

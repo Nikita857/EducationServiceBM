@@ -52,10 +52,12 @@ async function deleteUsersRequest(userId) {
         });
 
         const response = await deleteRequest.json();
+        console.log(response)
 
         if (deleteRequest.ok) {
             if (response.success) {
-                showAlert(response.message, 'success');
+                const successMessage = response.message || response.data;
+                showAlert(successMessage, 'success');
                 // Перезагружаем список пользователей
                 await loadUsers(currentPageUsers, usersPerPage, roleFilter);
             } else {

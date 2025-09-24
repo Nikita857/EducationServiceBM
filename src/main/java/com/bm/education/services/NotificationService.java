@@ -7,7 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     /**
      * Creates a new notification.
@@ -58,6 +63,16 @@ public class NotificationService {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             notification.setIsRead(true);
             notificationRepository.save(notification);
+            scheduler.schedule(()->{
+                deleteNotification(notificationId);
+            }, 24, TimeUnit.HOURS);
+        });
+    }
+
+    @Transactional
+    public void deleteNotification(Long notificationId) {
+        notificationRepository.findById(notificationId).ifPresent(notification -> {
+            notificationRepository.deleteById(notificationId);
         });
     }
 

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -93,6 +94,7 @@ public class User implements UserDetails {
     @PrePersist
     protected void oncCreate() {
         this.setQualification("1");
+        this.setAvatar("avatar.webp");
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

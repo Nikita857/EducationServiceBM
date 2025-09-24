@@ -99,7 +99,7 @@ public class UserService {
      */
     public boolean deleteUser(Integer id) {
         userRepository.deleteById(id);
-        return userRepository.existsById(id);
+        return !userRepository.existsById(id);
     }
 
     public User save(User user) {
@@ -363,6 +363,13 @@ public class UserService {
         user.setPassword(registerRequest.getPassword());
 
         return user;
+    }
+
+    public boolean isAdmin(@NotNull User user) {
+        if (user.getRoles() == null) {
+            return false;
+        }
+        return user.getRoles().contains(Role.ROLE_ADMIN);
     }
 
 }

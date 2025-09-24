@@ -2,6 +2,7 @@ package com.bm.education.security;
 
 import com.bm.education.security.filters.IpBlockingFilter;
 import com.bm.education.security.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,6 +64,16 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(exceptions -> exceptions
+                    // For API calls, return 401
+                    .defaultAuthenticationEntryPointFor(
+                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
+                        request -> request.getServletPath().startsWith("/api/")
+                    )
+                )
+                .formLogin(form -> form
+                    .loginPage("/login") // For browser navigation, redirect to /login
                 )
                 .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 .addFilterBefore(ipBlockingFilter, UsernamePasswordAuthenticationFilter.class)

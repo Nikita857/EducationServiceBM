@@ -40,6 +40,7 @@ public class CoursesService {
     private final ModuleService moduleService;
     private final LessonService lessonService;
     private final UserProgressRepository userProgressRepository;
+    private final UserModuleCompletionRepository userModuleCompletionRepository;
 
     /**
      * Gets the total number of courses.
@@ -252,7 +253,8 @@ public class CoursesService {
                 module.getSlug(),
                 module.getTitle(),
                 module.getStatus().toString(),
-                false
+                false, // default lessonsCompleted
+                false // default testPassed
         );
     }
 
@@ -280,19 +282,27 @@ public class CoursesService {
         List<Module> modules = moduleService.getModulesByCourseId(courseId);
         return modules.stream()
                 .map(module -> {
+                    // Check if all lessons are done
                     Integer totalLessons = lessonService.getLessonIds(module.getId()).size();
-                    boolean isCompleted = false;
+                    boolean lessonsCompleted;
                     if (totalLessons > 0) {
                         Integer completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
-                        isCompleted = totalLessons.equals(completedLessons);
+                        lessonsCompleted = totalLessons.equals(completedLessons);
+                    } else {
+                        lessonsCompleted = true; // Module with no lessons is considered to have its lessons completed
                     }
+
+                    // Check if the module test has been passed
+                    boolean testPassed = userModuleCompletionRepository.existsByUser_IdAndModule_Id(userId, module.getId());
+
                     return new ModuleResponseDTO(
                             module.getId(),
                             module.getCourse().getTitle(),
                             module.getSlug(),
                             module.getTitle(),
                             module.getStatus().toString(),
-                            isCompleted
+                            lessonsCompleted,
+                            testPassed
                     );
                 })
                 .collect(Collectors.toList());

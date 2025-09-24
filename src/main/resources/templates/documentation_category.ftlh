@@ -72,8 +72,8 @@
                 <div class="empty-state-icon mb-4">
                     <i class="bi bi-journal-x" style="font-size: 4rem; color: #475569;"></i>
                 </div>
-                <h3 class="h4 mb-3">Объекты не найдены</h3>
-                <p class="text-muted mb-4">В этой категории пока нет доступных объектов документации.</p>
+                <h3 class="h4 mb-3">Ничего не найдены</h3>
+                <p class="text-muted mb-4">В этой категории пока нет документов.</p>
             </div>
         </div>
     </#if>

@@ -1,9 +1,9 @@
-let questions = [];
+let activeQuestions = [];
 let currentQuestion = 0;
 let score = 0;
 
 function startQuiz(quizQuestions) {
-    questions = quizQuestions;
+    activeQuestions = quizQuestions;
     currentQuestion = 0;
     score = 0;
     showQuestion();
@@ -13,10 +13,10 @@ function startQuiz(quizQuestions) {
 function showQuestion() {
     const questionElement = document.getElementById('question');
     const answersElement = document.getElementById('answers');
-    const current = questions[currentQuestion];
+    const current = activeQuestions[currentQuestion];
 
     questionElement.textContent = `${current.question}`;
-    $('#questionCounter').text(`Вопрос ${currentQuestion + 1} из ${questions.length}`);
+    $('#questionCounter').text(`Вопрос ${currentQuestion + 1} из ${activeQuestions.length}`);
     $('#score').text(`${score} баллов`);
     answersElement.innerHTML = '';
 
@@ -30,12 +30,12 @@ function showQuestion() {
 }
 
 function checkAnswer(index) {
-    const current = questions[currentQuestion];
+    const current = activeQuestions[currentQuestion];
     if (current.answers[index].correct) {
         score++;
     }
     currentQuestion++;
-    if (currentQuestion < questions.length) {
+    if (currentQuestion < activeQuestions.length) {
         showQuestion();
     } else {
         showResult();
@@ -82,11 +82,11 @@ function showResult() {
     const answersElement = document.getElementById('answers');
     const questionCounterElement = document.getElementById('questionCounter');
 
-    if (score >= (questions.length * 0.8)) { // Pass if 80% or more correct
-        questionElement.textContent = `Тест пройден! Ваш результат: ${score} из ${questions.length}`;
+    if (score >= (activeQuestions.length * 0.8)) { // Pass if 80% or more correct
+        questionElement.textContent = `Тест пройден! Ваш результат: ${score} из ${activeQuestions.length}`;
         saveUserProgress();
     } else {
-        questionElement.textContent = `Тест не пройден! Ваш результат: ${score} из ${questions.length}`;
+        questionElement.textContent = `Тест не пройден! Ваш результат: ${score} из ${activeQuestions.length}`;
     }
     answersElement.innerHTML = '';
     questionCounterElement.textContent = 'Тест завершен';

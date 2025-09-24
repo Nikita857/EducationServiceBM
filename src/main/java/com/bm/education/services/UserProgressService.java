@@ -30,8 +30,8 @@ public class UserProgressService {
     private final CoursesRepository coursesRepository;
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
+    private final UserModuleCompletionRepository userModuleCompletionRepository;
     private final ModuleService moduleService;
-    private final ModuleTestService moduleTestService;
     private final LessonService lessonService;
     private final CoursesService coursesService;
 
@@ -93,8 +93,8 @@ public class UserProgressService {
         Map<String, String> progress = new HashMap<>();
         Integer courseModules = moduleService.getModulesByCourseId(courseId).size();
 
-         Integer completedModuleTests = moduleTestService.getNumberOfCompletedModules(userId);
-         progress.put("courseModules", String.format("%d/%d", completedModuleTests,  courseModules));
+        Integer completedModules = userModuleCompletionRepository.countByUser_IdAndModule_Course_Id(userId, courseId);
+        progress.put("courseModules", String.format("%d/%d", completedModules, courseModules));
         return progress;
     }
 }

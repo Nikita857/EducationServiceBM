@@ -131,7 +131,7 @@ function renderCoursesTable(courses) {
                         <span class="course-description">${course.description || 'N/A'}</span>
                     </div>
                     <div class="table-cell">
-                        <code class="click-for-redirect" style="cursor: pointer">/course/${course.slug}</code>
+                        ${getActiveLinks(course)}
                     </div>
                     <div class="table-cell" data-course-id="${course.id}">
                     ${adaptiveCourseStatus(course.status, course.id)}
@@ -175,6 +175,11 @@ function renderCoursesTable(courses) {
     tableCells.forEach(cell => {
         cell.style.overflow = 'visible';
     });
+}
+
+function getActiveLinks(course) {
+    return course.status === 'ACTIVE'? `<code class="click-for-redirect" style="cursor: pointer">/course/${course.slug}</code>`
+        : `<p>Невозможно просмотреть курс</p>`;
 }
 
 function adaptiveCourseStatus(status, courseId) {

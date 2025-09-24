@@ -15,5 +15,6 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Inte
     @Query(value = "select count(*) from user_progress where user_id = :userId and course_id = :courseId", nativeQuery = true)
     int totalCompletedLessonByUserId(@Param("userId") int userId, @Param("courseId") int courseId);
 
-    int countByModuleIdAndUserId(int module, int userId);
+    @Query("SELECT count(up) FROM UserProgress up WHERE up.user.id = :userId AND up.module.id = :moduleId AND up.completedAt IS NOT NULL")
+    int countByModuleIdAndUserId(@Param("userId") Integer userId, @Param("moduleId") Integer moduleId);
 }

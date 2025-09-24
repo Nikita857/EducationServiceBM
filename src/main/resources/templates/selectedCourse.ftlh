@@ -53,7 +53,7 @@
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-number">${completedLessons}/${totalLessons}</div>
-                        <div class="stat-label">Тем пройдено</div>
+                        <div class="stat-label">Уроков пройдено</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number">${completedLessons}/10</div>
@@ -106,13 +106,15 @@
                 <div class="module-list">
                     <#list modules as module>
                         <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}" class="module-btn">
-                            <h6 class="module-title">
-                                ${module.moduleSlug}
-                                <#if module.isCompleted()>
-                                    <i class="bi bi-check-circle-fill text-success"></i>
-                                </#if>
-                            </h6>
-                            <small class="text-muted">Модуль ${module?index + 1}</small>
+                            <div>
+                                <h6 class="module-title">
+                                    ${module.moduleSlug}
+                                </h6>
+                                <small class="text-muted">Модуль ${module?index + 1}</small>
+                            </div>
+                            <#if module.testPassed>
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            </#if>
                         </a>
                     </#list>
                 </div>
@@ -146,7 +148,7 @@
 
                 <div class="module-list">
                     <#list modules as module>
-                        <#if module.isCompleted()>
+                        <#if module.lessonsCompleted>
                             <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}/test" class="module-btn">
                                 <h6 class="module-title">Тест по модулю: ${module.moduleSlug} <i class="bi bi-unlock-fill text-success"></i></h6>
                             </a>

@@ -81,7 +81,7 @@ function renderModulesList() {
             <div class="module-header d-flex justify-content-between align-items-center">
                 <div class="module-info">
                     <h6 class="module-title mb-1">${module.order || index + 1}. ${escapeHtml(module["moduleTitle"] || 'Без названия')}</h6>
-                    <small class="text-muted">ID: ${module.moduleId} • ${module["lessonsCount"] || 0} уроков</small>
+                    <small class="text-muted">ID: ${module.moduleId} </small>
                 </div>
                 <div class="module-actions">
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editModule(${module.id})">
@@ -110,9 +110,6 @@ function createModulesModalElement() {
                     <div class="modal-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted" id="modulesCount">Модулей: 0</span>
-                            <a class="btn btn-success btn-sm" href="/admin/modules">
-                                <i class="fas fa-plus me-1"></i> Добавить модуль
-                            </a>
                         </div>
                         
                         <div id="modulesList" class="modules-list">
