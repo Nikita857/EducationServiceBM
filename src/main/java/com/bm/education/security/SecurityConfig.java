@@ -57,7 +57,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/auth/refresh",
                                 "/register",
-                                "/logout", "/logout/cookie", "/blocked"
+                                "/logout", "/logout/cookie", "/blocked", "/maintenance"
                         ).permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -84,10 +84,19 @@
         </div>
     </div>
 </nav>
-<script src="/js/auth/global-fetch-handler.js"></script>
-<script src="/js/notification.js"></script>
+
+<#-- Site-wide Banner -->
+<#if isBannerEnabled && bannerText?? && bannerText?has_content>
+    <div class="container-fluid">
+        <div class="alert alert-primary text-center my-2" style="z-index: -5">
+            <h4>${bannerText}</h4>
+        </div>
+    </div>
+</#if>
+<script src="${springMacroRequestContext.contextPath}/js/auth/global-fetch-handler.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/notification.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="/js/auth/expiredTokenController.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/auth/expiredTokenController.js"></script>
 
 
 <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false"></div>

@@ -18,7 +18,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 @Controller
 
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final UserService userService;
@@ -37,6 +35,7 @@ public class AdminController {
     private final ModuleService moduleService;
     private final LessonService lessonService;
     private final OfferService offerService;
+    private final ApplicationSettingService settingService;
 
     /**
      * Displays the admin dashboard.
@@ -45,11 +44,11 @@ public class AdminController {
      * @param model The model to add attributes to.
      * @return The name of the admin view, or a redirect to the index or login page.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin")
     public String admin(Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
-        if (user != null) {
-            if (user.getRoles().contains(Role.ROLE_ADMIN)) {
+
                 model.addAttribute("admin", user);
                 model.addAttribute("users", userService.getUsersCount());
                 model.addAttribute("courses", coursesService.getCoursesCount());
@@ -58,11 +57,16 @@ public class AdminController {
                 model.addAttribute("offers", offerService.getPendingOffersCount());
                 model.addAttribute("offersTotal", offerService.getOffersCount());
                 model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
+
+                // Add settings to the model for the settings tab
+                model.addAttribute("settings", settingService.getAllSettings());
+                model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
+                model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+                model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
+                model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+                model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+
                 return "admin";
-            }
-            return "redirect:/";
-        }
-        return "redirect:/login";
     }
 
     /**
@@ -71,6 +75,7 @@ public class AdminController {
      * @param offerId The ID of the offer to get.
      * @return A response entity containing the offer.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("admin/offers/{offerId}")
     public ResponseEntity<ApiResponse<OfferDto>> getOfferById(@PathVariable Integer offerId) {
         try {
@@ -92,6 +97,7 @@ public class AdminController {
      * @return A response entity indicating that the offer was updated successfully.
      */
     // Обновление ответа и статуса
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("admin/updateOffer")
     public ResponseEntity<ApiResponse<?>> updateOffer(
             @Valid @RequestBody OfferResponseDto updateDto,
@@ -130,6 +136,7 @@ public class AdminController {
      *
      * @return The name of the add module view.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/modules/create")
     public String addModule() {
         return "admin/addModule";
@@ -142,6 +149,7 @@ public class AdminController {
      * @param model The model to add attributes to.
      * @return The name of the video view.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/video/{name}")
     public String watchVideoUrl (@PathVariable String name, Model model) {
         Lesson lesson = lessonService.getLessonByVideoName(name);
@@ -155,5 +163,35 @@ public class AdminController {
             ));
         }
         return "admin/video";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/settings")
+    public String getSettingsPage(Model model) {
+        model.addAttribute("settings", settingService.getAllSettings());
+        model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
+        model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+        model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+        return "admin/settings";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/settings/save")
+    public String saveSettings(@RequestParam Map<String, String> allParams) {
+        // The "enabled" checkboxes will only be present in the map if they are checked.
+        // We need to handle the unchecked case by explicitly setting them to "false".
+        boolean maintenanceMode = allParams.containsKey(ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        boolean registrationEnabled = allParams.containsKey(ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        boolean bannerEnabled = allParams.containsKey(ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+
+        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_MODE, String.valueOf(maintenanceMode));
+        settingService.saveSetting(ApplicationSettingService.KEY_REGISTRATION_ENABLED, String.valueOf(registrationEnabled));
+        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_ENABLED, String.valueOf(bannerEnabled));
+        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_TEXT, allParams.get(ApplicationSettingService.KEY_SITE_BANNER_TEXT));
+        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_END_TIME, allParams.get(ApplicationSettingService.KEY_MAINTENANCE_END_TIME));
+
+        return "redirect:/admin";
     }
 }

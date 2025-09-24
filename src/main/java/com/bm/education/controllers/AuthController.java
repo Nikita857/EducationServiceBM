@@ -5,6 +5,8 @@ import com.bm.education.dto.auth.*;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.security.jwt.JwtService;
+import com.bm.education.services.ApplicationSettingService;
+import com.bm.education.services.ApplicationSettingService;
 import com.bm.education.services.LoginAttemptService;
 import com.bm.education.services.RefreshTokenService;
 import com.bm.education.services.UserService;
@@ -45,12 +47,17 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
+    private final ApplicationSettingService settingService;
 
     @PostMapping("/api/auth/register")
     @ResponseBody
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,
                                                  HttpServletResponse response,
                                                  BindingResult bindingResult) {
+
+        if (!settingService.isRegistrationEnabled()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Регистрация в данный момент отключена."));
+        }
 
         if(bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
@@ -150,6 +157,9 @@ public class AuthController {
 
     @GetMapping("/register")
     public String register() {
+        if (!settingService.isRegistrationEnabled()) {
+            return "redirect:/login";
+        }
         return "register";
     }
 
@@ -186,5 +196,12 @@ public class AuthController {
     public String blockedPage(Model model) {
         model.addAttribute("banDuration", loginAttemptService.getBanDuration() * 60);
         return "error/blocked";
+    }
+
+    @GetMapping("/maintenance")
+    public String getMaintenancePage(Model model) {
+        String endTime = settingService.getSetting(ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+        model.addAttribute("maintenanceEndTime", endTime);
+        return "maintenance";
     }
 }

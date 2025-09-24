@@ -11,10 +11,10 @@
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-<#--    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>-->
+    <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.min.js"></script>
-    <script type="module" src="${springMacroRequestContext.contextPath}/js/admin-bundle.js"></script>
+    <script type="module" src="${springMacroRequestContext.contextPath}/js/bundles/admin-bundle.js"></script>
 
     <title>Панель управления</title>
     <style>
@@ -132,7 +132,7 @@
                 </div>
                 <div class="nav-item">
                     <a href="#" class="nav-link" data-tab="docs-tab" onclick="loadDocuments()">
-                        <i class="bi bi-people"></i>
+                        <i class="bi bi-stickies"></i>
                         Документация
                     </a>
                 </div>
@@ -490,15 +490,7 @@
 
         <!-- Настройки -->
         <div class="tab-content" id="settings-tab">
-            <section class="content-section">
-                <h2 class="section-title">Настройки системы</h2>
-                <div class="card bg-transparent">
-                    <div class="card-body">
-                        <p>Здесь будут настройки системы...</p>
-                        <p>Конфигурация, параметры, системные настройки.</p>
-                    </div>
-                </div>
-            </section>
+            <#include "admin/settings.ftlh">
         </div>
     </main>
 </div>
