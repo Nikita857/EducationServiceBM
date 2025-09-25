@@ -5,9 +5,9 @@ services:
     image: mysql:8.0
     container_name: bm_education_db
     environment:
-      - MYSQL_DATABASE=bm_education
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=admin
+      - MYSQL_DATABASE=db_spring
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=
       - MYSQL_ROOT_PASSWORD=root
     volumes:
       - mysql_data:/var/lib/mysql
@@ -31,8 +31,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/bm_education
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
 
   nginx:
