@@ -6,6 +6,7 @@ import com.bm.education.models.Lesson;
 import com.bm.education.services.LessonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -31,10 +32,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UploadLessonController {
 
-    private static final String UPLOAD_DIR = Paths.get("src", "main", "resources", "static", "videos")
-            .toAbsolutePath()
-                    .normalize()
-                        .toString();
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
     private final LessonService lessonService;
 
     /**
@@ -63,7 +63,7 @@ public class UploadLessonController {
             MultipartFile file = request.getFile();
 
             // Создаем абсолютный путь к директории для сохранения
-            Path uploadPath = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
+            Path uploadPath = Paths.get(this.uploadPath, "videos").toAbsolutePath().normalize();
 
             // Создаем директорию если не существует
             if (!Files.exists(uploadPath)) {

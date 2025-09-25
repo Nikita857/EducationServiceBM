@@ -236,7 +236,7 @@
 <script>
     const endTime = "${maintenanceEndTime!}"; // Get time from model
 </script>
-<script src="${springMacroRequestContext.contextPath}/js/maintenanceTimer.js"></script>
+<script src="${staticHost}/js/maintenanceTimer.js"></script>
 
 <script>
     // Добавляем анимацию для элементов при загрузке

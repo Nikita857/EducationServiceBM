@@ -1,29 +1,25 @@
-# Stage 1: Build backend application with Maven
+# Этап 1: Сборка приложения с помощью Maven
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
+
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Copy all necessary project files
+# Копируем только то, что нужно для сборки, чтобы кэш Docker работал эффективнее
 COPY pom.xml .
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .gitignore .
-COPY keystore.p12 .
-COPY selfsigned.crt .
-COPY qodana.yaml .
 COPY src ./src
 
-# Build the application JAR
+# Собираем jar-файл, пропуская тесты
 RUN mvn clean package -DskipTests
 
-# Stage 2: Final runtime image
+# Этап 2: Создание финального образа для запуска
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copy the application JAR from the builder stage
+# Копируем только собранный jar-файл из предыдущего этапа
 COPY --from=builder /app/target/*.jar app.jar
 
-# Copy the keystore for SSL
-COPY --from=builder /app/keystore.p12 keystore.p12
+# Указываем, что контейнер будет слушать порт 8080
+EXPOSE 8080
 
-EXPOSE 8443
+# Команда для запуска приложения
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,47 +1,56 @@
 version: '3.8'
-services:
-  app:
-    image: nikita857/education-service:latest
-    build:
-      context: .
-      dockerfile: src/main/docker/Dockerfile
-    ports:
-      - "8443:8443"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/db_spring?useSSL=false&allowPublicKeyRetrieval=true"
-      SPRING_DATASOURCE_USERNAME: "root"
-      SPRING_DATASOURCE_PASSWORD: ""
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-      SPRING_WEB_RESOURCES_STATIC_LOCATIONS: "classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:/static/"
 
+services:
   db:
-    image: mariadb:10.4.32
-    ports:
-      - "3307:3306"
+    image: mysql:8.0
+    container_name: bm_education_db
     environment:
-      MYSQL_DATABASE: "db_spring"
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      - MYSQL_DATABASE=bm_education
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - db-data:/var/lib/mysql
-      - ./src/main/resources/static/db:/docker-entrypoint-initdb.d
 
-  phpmyadmin:
-    image: phpmyadmin
-    restart: always
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: db
+  app:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile
+    container_name: bm_education_app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/bm_education
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  nginx:
+    image: nginx:latest
+    container_name: bm_education_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount the static files from your project into the nginx container
+      - ./src/main/resources/static:/usr/share/nginx/html:ro
+      # Mount the nginx configuration file
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Mount SSL certificates (if you want to re-enable HTTPS)
+      # - ./nginx/certs/localhost.crt:/etc/nginx/certs/localhost.crt
+      # - ./nginx/certs/localhost.key:/etc/nginx/certs/localhost.key
+    depends_on:
+      - app
 
 volumes:
-  db-data:
+  mysql_data:

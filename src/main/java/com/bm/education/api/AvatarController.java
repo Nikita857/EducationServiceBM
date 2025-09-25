@@ -4,6 +4,9 @@ import com.bm.education.services.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -28,33 +31,19 @@ import java.util.UUID;
  */
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class AvatarController {
 
     private final UserService userService;
 
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
     private final List<String> ALLOWED_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif", "image/webp");
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    private Path staticAvatarsPath;
 
-    /**
-     * Initializes the controller by creating the directory for storing avatars if it does not exist.
-     */
-    @PostConstruct
-    public void init() {
-        try {
-            // Путь к папке static внутри resources
-            staticAvatarsPath = Paths.get("src", "main", "resources", "static", "avatars")
-                    .toAbsolutePath()
-                    .normalize();
-
-            // Создаем директорию если не существует
-            if (!Files.exists(staticAvatarsPath)) {
-                Files.createDirectories(staticAvatarsPath);
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException("Не удалось создать директорию для аватаров", e);
-        }
+    private Path getRootLocation() {
+        return Paths.get(uploadPath, "avatars");
     }
 
     /**
@@ -79,10 +68,16 @@ public class AvatarController {
             String fileExtension = getFileExtension(originalFileName);
             String fileName = UUID.randomUUID() + fileExtension;
 
-            Files.deleteIfExists(staticAvatarsPath.resolve(userService.getUserByUsername(user.getName()).getAvatar()));
+            // Create directory if it doesn't exist
+            if (!Files.exists(getRootLocation())) {
+                Files.createDirectories(getRootLocation());
+            }
+
+            Files.deleteIfExists(getRootLocation().resolve(userService.getUserByUsername(user.getName()).getAvatar()));
 
             // Сохраняем файл в static/avatars/
-            Path filePath = staticAvatarsPath.resolve(fileName);
+            Path filePath = getRootLocation().resolve(fileName);
+            log.debug("Маршрут загрузки: {}", filePath);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Сохраняем путь в БД (только имя файла)
@@ -112,7 +107,7 @@ public class AvatarController {
     @ResponseBody
     public ResponseEntity<Resource> serveAvatar(@PathVariable String filename) {
         try {
-            Path file = staticAvatarsPath.resolve(filename);
+            Path file = getRootLocation().resolve(filename);
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() && resource.isReadable()) {
@@ -165,7 +160,7 @@ public class AvatarController {
     }
 
     /**
-     * Determines the content type of a file.
+     * Determines the content type of file.
      *
      * @param filename The name of the file.
      * @return The content type of the file.

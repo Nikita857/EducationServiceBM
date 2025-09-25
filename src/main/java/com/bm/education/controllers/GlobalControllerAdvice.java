@@ -2,6 +2,7 @@ package com.bm.education.controllers;
 
 import com.bm.education.services.ApplicationSettingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -10,6 +11,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalControllerAdvice {
 
     private final ApplicationSettingService settingService;
+
+    @Value("${app.static.host:}")
+    private String staticHost;
+
+    @ModelAttribute("staticHost")
+    public String getStaticHost() {
+        return staticHost;
+    }
 
     @ModelAttribute("isBannerEnabled")
     public boolean isBannerEnabled() {

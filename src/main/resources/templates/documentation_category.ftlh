@@ -7,8 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/tasklist.css">
+    <link rel="stylesheet" href="${staticHost}/css/header.css">
+    <link rel="stylesheet" href="${staticHost}/css/tasklist.css">
     <title>${category.name}</title>
 </head>
 <body>

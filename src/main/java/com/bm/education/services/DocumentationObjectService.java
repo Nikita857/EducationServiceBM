@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,13 @@ public class DocumentationObjectService {
 
     private final DocumentationObjectRepository documentationObjectRepository;
     private final DocumentationCategoryRepository documentationCategoryRepository;
-    private final Path rootLocation = Paths.get("src/main/resources/static/docs");
+
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
+    private Path getRootLocation() {
+        return Paths.get(uploadPath, "docs");
+    }
 
     @Transactional(readOnly = true)
     public Page<DocumentationObjectDTO> getDocuments(Pageable pageable, Integer courseId, Long categoryId) {
@@ -70,7 +77,7 @@ public class DocumentationObjectService {
             // First, delete the file from the filesystem.
             String filename = doc.getFile();
             if (filename != null && !filename.isBlank()) {
-                Path filePath = rootLocation.resolve(filename).normalize().toAbsolutePath();
+                Path filePath = getRootLocation().resolve(filename).normalize().toAbsolutePath();
                 try {
                     Files.deleteIfExists(filePath);
                 } catch (IOException e) {
@@ -109,6 +116,7 @@ public class DocumentationObjectService {
     }
 
     private @NotNull String saveFile(@NotNull MultipartFile file) throws IOException {
+        Path rootLocation = getRootLocation();
         if (!Files.exists(rootLocation)) {
             Files.createDirectories(rootLocation);
         }

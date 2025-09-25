@@ -7,14 +7,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/admin.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/adminModule.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
+    <link rel="stylesheet" href="${staticHost}/css/admin.css">
+    <link rel="stylesheet" href="${staticHost}/css/adminModule.css">
+    <link rel="stylesheet" href="${staticHost}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.tiny.cloud/1/7q79b4cg9k3a3qctp723vlt7l6n70oxa7l90sdaq5s0kf3bj/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
     <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.min.js"></script>
-    <script type="module" src="${springMacroRequestContext.contextPath}/js/bundles/admin-bundle.js"></script>
+    <script type="module" src="${staticHost}/js/admin-bundle.js"></script>
 
     <title>Панель управления</title>
     <style>
@@ -725,8 +725,8 @@
         </div>
     </div>
 </div>
-<script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
+<script src="${staticHost}/js/logoutScript.js"></script>
+<script src="${staticHost}/js/custom-alert.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

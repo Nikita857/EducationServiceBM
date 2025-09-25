@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,11 +37,17 @@ public class CoursesService {
 
     private final CoursesRepository coursesRepository;
     private final UserRepository userRepository;
-    private final Path rootLocation = Paths.get("src/main/resources/static/img/course-brand");
     private final ModuleService moduleService;
     private final LessonService lessonService;
     private final UserProgressRepository userProgressRepository;
     private final UserModuleCompletionRepository userModuleCompletionRepository;
+
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
+    private Path getRootLocation() {
+        return Paths.get(uploadPath, "img", "course-brand");
+    }
 
     /**
      * Gets the total number of courses.
@@ -128,6 +135,7 @@ public class CoursesService {
      * @throws IOException if there is an error while saving the image file.
      */
     private @NotNull String saveImage(MultipartFile file) throws IOException {
+        Path rootLocation = getRootLocation();
         // Создаем директорию, если не существует
         
         if (!Files.exists(rootLocation)) {

@@ -8,8 +8,8 @@
     <title>Итоговый тест по модулю | BM Education</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
+    <link rel="stylesheet" href="${staticHost}}/css/header.css">
+    <link rel="stylesheet" href="${staticHost}/css/custom-alert.css">
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -151,8 +151,8 @@
 </div>
 
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
-<script src="${springMacroRequestContext.contextPath}/js/moduleTestHandler.js"></script>
+<script src="${staticHost}/js/custom-alert.js"></script>
+<script src="${staticHost}/js/moduleTestHandler.js"></script>
 
 </body>
 </html>

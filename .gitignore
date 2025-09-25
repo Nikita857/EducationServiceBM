@@ -34,3 +34,8 @@ target/
 
 # Maven wrapper
 .mvn/
+
+# Gemini configuration file
+.gemini.config
+/src/main/resources/static/videos/
+

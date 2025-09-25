@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет</title>
     <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/css/bootstrap.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/header.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/cabinet.css">
-    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/custom-alert.css">
+    <link rel="stylesheet" href="${staticHost}/css/header.css">
+    <link rel="stylesheet" href="${staticHost}/css/cabinet.css">
+    <link rel="stylesheet" href="${staticHost}/css/custom-alert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body style="background-color: #0f172a; color: #e2e8f0; min-height: 100vh">
