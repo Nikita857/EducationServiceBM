@@ -146,7 +146,7 @@
 
 
 <script>${lessonData.testCode?no_esc}</script>
-<script src="${springMacroRequestContext.contextPath}/js/modalTest.js"></script>
+<script src="${staticHost}/js/modalTest.js"></script>
 <script>
     // Анимация элементов при загрузке
     document.addEventListener('DOMContentLoaded', function () {

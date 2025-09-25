@@ -2,18 +2,15 @@ package com.bm.education.services;
 
 import com.bm.education.dto.ModuleCreateRequest;
 import com.bm.education.dto.ModuleResponseDTO;
-import com.bm.education.models.Course;
-import com.bm.education.models.Lesson;
+import com.bm.education.models.*;
 import com.bm.education.models.Module;
-import com.bm.education.models.ModuleStatus;
-import com.bm.education.repositories.CoursesRepository;
-import com.bm.education.repositories.LessonRepository;
-import com.bm.education.repositories.ModuleRepository;
-import com.bm.education.repositories.UserProgressRepository;
+import com.bm.education.repositories.*;
+import com.bm.education.repositories.UserModuleCompletionRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +34,7 @@ public class ModuleService {
     private final LessonRepository lessonRepository;
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
+    private final UserModuleCompletionRepository userModuleCompletionRepository;
 
     /**
      * Gets all modules for a course.
@@ -273,5 +273,17 @@ public class ModuleService {
         Integer completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
         return totalLessons.equals(completedLessons);
     }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, Boolean> getCompletedModulesOfCourse(Integer courseId, Integer userId) {
+        List<Integer> completedModuleIds = userModuleCompletionRepository.findCompletedModuleIdsByCourse(userId, courseId);
+        return completedModuleIds.stream()
+                .collect(Collectors.toMap(
+                        moduleId -> moduleId,
+                        isComplete -> true,
+                        (existing, replacement) -> existing // In case of duplicates, keep the existing entry
+                ));
+    }
+
 
 }

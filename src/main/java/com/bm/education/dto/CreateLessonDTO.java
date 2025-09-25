@@ -31,4 +31,5 @@ public class CreateLessonDTO {
      * The ID of the module the lesson belongs to.
      */
     private Integer moduleId;
+    private Long contentLength;
 }

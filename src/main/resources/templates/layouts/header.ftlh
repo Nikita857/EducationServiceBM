@@ -93,14 +93,14 @@
         </div>
     </div>
 </#if>
-<script src="${staticHost}/js/auth/global-fetch-handler.js"></script>
-<script src="${staticHost}/js/notification.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/auth/global-fetch-handler.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/notification.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/auth/expiredTokenController.js"></script>
 
 
 <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false"></div>
-<script src="${staticHost}/js/logoutScript.js"></script>
-<script src="${staticHost}/js/custom-alert.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/logoutScript.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/custom-alert.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.js"></script>
 <script src="${springMacroRequestContext.contextPath}/webjars/jquery/3.7.1/jquery.js"></script>

@@ -6,7 +6,6 @@ import com.bm.education.dto.DocumentationCategoryDTO;
 import com.bm.education.dto.DocumentationObjectCreateRequest;
 import com.bm.education.dto.DocumentationObjectDTO;
 import com.bm.education.dto.DocumentationObjectResponseDTO;
-import com.bm.education.models.DocumentationCategory;
 import com.bm.education.models.DocumentationObject;
 import com.bm.education.services.CoursesService;
 import com.bm.education.services.DocumentationObjectService;

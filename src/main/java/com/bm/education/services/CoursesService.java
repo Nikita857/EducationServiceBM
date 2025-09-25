@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,7 +56,9 @@ public class CoursesService {
      *
      * @return The total number of courses.
      */
-    public long getCoursesCount() {return coursesRepository.count();}
+    public long getCoursesCount() {
+        return coursesRepository.count();
+    }
 
     /**
      * Gets a course by its slug.
@@ -78,10 +82,9 @@ public class CoursesService {
     public List<Course> getUserCourses(Integer userId) {
         return userRepository.findById(userId).map(user -> {
             if (user.getRoles().contains(Role.ROLE_ADMIN)) {
-                
+
                 return coursesRepository.findAll();
             }
-            
             return coursesRepository.getAvailableUserCourses(userId, CourseStatus.ACTIVE);
         }).orElse(null);
     }
@@ -90,9 +93,9 @@ public class CoursesService {
      * Creates a new course.
      *
      * @param courseRequest The request object containing the course details.
-     * @param imageFile The image file for the course.
+     * @param imageFile     The image file for the course.
      * @return The created course.
-     * @throws IOException if there is an error while saving the image file.
+     * @throws IOException              if there is an error while saving the image file.
      * @throws IllegalArgumentException if the course with the same slug already exists or the image file is invalid.
      */
     public Course createCourse(@NotNull CourseCreateRequest courseRequest, MultipartFile imageFile) throws IOException {
@@ -105,12 +108,12 @@ public class CoursesService {
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("Изображение для курса обязательно");
         }
-        
+
         String contentType = imageFile.getContentType();
         if (contentType == null ||
                 (!contentType.equals("image/jpeg") &&
-                 !contentType.equals("image/png") &&
-                 !contentType.equals("image/gif"))) {
+                        !contentType.equals("image/png") &&
+                        !contentType.equals("image/gif"))) {
             throw new IllegalArgumentException("Разрешены только файлы JPG, PNG или GIF");
         }
 
@@ -137,28 +140,28 @@ public class CoursesService {
     private @NotNull String saveImage(MultipartFile file) throws IOException {
         Path rootLocation = getRootLocation();
         // Создаем директорию, если не существует
-        
+
         if (!Files.exists(rootLocation)) {
-            
+
             Files.createDirectories(rootLocation);
         }
 
         // Генерируем уникальное имя файла
-        
+
         String originalFilename = file.getOriginalFilename();
         String fileExtension = originalFilename != null ?
                 originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
         String filename = UUID.randomUUID() + fileExtension;
-        
+
 
         // Сохраняем файл
-        
+
         Path destinationFile = rootLocation.resolve(Paths.get(filename))
                 .normalize().toAbsolutePath();
-        
+
 
         Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
-        
+
         return filename;
     }
 
@@ -178,7 +181,7 @@ public class CoursesService {
      *
      * @param request The request object containing the updated course details.
      * @return The updated course.
-     * @throws IOException if there is an error while saving the image file.
+     * @throws IOException              if there is an error while saving the image file.
      * @throws IllegalArgumentException if the course is not found or the course with the same slug already exists.
      */
     @Transactional
@@ -231,8 +234,8 @@ public class CoursesService {
     /**
      * Gets a paginated list of courses.
      *
-     * @param page The page number.
-     * @param size The page size.
+     * @param page     The page number.
+     * @param size     The page size.
      * @param courseId The ID of the course to retrieve, or 0 to retrieve all courses.
      * @return A paginated list of courses.
      */
@@ -240,9 +243,9 @@ public class CoursesService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         //Пиздатый подход, потому что сразу выделяем память под объект а только потом устанавливаем ему значение
         Page<Course> courses;
-        if(courseId != 0) {
+        if (courseId != 0) {
             courses = coursesRepository.findById(courseId, pageable);
-        }else{
+        } else {
             courses = coursesRepository.findAll(pageable);
         }
         return courses.map(this::convertToCourseResponseDto);
@@ -283,11 +286,14 @@ public class CoursesService {
      * Gets all modules for a course, including completion status for a user.
      *
      * @param courseId The ID of the course.
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @return A list of modules for the course.
      */
     public List<ModuleResponseDTO> getModulesOfCourseWithProgress(Integer courseId, Integer userId) {
         List<Module> modules = moduleService.getModulesByCourseId(courseId);
+        // Get all completed modules for this course in one query
+        Map<Integer, Boolean> completedModulesMap = moduleService.getCompletedModulesOfCourse(courseId, userId);
+
         return modules.stream()
                 .map(module -> {
                     // Check if all lessons are done
@@ -300,8 +306,8 @@ public class CoursesService {
                         lessonsCompleted = true; // Module with no lessons is considered to have its lessons completed
                     }
 
-                    // Check if the module test has been passed
-                    boolean testPassed = userModuleCompletionRepository.existsByUser_IdAndModule_Id(userId, module.getId());
+                    // Check if the module test has been passed from the pre-fetched map
+                    boolean testPassed = completedModulesMap.containsKey(module.getId());
 
                     return new ModuleResponseDTO(
                             module.getId(),
@@ -342,7 +348,7 @@ public class CoursesService {
      * Calculates the progress of a course for a user.
      *
      * @param courseId The ID of the course.
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @return The progress of the course for the user.
      */
     private Integer calculateCourseProgress(Integer courseId, Integer userId) {
@@ -355,7 +361,7 @@ public class CoursesService {
             double progressPercentage = (completedLessons.doubleValue() / totalLessons.doubleValue()) * 100;
             return (int) Math.round(progressPercentage);
         } catch (Exception e) {
-            
+
             return 0;
         }
     }
@@ -406,7 +412,7 @@ public class CoursesService {
                 course.getStatus().toString(),
                 course.getCreatedAt().toString(),
                 course.getUpdatedAt().toString()
-                );
+        );
     }
 
     /**
@@ -416,10 +422,10 @@ public class CoursesService {
      * @return true if the course was deleted successfully, false otherwise.
      */
     public boolean deleteCourseById(Integer courseId) {
-        if(coursesRepository.existsById(courseId)) {
+        if (coursesRepository.existsById(courseId)) {
             coursesRepository.deleteById(courseId);
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -427,7 +433,7 @@ public class CoursesService {
     /**
      * Updates the status of a course.
      *
-     * @param status The new status of the course.
+     * @param status   The new status of the course.
      * @param courseId The ID of the course to update.
      * @return true if the course status was updated successfully, false otherwise.
      * @throws IllegalArgumentException if the course is not found.
@@ -438,9 +444,9 @@ public class CoursesService {
                 () -> new IllegalArgumentException("Course not found")
         );
         course.setStatus(CourseStatus.valueOf(status));
-        
+
         Course updatedCourse = coursesRepository.save(course);
-        
+
         return updatedCourse.getStatus() == CourseStatus.valueOf(status);
     }
 }

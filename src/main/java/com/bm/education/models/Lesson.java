@@ -54,6 +54,9 @@ public class Lesson {
     @Column(name = "test_code", length = 5000)
     private String testCode;
 
+    @Column(name = "content_length")
+    private Long contentLength;
+
     @OneToMany(mappedBy = "lesson")
     @ToString.Exclude
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();

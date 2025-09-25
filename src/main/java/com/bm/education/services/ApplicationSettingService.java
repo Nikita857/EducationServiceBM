@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.stream;
+
 @Service
 @RequiredArgsConstructor
 public class ApplicationSettingService {

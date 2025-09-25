@@ -94,6 +94,7 @@ public class UploadLessonController {
                 dto.setShortDescription(request.getShortDescription());
                 dto.setTestCode(request.getTestCode());
                 dto.setModuleId(request.getModuleId());
+                dto.setContentLength(file.getSize());
 
                 Lesson savedLesson = lessonService.saveLesson(dto);
 

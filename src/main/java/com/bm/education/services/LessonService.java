@@ -190,6 +190,7 @@ public class LessonService {
         lesson.setShortDescription(dto.getShortDescription());
         lesson.setTestCode(dto.getTestCode());
         lesson.setModule(module);
+        lesson.setContentLength(dto.getContentLength());
 
         return lessonRepository.save(lesson);
     }

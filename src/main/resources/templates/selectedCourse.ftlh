@@ -150,7 +150,14 @@
                     <#list modules as module>
                         <#if module.lessonsCompleted>
                             <a href="/course/${selectedCourseData.slug}/module/${module.moduleTitle}/test" class="module-btn">
-                                <h6 class="module-title">Тест по модулю: ${module.moduleSlug} <i class="bi bi-unlock-fill text-success"></i></h6>
+                                <h6 class="module-title">
+                                    Тест по модулю: ${module.moduleSlug}
+                                    <#if module.testPassed>
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    <#else>
+                                        <i class="bi bi-unlock-fill text-primary"></i>
+                                    </#if>
+                                </h6>
                             </a>
                         <#else>
                             <span class="module-btn disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Пройдите все уроки в модуле, чтобы разблокировать тест">

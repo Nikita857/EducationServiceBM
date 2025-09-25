@@ -79,6 +79,7 @@ public class CoursesController {
             model.addAttribute("percentageOfLearning", moduleService.countPercentOfLearning(completedLessons, totalLessons));
             model.addAttribute("progressMap", userProgressService.getCourseProgress(user.getId(), course.getId()));
             model.addAttribute("isAdmin", userService.isAdmin(user));
+            model.addAttribute("completedModulesOfCourse", moduleService.getCompletedModulesOfCourse(course.getId(), user.getId()));
 
             return "selectedCourse";
         }else{
