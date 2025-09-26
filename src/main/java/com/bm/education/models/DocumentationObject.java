@@ -3,6 +3,10 @@ package com.bm.education.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -23,8 +27,13 @@ public class DocumentationObject {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "tags")
-    private String tags;
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "documentation_object_tags",
+        joinColumns = @JoinColumn(name = "documentation_object_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
 
     @Column(name = "file")
     private String file;

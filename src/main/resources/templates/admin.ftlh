@@ -960,12 +960,15 @@
                         <input type="text" class="form-control" id="docName" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="docTags" class="form-label">Теги (через запятую)</label>
-                        <input type="text" class="form-control" id="docTags" name="tags">
+                        <label class="form-label">Теги</label>
+                        <div id="docTagsContainer" class="d-flex flex-wrap gap-2 border rounded p-2 bg-dark-subtle"> 
+                            <!-- Tags will be loaded here by JS -->
+                        </div>
+                        <select name="tags" id="docTagsSelect" multiple class="d-none"></select>
                     </div>
                     <div class="mb-3">
                         <label for="docCourse" class="form-label">Курс</label>
-                        <select class="form-select" id="docCourse" name="courseId" required>
+                        <select class="form-select" id="docCourse" name="courseId" onchange="handleCourseChangeForModal(this.value)" required>
                             <!-- Courses will be populated here by JS -->
                         </select>
                     </div>

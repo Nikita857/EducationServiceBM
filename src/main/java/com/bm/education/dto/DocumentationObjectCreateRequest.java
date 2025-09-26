@@ -13,7 +13,7 @@ public class DocumentationObjectCreateRequest {
     @Size(max = 255, message = "Название документа не может превышать 255 символов")
     private String name;
 
-    private String tags; // Optional
+    private java.util.List<String> tags; // Optional
 
     @NotNull(message = "Категория не может быть пустой")
     private Long categoryId;

@@ -4,8 +4,13 @@ import com.bm.education.dto.DocumentationObjectCreateRequest;
 import com.bm.education.dto.DocumentationObjectDTO;
 import com.bm.education.models.DocumentationCategory;
 import com.bm.education.models.DocumentationObject;
+import com.bm.education.models.Tag;
+
+import java.util.HashSet;
+import java.util.Set;
 import com.bm.education.repositories.DocumentationCategoryRepository;
 import com.bm.education.repositories.DocumentationObjectRepository;
+import com.bm.education.repositories.TagRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +41,7 @@ public class DocumentationObjectService {
 
     private final DocumentationObjectRepository documentationObjectRepository;
     private final DocumentationCategoryRepository documentationCategoryRepository;
+    private final TagRepository tagRepository;
 
     @Value("${app.upload.path}")
     private String uploadPath;
@@ -51,20 +57,45 @@ public class DocumentationObjectService {
 
         for (Sort.Order order : originalSort) {
             String property = order.getProperty();
-            String mappedProperty = property;
-
-            if ("courseName".equals(property)) {
-                mappedProperty = "course.title";
-            } else if ("categoryName".equals(property)) {
-                mappedProperty = "c.name";
-            }
-
+            // Remap DTO properties to Entity properties for sorting
+            String mappedProperty = switch (property) {
+                case "categoryName" -> "category.name";
+                case "courseName" -> "category.documentation.course.title";
+                default -> property; // Handles id, name, file, tags
+            };
             newSort = newSort.and(Sort.by(order.getDirection(), mappedProperty));
         }
 
         Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), newSort);
 
-        return documentationObjectRepository.findByFilters(newPageable, courseId, categoryId);
+        Page<DocumentationObject> docPage = documentationObjectRepository.findByFilters(newPageable, courseId, categoryId);
+
+        return docPage.map(this::convertToDocumentationObjectDTO);
+    }
+
+    private DocumentationObjectDTO convertToDocumentationObjectDTO(DocumentationObject doc) {
+        String courseName = null;
+        String categoryName = null;
+
+        if (doc.getCategory() != null) {
+            categoryName = doc.getCategory().getName();
+            if (doc.getCategory().getDocumentation() != null && doc.getCategory().getDocumentation().getCourse() != null) {
+                courseName = doc.getCategory().getDocumentation().getCourse().getTitle();
+            }
+        }
+
+        String tagsString = doc.getTags().stream()
+                .map(Tag::getName)
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        return new DocumentationObjectDTO(
+                doc.getId(),
+                doc.getName(),
+                tagsString,
+                doc.getFile(),
+                categoryName,
+                courseName
+        );
     }
 
     @Transactional
@@ -107,10 +138,20 @@ public class DocumentationObjectService {
         // Create and save DocumentationObject
         DocumentationObject docObject = new DocumentationObject();
         docObject.setName(request.getName());
-        docObject.setTags(request.getTags());
         docObject.setFile(fileUrl);
         docObject.setText(request.getTextContent());
         docObject.setCategory(category);
+
+        // Handle Tags
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            Set<Tag> tags = new HashSet<>();
+            for (String tagName : request.getTags()) {
+                Tag tag = tagRepository.findByName(tagName.trim())
+                        .orElseGet(() -> new Tag(tagName.trim()));
+                tags.add(tag);
+            }
+            docObject.setTags(tags);
+        }
 
         return documentationObjectRepository.save(docObject);
     }

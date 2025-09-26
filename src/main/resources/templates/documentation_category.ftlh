@@ -44,6 +44,19 @@
 
 <!-- Documentation Objects Content -->
 <div class="container">
+
+    <#-- Tag Filter -->
+    <div class="d-flex justify-content-center flex-wrap gap-2 my-4">
+        <a href="?" class="btn btn-sm <#if !activeTag??>btn-primary<#else>btn-outline-secondary</#if>">Все теги</a>
+        <#if uniqueTags??>
+            <#list uniqueTags as tag>
+                <a href="?tag=${tag.name}" class="btn btn-sm <#if activeTag?? && activeTag == tag.name>btn-outline-primary<#else>btn-outline-secondary</#if>">
+                    ${tag.name}
+                </a>
+            </#list>
+        </#if>
+    </div>
+
     <#if category.documentationObjects?has_content>
         <div class="lessons-grid">
             <#list category.documentationObjects as object>
@@ -56,11 +69,15 @@
 
                     <a href="/docs/${object.file}" class="btn btn-primary w-50">Открыть</a>
 
-                    <#if object.tags?? && object.tags?has_content>
+                    <#if object.tags?? && object.tags?size gt 0>
                         <div class="mt-3">
-                            <#list object.tags?split(",") as tag>
-                                <span class="badge bg-secondary">${tag?trim}</span>
+                            <#list object.tags as tag>
+                                <span class="badge bg-secondary">${tag.name}</span>
                             </#list>
+                        </div>
+                    <#else>
+                        <div class="mt-3">
+                            <span class="badge bg-info">Тегов нет</span>
                         </div>
                     </#if>
                 </div>
