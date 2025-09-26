@@ -66,8 +66,8 @@
                     <div class="avatar-container mb-3">
                         <img src="/avatars/${user.avatar}" alt="Аватар" class="avatar rounded-circle" id="userAvatar">
                         <span class="status-badge-profile">
-<span class="badge" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">Онлайн</span>
-</span>
+                            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">Онлайн</span>
+                        </span>
                     </div>
 
                     <form id="avatarUploadForm" action="/profile/avatar/upload" method="post"
@@ -100,7 +100,7 @@
                         </button>
                     </div>
                     <div class="d-grid gap-2">
-                        <a href="/" class="btn btn-primary">
+                        <a href="/personal-file/personal-file-user123.pdf" class="btn btn-primary" target="_blank">
                             Личное дело сотрудника
                         </a>
                     </div>
@@ -192,7 +192,9 @@
                                                             Заявка: ${offer.topic}
                                                         </h5>
                                                         <button type="button" class="btn-close btn-close-white"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                data-bs-dismiss="modal" aria-label="Close">
+                                                                <i class="bi bi-x-lg"></i>
+                                                        </button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="offer-details">
@@ -303,7 +305,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-lock"></i> Смена пароля</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="passwordChangeForm">
@@ -341,7 +345,9 @@
                     <i class="bi bi-lightbulb me-2"></i>Форма обратной связи
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                        aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                </button>
             </div>
 
             <form id="sendOffer">

@@ -183,7 +183,9 @@
                     <i class="bi bi-lightbulb me-2"></i>Форма обратной связи
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                        aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                </button>
             </div>
 
             <form id="sendOffer">

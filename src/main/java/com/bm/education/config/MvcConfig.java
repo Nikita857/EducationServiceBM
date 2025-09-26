@@ -6,10 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.context.annotation.Bean;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
