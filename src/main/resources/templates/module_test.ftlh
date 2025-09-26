@@ -153,6 +153,6 @@
 <script src="${springMacroRequestContext.contextPath}/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
 <script src="${staticHost}/js/custom-alert.js"></script>
 <script src="${staticHost}/js/moduleTestHandler.js"></script>
-
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 </body>
 </html>

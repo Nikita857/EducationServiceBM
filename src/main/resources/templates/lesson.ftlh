@@ -147,6 +147,7 @@
 
 <script>${lessonData.testCode?no_esc}</script>
 <script src="${staticHost}/js/modalTest.js"></script>
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 <script>
     // Анимация элементов при загрузке
     document.addEventListener('DOMContentLoaded', function () {

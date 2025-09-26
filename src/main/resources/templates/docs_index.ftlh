@@ -69,5 +69,6 @@
     </#if>
 </div>
 <script src="${staticHost}/js/main.js"></script>
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 </body>
 </html>

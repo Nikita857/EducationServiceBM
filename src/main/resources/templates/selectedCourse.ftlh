@@ -254,5 +254,6 @@
         });
     });
 </script>
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 </body>
 </html>

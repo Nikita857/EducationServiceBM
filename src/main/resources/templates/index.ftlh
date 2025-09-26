@@ -83,6 +83,7 @@
     </#if>
 </div>
 <script src="${staticHost}/js/indexPage.js"></script>
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 <script src="${staticHost}/js/main.js"></script>
 </body>
 </html>

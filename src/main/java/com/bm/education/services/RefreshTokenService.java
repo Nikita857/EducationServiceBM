@@ -3,6 +3,7 @@ package com.bm.education.services;
 import com.bm.education.models.User;
 import com.bm.education.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
+    @Value("${jwt.refresh-token.expiration-ms}")
+    private Long refreshTokenDurationMs;
+
     private final UserRepository userRepository;
 
     public Optional<User> findByToken(String token) {
@@ -23,8 +27,6 @@ public class RefreshTokenService {
     @Transactional
     public User createRefreshToken(User user) {
         user.setRefreshToken(UUID.randomUUID().toString());
-        // 1 day for refresh token
-        final long refreshTokenDurationMs = 24 * 60 * 60 * 1000;
         user.setRefreshTokenExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         return userRepository.save(user);
     }

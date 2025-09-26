@@ -95,6 +95,6 @@
         </div>
     </#if>
 </div>
-
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 </body>
 </html>

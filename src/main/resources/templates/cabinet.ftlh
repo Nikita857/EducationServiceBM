@@ -382,6 +382,7 @@
 </div>
 <script src="${staticHost}/js/changePassword.js"></script>
 <script src="${staticHost}/js/formCatcher.js"></script>
+<script src="${staticHost}/js/auth/expiredTokenController.js"></script>
 <script>
     document.getElementById('newOffer').onclick = function () {
         $('#offerModal').modal('show');
