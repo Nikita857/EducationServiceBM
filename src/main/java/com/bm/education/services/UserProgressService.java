@@ -63,8 +63,7 @@ public class UserProgressService {
             Optional<UserProgress> existingProgress = userProgressRepository
                     .findByUserIdAndLessonId(userId, lessonId);
 
-            UserProgress progress;
-            progress = existingProgress.orElseGet(UserProgress::new);
+            UserProgress progress = existingProgress.orElseGet(UserProgress::new);
 
             progress.setUser(user);
             progress.setCourse(course);

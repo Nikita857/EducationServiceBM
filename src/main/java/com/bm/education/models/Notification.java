@@ -5,17 +5,24 @@ import lombok.*;
 
 import java.time.Instant;
 
-@Table(name = "notifications")
 @Entity
+@Table(name = "notifications")
+@Builder
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notification {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notification_seq")
-    @SequenceGenerator(name = "notification_seq", sequenceName = "notification_seq", allocationSize = 1)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "notification_seq"
+    )
+    @SequenceGenerator(
+            name = "notification_seq",
+            sequenceName = "notification_seq",
+            allocationSize = 1
+    )
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -30,10 +37,10 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
-    @Column(name = "link", length = 255)
+    @Column(name = "link")
     private String link;
 
-    @Column(name = "message", nullable = false, length = 255)
+    @Column(name = "message", nullable = false)
     private String message;
 
     @Override

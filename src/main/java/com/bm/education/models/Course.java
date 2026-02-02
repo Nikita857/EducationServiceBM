@@ -1,38 +1,48 @@
 package com.bm.education.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "courses", indexes = {
+@Table(name = "courses",
+        indexes = {
         @Index(name = "idx_course_slug", columnList = "slug"),
         @Index(name = "idx_course_title", columnList = "title")
 })
+@Builder
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_seq")
-    @SequenceGenerator(name = "course_seq", sequenceName = "course_seq", allocationSize = 1)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "course_seq"
+    )
+    @SequenceGenerator(
+            name = "course_seq",
+            sequenceName = "course_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(name = "image", length = 255)
+    @Column(name = "image")
     private String image;
 
     @Lob
@@ -45,7 +55,7 @@ public class Course {
     private String slug;
 
     @Builder.Default
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private Set<Module> modules = new LinkedHashSet<>();
 
     @Builder.Default
@@ -55,44 +65,37 @@ public class Course {
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Documentation documentation;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private CourseStatus status;
+    @Builder.Default
+    @Column(nullable = false)
+    private CourseStatus status = CourseStatus.INACTIVE;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private Instant createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        status = CourseStatus.INACTIVE;
-    }
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null)
-            return false;
-        Class<?> oEffectiveClass = o instanceof org.hibernate.proxy.HibernateProxy proxy
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof org.hibernate.proxy.HibernateProxy proxy
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass)
-            return false;
+        if (thisEffectiveClass != oEffectiveClass) return false;
         Course course = (Course) o;
-        return getId() != null && java.util.Objects.equals(getId(), course.getId());
+        return getId() != null && Objects.equals(getId(), course.getId());
     }
 
     @Override
     public final int hashCode() {
-        return this instanceof org.hibernate.proxy.HibernateProxy proxy
+        return this instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
                 : getClass().hashCode();
     }

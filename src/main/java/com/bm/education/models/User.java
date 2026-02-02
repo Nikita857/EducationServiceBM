@@ -14,71 +14,63 @@ import java.util.stream.Collectors;
 import java.util.*;
 
 @Entity
-@Getter
-@Setter
-@Builder
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_email", columnList = "email"),
         @Index(name = "idx_user_username", columnList = "username")
 })
+@Builder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", allocationSize = 1)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "user_seq"
+    )
+    @SequenceGenerator(
+            name = "user_seq",
+            sequenceName = "user_seq",
+            allocationSize = 1
+    )
     private Long id;
 
-    @Size(min = 2, max = 50, message = "Имя должно быть от 2 до 50 символов")
-    @NotNull
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
-    @Size(min = 2, max = 50, message = "Фамилия должна быть от 2 до 50 символов")
-    @NotNull
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Size(min = 2, max = 50, message = "Поле отдел должно быть от 2 до 50 символов")
-    @NotNull
-    @Column(name = "department", nullable = false, length = 50)
+    @Column(name = "department", nullable = false, length = 150)
     private String department;
 
-    @Size(min = 2, max = 50, message = "Поле должность должно быть от 2 до 50 символов")
-    @NotNull
-    @Column(name = "job_title", nullable = false, length = 50)
+    @Column(name = "job_title", nullable = false, length = 150)
     private String jobTitle;
 
-    @Column(name = "qualification", length = 50)
+    @Column(name = "qualification", length = 200)
     private String qualification;
 
-    @Size(min = 5, max = 50, message = "Поле логин должно быть от 5 до 50 символов")
-    @NotNull
     @Column(name = "username", nullable = false, length = 50, unique = true)
     private String username;
 
-    @Size(min = 8, max = 255, message = "Длин пароля должна быть от 8 до 20 символов")
-    @NotNull
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 20)
     private String password;
 
-    @Size(max = 255)
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Size(max = 200)
     @Column(name = "avatar", nullable = false)
     private String avatar;
 
-    @ColumnDefault("current_timestamp()")
+    @Builder.Default
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
-    @ColumnDefault("current_timestamp()")
+    @Builder.Default
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    private Instant updatedAt = Instant.now();
 
     @Builder.Default
     @OneToMany(mappedBy = "user")

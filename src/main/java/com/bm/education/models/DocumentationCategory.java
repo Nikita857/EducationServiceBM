@@ -2,25 +2,35 @@ package com.bm.education.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
+@Table(
+        name = "documentation_categories",
+        indexes = {
+                @Index(name = "idx_doc_cat_slug", columnList = "link"),
+                @Index(name = "idx_doc_cat_name", columnList = "name")
+        })
+@Builder
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "documentation_categories", indexes = {
-        @Index(name = "idx_doc_cat_slug", columnList = "link"),
-        @Index(name = "idx_doc_cat_name", columnList = "name")
-})
 public class DocumentationCategory {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "doc_cat_seq")
-    @SequenceGenerator(name = "doc_cat_seq", sequenceName = "doc_cat_seq", allocationSize = 1)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "doc_cat_seq"
+    )
+    @SequenceGenerator(
+            name = "doc_cat_seq",
+            sequenceName = "doc_cat_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(name = "name", nullable = false)
@@ -43,21 +53,21 @@ public class DocumentationCategory {
             return true;
         if (o == null)
             return false;
-        Class<?> oEffectiveClass = o instanceof org.hibernate.proxy.HibernateProxy proxy
+        Class<?> oEffectiveClass = o instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof org.hibernate.proxy.HibernateProxy proxy
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         if (thisEffectiveClass != oEffectiveClass)
             return false;
         DocumentationCategory that = (DocumentationCategory) o;
-        return getId() != null && java.util.Objects.equals(getId(), that.getId());
+        return getId() != null && Objects.equals(getId(), that.getId());
     }
 
     @Override
     public final int hashCode() {
-        return this instanceof org.hibernate.proxy.HibernateProxy proxy
+        return this instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
                 : getClass().hashCode();
     }

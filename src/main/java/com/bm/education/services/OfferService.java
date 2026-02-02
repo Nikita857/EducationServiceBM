@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,25 +50,14 @@ public class OfferService {
     @Transactional
     public Offer saveOffer(Offer offer) {
         try {
-            // Убедимся, что установлены значения по умолчанию
-            if (offer.getStatus() == null) {
-                offer.setStatus(OfferStatus.PENDING);
-            }
-            if (offer.getCreatedAt() == null) {
-                offer.setCreatedAt(LocalDateTime.now());
-            }
-            offer.setUpdatedAt(LocalDateTime.now());
-
             return offerRepository.save(offer);
 
         } catch (ConstraintViolationException e) {
-
             throw new ValidationException("Ошибка валидации: " +
                     e.getConstraintViolations().stream()
                             .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                             .collect(Collectors.joining(", ")));
         } catch (Exception e) {
-
             throw new ServiceException("Ошибка при сохранении заявки");
         }
     }
@@ -189,7 +179,7 @@ public class OfferService {
             // Обновляем статус и ответ
             offer.setStatus(updateDto.status());
             offer.setResponse(updateDto.response());
-            offer.setUpdatedAt(LocalDateTime.now());
+            offer.setUpdatedAt(Instant.now());
 
             return offerRepository.save(offer);
 

@@ -12,20 +12,26 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
-@Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "lessons", indexes = {
         @Index(name = "idx_lesson_title", columnList = "title")
 })
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Lesson {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lesson_seq")
-    @SequenceGenerator(name = "lesson_seq", sequenceName = "lesson_seq", allocationSize = 1)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "lesson_seq"
+    )
+    @SequenceGenerator(
+            name = "lesson_seq",
+            sequenceName = "lesson_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @JsonBackReference
@@ -33,7 +39,6 @@ public class Lesson {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "module_id", nullable = false)
-    @ToString.Exclude
     private Module module;
 
     @Size(max = 100)
@@ -49,8 +54,6 @@ public class Lesson {
     @Column(name = "description", length = 5000)
     private String description;
 
-    @Size(max = 50)
-    @NotNull
     @Column(name = "short_description", nullable = false, length = 50)
     private String shortDescription;
 
@@ -63,6 +66,5 @@ public class Lesson {
 
     @Builder.Default
     @OneToMany(mappedBy = "lesson")
-    @ToString.Exclude
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 }
