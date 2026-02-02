@@ -1,9 +1,11 @@
 package com.bm.education.feat.user.controller;
 
-import com.bm.education.feat.lesson.dto.CreateLessonDTO;
+import com.bm.education.feat.lesson.dto.CreateLessonRequest;
 import com.bm.education.feat.lesson.dto.LessonUploadRequest;
 import com.bm.education.feat.lesson.model.Lesson;
 import com.bm.education.feat.lesson.service.LessonService;
+import com.bm.education.shared.common.ApiResponse;
+import com.bm.education.shared.validation.ValidationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -36,6 +40,8 @@ public class UploadLessonController {
     private String uploadPath;
 
     private final LessonService lessonService;
+    private final ObjectMapper objectMapper;
+    private final ValidationService validationService;
 
     /**
      * Creates a new lesson.
@@ -49,14 +55,12 @@ public class UploadLessonController {
     public ResponseEntity<?> createLesson(@Valid @ModelAttribute LessonUploadRequest request,
             BindingResult bindingResult) {
 
-        if (lessonService.validation(bindingResult) != null) {
-            return ResponseEntity.badRequest().body(lessonService.validation(bindingResult));
-        }
+        validationService.validate(bindingResult);
+
         // Проверка на пустой файл
         if (request.file().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Файл не должен быть пустым"));
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Файл не должен быть пустым"));
         }
 
         try {
@@ -90,36 +94,35 @@ public class UploadLessonController {
 
             // Проверяем что файл действительно сохранился
             if (Files.exists(filePath) && Files.size(filePath) > 0) {
-                CreateLessonDTO dto = new CreateLessonDTO(
+                // Create JSON content with video URL
+                ObjectNode contentNode = objectMapper.createObjectNode();
+                contentNode.put("type", "video");
+                contentNode.put("src", uniqueFileName);
+
+                CreateLessonRequest dto = new CreateLessonRequest(
                         request.title(),
-                        uniqueFileName,
-                        request.description(),
+                        contentNode,
                         request.shortDescription(),
-                        null,
                         request.moduleId(),
                         file.getSize());
 
                 Lesson savedLesson = lessonService.saveLesson(dto);
 
-                return ResponseEntity.ok().body(Map.of(
-                        "success", true,
-                        "message", "Урок успешно создан",
-                        "lessonId", savedLesson.getId(),
-                        "fileName", uniqueFileName));
+                return ResponseEntity.ok().body(
+                        ApiResponse.success("Урок успешно создан", Map.of(
+                                "lessonId", savedLesson.getId(),
+                                "fileName", uniqueFileName)));
             } else {
-                return ResponseEntity.internalServerError().body(Map.of(
-                        "success", false,
-                        "message", "Видеофайл не был сохранен"));
+                return ResponseEntity.internalServerError().body(
+                        ApiResponse.error("Видеофайл не был сохранен"));
             }
 
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of(
-                    "success", false,
-                    "message", "Ошибка сохранения файла: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error("Ошибка сохранения файла: " + e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Ошибка обработки запроса: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Ошибка обработки запроса: " + e.getMessage()));
         }
     }
 }

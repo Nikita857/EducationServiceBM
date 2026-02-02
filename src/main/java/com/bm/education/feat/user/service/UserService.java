@@ -2,8 +2,8 @@ package com.bm.education.feat.user.service;
 
 import com.bm.education.shared.exception.ApiException;
 import com.bm.education.feat.auth.repository.RoleRepository;
-import com.bm.education.feat.course.dto.CourseSelectionDTO;
-import com.bm.education.feat.user.dto.UserResponseDTO;
+import com.bm.education.feat.course.dto.CourseSelection;
+import com.bm.education.feat.user.dto.UserResponse;
 import com.bm.education.feat.user.dto.UserUpdateRequestDTO;
 import com.bm.education.feat.auth.dto.RegisterRequest;
 import com.bm.education.feat.course.repository.CoursesRepository;
@@ -227,7 +227,7 @@ public class UserService {
      * @return A paginated list of all users as DTOs.
      */
     @Transactional(readOnly = true)
-    public Page<UserResponseDTO> getAllUsersByDTO(int page, int size, String role) {
+    public Page<UserResponse> getAllUsersByDTO(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<User> usersPage;
         if (!role.equals("ALL")) {
@@ -237,7 +237,7 @@ public class UserService {
         } else {
             usersPage = userRepository.findAll(pageable);
         }
-        return usersPage.map(userMapper::toResponseDTO);
+        return usersPage.map(userMapper::toResponse);
     }
 
     /**
@@ -246,8 +246,8 @@ public class UserService {
      * @param userId The ID of the user.
      * @return The user with the specified ID as a DTO.
      */
-    public UserResponseDTO getUserById(Long userId) {
-        return userMapper.toResponseDTO(userRepository.findById(userId).orElse(new User()));
+    public UserResponse getUserById(Long userId) {
+        return userMapper.toResponse(userRepository.findById(userId).orElse(new User()));
     }
 
     /**
@@ -302,7 +302,7 @@ public class UserService {
      * @throws EntityNotFoundException if the user is not found.
      */
     @Transactional
-    public List<CourseSelectionDTO> getUserCourses(Long userId) {
+    public List<CourseSelection> getUserCourses(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException("User not found");
         }
@@ -310,7 +310,7 @@ public class UserService {
 
         return enrollments.stream()
                 .map(UserCourses::getCourse)
-                .map(course -> new CourseSelectionDTO(course.getId(), course.getTitle()))
+                .map(course -> new CourseSelection(course.getId(), course.getTitle()))
                 .collect(Collectors.toList());
     }
 

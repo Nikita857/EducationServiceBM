@@ -1,7 +1,6 @@
 package com.bm.education.feat.maintenance.controller;
 
 import com.bm.education.feat.course.service.CoursesService;
-import com.bm.education.feat.lesson.model.Lesson;
 import com.bm.education.feat.lesson.service.LessonService;
 import com.bm.education.feat.maintenance.service.ApplicationSettingService;
 import com.bm.education.feat.offer.model.Offer;
@@ -157,20 +156,15 @@ public class AdminController {
      * @param model The model to add attributes to.
      * @return The name of the video view.
      */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/video/{name}")
-    public String watchVideoUrl(@PathVariable String name, Model model) {
-        Lesson lesson = lessonService.getLessonByVideoName(name);
-        if (lesson == null) {
-            model.addAttribute("video", "Такого ведеоролика нет");
-            model.addAttribute("title", "Видео не найдено");
-        } else {
-            model.addAllAttributes(Map.of(
-                    "video", lesson.getVideo(),
-                    "title", lesson.getTitle()));
-        }
-        return "admin/video";
-    }
+    /*
+     * @PreAuthorize("hasRole('ADMIN')")
+     * 
+     * @GetMapping("/admin/video/{name}")
+     * public String watchVideoUrl(@PathVariable String name, Model model) {
+     * // Obsolete: Lesson video field is removed.
+     * return "admin/video";
+     * }
+     */
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/settings")

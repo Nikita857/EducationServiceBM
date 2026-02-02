@@ -1,7 +1,6 @@
 package com.bm.education.shared.security;
 
 import com.bm.education.shared.security.jwt.JwtAuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.savedrequest.NullRequestCache;
 
 @Configuration
 @EnableWebSecurity
@@ -36,38 +34,19 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                )
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/css/**", "/js/**", "/webjars/**", "/images/**",
-                                "/videos/**", "/favicon.ico", "/avatars/**",
-                                "/img/**", "/static/**", "/error"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/login",
-                                "/api/auth/**",
-                                "/api/auth/refresh",
-                                "/register",
-                                "/logout", "/logout/cookie", "/blocked", "/maintenance"
-                        ).permitAll()
-                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
+                                "/api/v1/auth/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
+                        .permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(exceptions -> exceptions
-                    // For API calls, return 401
-                    .defaultAuthenticationEntryPointFor(
-                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
-                        request -> request.getServletPath().startsWith("/api/")
-                    )
-                )
-                .formLogin(form -> form
-                    .loginPage("/login") // For browser navigation, redirect to /login
-                )
-                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -87,7 +66,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

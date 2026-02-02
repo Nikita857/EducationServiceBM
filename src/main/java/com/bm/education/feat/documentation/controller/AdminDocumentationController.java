@@ -1,7 +1,7 @@
 package com.bm.education.feat.documentation.controller;
 
 import com.bm.education.shared.common.ApiResponse;
-import com.bm.education.feat.course.dto.CourseResponseDTO;
+import com.bm.education.feat.course.dto.CourseResponse;
 import com.bm.education.feat.documentation.dto.DocumentationCategoryDTO;
 import com.bm.education.feat.documentation.dto.DocumentationObjectCreateRequest;
 import com.bm.education.feat.documentation.dto.DocumentationObjectDTO;
@@ -66,7 +66,7 @@ public class AdminDocumentationController {
     @GetMapping("/documents/courses")
     public ResponseEntity<ApiResponse<?>> getCoursesForFilter() {
         try {
-            List<CourseResponseDTO> courses = coursesService.findCoursesAndWriteDTO();
+            List<CourseResponse> courses = coursesService.findCoursesAndWriteDTO();
             return ResponseEntity.ok(ApiResponse.success(courses));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(

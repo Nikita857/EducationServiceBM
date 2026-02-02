@@ -5,7 +5,7 @@ import com.bm.education.feat.quiz.dto.AnswerDTO;
 import com.bm.education.feat.quiz.dto.QuestionDTO;
 import com.bm.education.feat.quiz.dto.TestResultDTO;
 import com.bm.education.feat.quiz.dto.TestSubmissionDTO;
-import com.bm.education.feat.user.dto.UserAnswerDTO;
+import com.bm.education.feat.user.dto.UserAnswer;
 import com.bm.education.feat.user.model.User;
 import com.bm.education.feat.user.model.UserCourseCompletion;
 import com.bm.education.feat.user.model.UserModuleCompletion;
@@ -91,7 +91,7 @@ public class ModuleTestService {
 
     @Transactional
     public TestResultDTO checkAnswers(Long moduleId,
-                                      @NotNull @org.jetbrains.annotations.NotNull TestSubmissionDTO submission, Authentication authentication) {
+            @NotNull @org.jetbrains.annotations.NotNull TestSubmissionDTO submission, Authentication authentication) {
         List<QuestionDTO> allQuestions = getAllQuestionsForModule(moduleId, true);
         int score = 0;
 
@@ -99,7 +99,7 @@ public class ModuleTestService {
                 .collect(Collectors.toMap(
                         QuestionDTO::question, q -> q, (q1, q2) -> q1));
 
-        for (UserAnswerDTO userAnswer : submission.answers()) {
+        for (UserAnswer userAnswer : submission.answers()) {
             QuestionDTO question = questionMap.get(userAnswer.question());
             if (question != null) {
                 for (AnswerDTO answer : question.answers()) {
@@ -117,14 +117,14 @@ public class ModuleTestService {
         User user = userService.getUserByUsername(authentication.getName());
         Module module = moduleService.getModuleById(moduleId);
 
-//        TODO создать что типа этого класса
-//        ModuleTestResult testResult = new ModuleTestResult();
-//        testResult.setUser(user);
-//        testResult.setModule(module);
-//        testResult.setScore(score);
-//        testResult.setTotalQuestions(totalQuestionsInTest);
-//        testResult.setCompletionDate(LocalDateTime.now());
-//        moduleTestResultRepository.save(testResult);
+        // TODO создать что типа этого класса
+        // ModuleTestResult testResult = new ModuleTestResult();
+        // testResult.setUser(user);
+        // testResult.setModule(module);
+        // testResult.setScore(score);
+        // testResult.setTotalQuestions(totalQuestionsInTest);
+        // testResult.setCompletionDate(LocalDateTime.now());
+        // moduleTestResultRepository.save(testResult);
 
         // If the user passed, mark the module as completed
         if (percentage >= MINIMAL_PERCENTAGE_OF_CORRECT_ANSWERS) {

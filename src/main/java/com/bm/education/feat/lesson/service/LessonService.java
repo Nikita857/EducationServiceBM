@@ -1,10 +1,11 @@
 package com.bm.education.feat.lesson.service;
 
-import com.bm.education.feat.lesson.dto.CreateLessonDTO;
-import com.bm.education.feat.lesson.dto.LessonDto;
-import com.bm.education.feat.lesson.dto.LessonRequestDTO;
-import com.bm.education.feat.lesson.dto.LessonResponseDTO;
-import com.bm.education.feat.module.dto.ViewModuleDto;
+import com.bm.education.feat.lesson.dto.CreateLessonRequest;
+import com.bm.education.feat.lesson.dto.LessonListResponse;
+import com.bm.education.feat.lesson.dto.LessonResponse;
+import com.bm.education.feat.lesson.dto.LessonShortResponse;
+import com.bm.education.feat.lesson.dto.LessonUpdateRequest;
+import com.bm.education.feat.module.dto.ViewModule;
 import com.bm.education.feat.module.service.ModuleService;
 import com.bm.education.feat.lesson.model.Lesson;
 import com.bm.education.feat.module.model.Module;
@@ -17,15 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
+import com.bm.education.feat.lesson.mapper.LessonMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+import com.bm.education.shared.exception.ResourceNotFoundException;
 
 /**
  * Service for managing lessons.
@@ -38,6 +37,7 @@ public class LessonService {
     private final ModuleRepository moduleRepository;
     private final UserService userService;
     private final ModuleService moduleService;
+    private final LessonMapper lessonMapper;
 
     /**
      * Gets a lesson by its ID and module ID.
@@ -68,24 +68,11 @@ public class LessonService {
      * @return The total number of lessons.
      */
     @Transactional
-    public long getLessonsCount() {
+    public Long getLessonsCount() {
         return lessonRepository.count();
     }
 
-    /**
-     * Converts a lesson to a LessonRequestDTO.
-     *
-     * @param lesson The lesson to convert.
-     * @return The converted LessonRequestDTO.
-     */
-    public LessonRequestDTO convertToDTO(Lesson lesson) {
-        return new LessonRequestDTO(
-                lesson.getId(),
-                lesson.getTitle(),
-                lesson.getModule().getTitle(),
-                lesson.getModule().getSlug(),
-                lesson.getModule().getCourse().getSlug());
-    }
+    // Removed manual convertToDTO, use mapper instead
 
     /**
      * Gets all lessons for a module as a list of DTOs.
@@ -94,12 +81,12 @@ public class LessonService {
      * @return A list of all lessons for the module as DTOs.
      */
     @Transactional
-    public List<LessonRequestDTO> getModuleLessons(Long moduleId) {
+    public List<LessonListResponse> getModuleLessons(Long moduleId) {
         List<Lesson> lessons = lessonRepository.findLessonsByModuleId(moduleId);
         // Пробегаемся по листу уроков конвертируем каждый обьект lesson в ДТО и
         // собираем кучу дтошек в лист
         return lessons.stream()
-                .map(this::convertToDTO)
+                .map(lessonMapper::toListResponse)
                 .collect(Collectors.toList());
     }
 
@@ -125,22 +112,7 @@ public class LessonService {
         return lessonRepository.countCompletedLessons(courseId, userId);
     }
 
-    /**
-     * Converts a lesson to a LessonResponseDTO.
-     *
-     * @param lesson The lesson to convert.
-     * @return The converted LessonResponseDTO.
-     */
-    public LessonResponseDTO convertToLessonResponseDTO(Lesson lesson) {
-        return new LessonResponseDTO(
-                lesson.getId(),
-                lesson.getModule().getTitle(),
-                lesson.getTitle(),
-                lesson.getVideo(),
-                lesson.getDescription(),
-                lesson.getShortDescription(),
-                null); // testCode removed
-    }
+    // Removed manual convertToLessonResponseDTO, use mapper instead
 
     /**
      * Gets a paginated list of lessons as DTOs.
@@ -151,7 +123,7 @@ public class LessonService {
      *                 lessons.
      * @return A paginated list of lessons as DTOs.
      */
-    public Page<LessonResponseDTO> putLessonsInDTO(Integer page, Integer size, Long moduleId) {
+    public Page<LessonResponse> putLessonsInDTO(Integer page, Integer size, Long moduleId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Lesson> lessons;
         if (moduleId == 0L) {
@@ -159,7 +131,38 @@ public class LessonService {
         } else {
             lessons = lessonRepository.findByModuleIdWithModule(moduleId, pageable);
         }
-        return lessons.map(this::convertToLessonResponseDTO);
+        return lessons.map(lessonMapper::toResponse);
+    }
+
+    /**
+     * Gets a paginated list of lessons (alias for putLessonsInDTO).
+     */
+    public Page<LessonResponse> getLessonsPaginated(int page, int size, Long moduleId) {
+        return putLessonsInDTO(page, size, moduleId);
+    }
+
+    /**
+     * Deletes a lesson by ID.
+     */
+    @Transactional
+    public void deleteLesson(Long lessonId) {
+        if (!lessonRepository.existsById(lessonId)) {
+            throw new ResourceNotFoundException("Урок", lessonId);
+        }
+        lessonRepository.deleteById(lessonId);
+    }
+
+    /**
+     * Gets a short lesson response for editing.
+     */
+    @Transactional(readOnly = true)
+    public LessonShortResponse getLessonShort(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Урок", lessonId));
+        return LessonShortResponse.builder()
+                .title(lesson.getTitle())
+                .content(lesson.getContent())
+                .build();
     }
 
     /**
@@ -169,17 +172,7 @@ public class LessonService {
      * @return A response entity with the validation errors, or null if there are no
      *         errors.
      */
-    public ResponseEntity<?> validation(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Ошибки валидации",
-                    "errors", errors));
-        }
-        return null;
-    }
+    // Removed validation method, use ValidationService in controller
 
     /**
      * Saves a new lesson.
@@ -187,16 +180,14 @@ public class LessonService {
      * @param dto The DTO containing the lesson details.
      * @return The saved lesson.
      */
-    public Lesson saveLesson(CreateLessonDTO dto) {
-        Module module = moduleRepository.findById(dto.moduleId()).orElse(null);
+    public Lesson saveLesson(CreateLessonRequest request) {
+        Module module = moduleRepository.findById(request.moduleId()).orElse(null);
         Lesson lesson = new Lesson();
-        lesson.setTitle(dto.title());
-        lesson.setVideo(dto.video());
-        lesson.setDescription(dto.description());
-        lesson.setShortDescription(dto.shortDescription());
-        // lesson.setTestCode(dto.testCode()); // Removed
+        lesson.setTitle(request.title());
+        lesson.setContent(request.content());
+        lesson.setShortDescription(request.shortDescription());
         lesson.setModule(module);
-        lesson.setContentLength(dto.contentLength());
+        lesson.setContentLength(request.contentLength());
 
         return lessonRepository.save(lesson);
     }
@@ -210,28 +201,19 @@ public class LessonService {
      * @throws RuntimeException if the lesson is not found.
      */
     @Transactional
-    public Lesson updateLesson(Long lessonId, LessonDto lessonDto) {
+    public Lesson updateLesson(Long lessonId, LessonUpdateRequest request) {
         Lesson lessonToUpdate = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId)); // Or a more specific
-                                                                                                   // exception
+                .orElseThrow(() -> new ResourceNotFoundException("Урок", lessonId));
 
-        lessonToUpdate.setTitle(lessonDto.title());
-        lessonToUpdate.setDescription(lessonDto.textContent());
-        lessonToUpdate.setVideo(lessonDto.videoUrl());
+        lessonToUpdate.setTitle(request.title());
+        lessonToUpdate.setContent(request.content());
+        lessonToUpdate.setShortDescription(request.shortDescription());
 
         return lessonRepository.save(lessonToUpdate);
     }
 
-    /**
-     * Gets a lesson by its video name.
-     *
-     * @param videoName The name of the video.
-     * @return The lesson with the specified video name, or null if not found.
-     */
-    @Transactional(readOnly = true)
-    public Lesson getLessonByVideoName(String videoName) {
-        return lessonRepository.findLessonByVideo(videoName).orElse(null);
-    }
+    // Removed getLessonByVideoName as video field is removed.
+    // public Lesson getLessonByVideoName(String videoName) { ... }
 
     /**
      * Gets all lessons with progress for a user in a module.
@@ -241,7 +223,7 @@ public class LessonService {
      * @return A list of all lessons with progress for the user in the module.
      */
     @Transactional(readOnly = true)
-    public List<ViewModuleDto> getLessonsWithProgress(String userName, String moduleSlug) {
+    public List<ViewModule> getLessonsWithProgress(String userName, String moduleSlug) {
         Long userId = userService.getUserByUsername(userName).getId();
         Long moduleId = moduleService.getModuleBySlug(moduleSlug).getId();
         List<Object[]> results = lessonRepository.findLessonsByModuleAndUserId(userId, moduleId);
@@ -256,8 +238,8 @@ public class LessonService {
      * @param result The object array to map.
      * @return The mapped ViewModuleDto.
      */
-    private ViewModuleDto mapToDTO(Object[] result) {
-        return new ViewModuleDto(
+    private ViewModule mapToDTO(Object[] result) {
+        return new ViewModule(
                 ((Long) result[0]),
                 (String) result[1],
                 (String) result[2],

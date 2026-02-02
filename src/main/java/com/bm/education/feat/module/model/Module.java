@@ -2,12 +2,13 @@ package com.bm.education.feat.module.model;
 
 import com.bm.education.feat.course.model.Course;
 import com.bm.education.feat.lesson.model.Lesson;
-import com.bm.education.feat.quiz.model.Question;
+import com.bm.education.feat.quiz.model.Quiz;
 import com.bm.education.feat.user.model.UserProgress;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
@@ -45,6 +46,12 @@ public class Module {
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "module_order")
+    private Integer moduleOrder;
+
     @NotNull
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -59,9 +66,8 @@ public class Module {
     @OneToMany(mappedBy = "module")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(name = "questions", columnDefinition = "jsonb")
-    private java.util.List<Question> questions;
+    @OneToOne(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Quiz quiz;
 
     @PrePersist
     protected void onCreate() {

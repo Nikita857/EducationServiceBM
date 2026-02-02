@@ -6,7 +6,7 @@ package com.bm.education.feat.offer.service;
 import com.bm.education.feat.offer.dto.OfferDto;
 import com.bm.education.feat.offer.dto.OfferRequestDTO;
 import com.bm.education.feat.offer.dto.OfferResponseDto;
-import com.bm.education.feat.user.dto.UserResponseDTO;
+import com.bm.education.feat.user.dto.UserResponse;
 import com.bm.education.feat.user.service.UserService;
 import com.bm.education.feat.offer.model.Offer;
 import com.bm.education.feat.offer.model.OfferStatus;
@@ -120,7 +120,7 @@ public class OfferService {
      * @return The converted OfferRequestDTO.
      */
     public OfferRequestDTO convertToRequestDTO(@NotNull Offer offer) {
-        UserResponseDTO user = userService.getUserById(offer.getUser().getId());
+        UserResponse user = userService.getUserById(offer.getUser().getId());
         return new OfferRequestDTO(
                 offer.getId(),
                 user.id(),

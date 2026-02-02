@@ -1,7 +1,6 @@
 package com.bm.education.feat.lesson.model;
 
 import com.bm.education.feat.module.model.Module;
-import com.bm.education.feat.quiz.model.Question;
 import com.bm.education.feat.user.model.UserProgress;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -10,6 +9,10 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -42,20 +45,18 @@ public class Lesson {
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Size(max = 255)
-    @Column(name = "video")
-    private String video;
-
-    @Size(max = 5000)
-    @Column(name = "description", length = 5000)
-    private String description;
-
     @Column(name = "short_description", nullable = false, length = 50)
     private String shortDescription;
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(name = "questions", columnDefinition = "jsonb")
-    private java.util.List<Question> questions;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "content", columnDefinition = "jsonb")
+    private JsonNode content;
+
+    @Column(name = "lesson_order")
+    private Integer lessonOrder;
+
+    @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    private com.bm.education.feat.quiz.model.Quiz quiz;
 
     @Column(name = "content_length")
     private Long contentLength;

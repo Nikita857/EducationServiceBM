@@ -2,7 +2,6 @@ package com.bm.education.feat.course.model;
 
 import com.bm.education.feat.documentation.model.Documentation;
 import com.bm.education.feat.module.model.Module;
-import com.bm.education.feat.quiz.model.Question;
 import com.bm.education.feat.user.model.UserProgress;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
@@ -40,9 +39,22 @@ public class Course {
     @Column(name = "image")
     private String image;
 
-    @Lob
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
+
+    @Column(name = "short_description", length = 500, nullable = false)
+    private String shortDescription;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty")
+    private CourseDifficulty difficulty;
+
+    @Column(name = "estimated_duration")
+    private Integer estimatedDuration; // In minutes
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Pattern(regexp = "^[a-z0-9-]+$", message = "URL может содержать только латинские буквы, цифры и дефисы")
     @Size(max = 100, message = "URL не должен превышать 100 символов")
@@ -57,9 +69,8 @@ public class Course {
     @OneToMany(mappedBy = "course")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(name = "questions", columnDefinition = "jsonb")
-    private java.util.List<Question> questions;
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private com.bm.education.feat.quiz.model.Quiz quiz;
 
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Documentation documentation;

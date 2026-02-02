@@ -1,7 +1,7 @@
 package com.bm.education.feat.module.service;
 
 import com.bm.education.feat.module.dto.ModuleCreateRequest;
-import com.bm.education.feat.module.dto.ModuleResponseDTO;
+import com.bm.education.feat.module.dto.ModuleResponse;
 import com.bm.education.feat.course.model.Course;
 import com.bm.education.feat.course.repository.CoursesRepository;
 import com.bm.education.feat.lesson.repository.LessonRepository;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.bm.education.shared.exception.ResourceNotFoundException;
 
 /**
  * Service for managing modules.
@@ -114,9 +115,10 @@ public class ModuleService {
      */
     @Transactional
     public void deleteModule(Long moduleId) {
-        if (moduleRepository.findById(moduleId).isPresent()) {
-            moduleRepository.deleteById(moduleId);
+        if (!moduleRepository.existsById(moduleId)) {
+            throw new ResourceNotFoundException("Модуль", moduleId);
         }
+        moduleRepository.deleteById(moduleId);
     }
 
     /**
@@ -127,12 +129,11 @@ public class ModuleService {
      * @return true if the module status was updated successfully, false otherwise.
      */
     @Transactional
-    public boolean updateModuleStatus(Long moduleId, ModuleStatus moduleStatus) {
-        if (moduleRepository.findById(moduleId).isEmpty()) {
-            return false;
+    public void updateModuleStatus(Long moduleId, ModuleStatus moduleStatus) {
+        if (!moduleRepository.existsById(moduleId)) {
+            throw new ResourceNotFoundException("Модуль", moduleId);
         }
         moduleRepository.updateStatusById(moduleId, moduleStatus.toString());
-        return true;
     }
 
     /**
@@ -146,7 +147,7 @@ public class ModuleService {
      *                                                     found.
      */
     @Transactional
-    public ModuleResponseDTO createModule(ModuleCreateRequest moduleCreateRequest) {
+    public ModuleResponse createModule(ModuleCreateRequest moduleCreateRequest) {
         // 1. Check for slug uniqueness
         if (moduleRepository.findBySlug(moduleCreateRequest.slug()).isPresent()) {
             throw new IllegalStateException("Модуль с таким URI (slug) уже существует: " + moduleCreateRequest.slug());
@@ -169,14 +170,14 @@ public class ModuleService {
     }
 
     /**
-     * Converts a module to a ModuleResponseDTO.
+     * Converts a module to a ModuleResponse.
      *
      * @param module The module to convert.
-     * @return The converted ModuleResponseDTO.
+     * @return The converted ModuleResponse.
      */
     @Contract("_ -> new")
-    private @NotNull ModuleResponseDTO convertToModuleResponseDTO(@NotNull Module module) {
-        return new ModuleResponseDTO(
+    private @NotNull ModuleResponse convertToModuleResponseDTO(@NotNull Module module) {
+        return new ModuleResponse(
                 module.getId(),
                 module.getCourse().getTitle(),
                 module.getTitle(),
@@ -191,7 +192,7 @@ public class ModuleService {
      *
      * @return A list of all modules as DTOs.
      */
-    public List<ModuleResponseDTO> getAllModulesByDTO() {
+    public List<ModuleResponse> getAllModulesByDTO() {
         List<Module> modules = moduleRepository.findAllWithCourse();
         return modules.stream()
                 .map(this::convertToModuleResponseDTO)
@@ -208,7 +209,7 @@ public class ModuleService {
      * @return A paginated list of modules as DTOs.
      */
     @Transactional
-    public Page<ModuleResponseDTO> putModulesInDTO(int page, int size, Long courseId) {
+    public Page<ModuleResponse> putModulesInDTO(int page, int size, Long courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Module> modules;
 
@@ -228,9 +229,10 @@ public class ModuleService {
      * @return The module with the specified ID as a DTO, or null if not found.
      */
     @Transactional(readOnly = true)
-    public ModuleResponseDTO findModuleById(Long id) {
-        Module module = moduleRepository.findById(id).orElse(null);
-        return module != null ? convertToModuleResponseDTO(module) : null;
+    public ModuleResponse findModuleById(Long id) {
+        Module module = moduleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Модуль", id));
+        return convertToModuleResponseDTO(module);
     }
 
     /**
@@ -239,26 +241,21 @@ public class ModuleService {
      * @param request The request object containing the updated module details.
      * @return true if the module was updated successfully, false otherwise.
      */
-    public boolean updateModule(ModuleUpdateRequest request) {
-        try {
-            Module module = moduleRepository.findById(request.moduleId()).orElseThrow(
-                    () -> new RuntimeException("Could not find module with id: " + request.moduleId()));
+    @Transactional
+    public void updateModule(ModuleUpdateRequest request) {
+        Module module = moduleRepository.findById(request.moduleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Модуль", request.moduleId()));
 
-            module.setTitle(request.name());
-            module.setSlug(request.slug());
+        module.setTitle(request.name());
+        module.setSlug(request.slug());
 
-            if (request.courseId() != null) {
-                Course course = coursesRepository.findById(request.courseId()).orElseThrow(
-                        () -> new RuntimeException("Could not find course with id: " + request.courseId()));
-                module.setCourse(course);
-            }
-
-            moduleRepository.save(module);
-            return true;
-        } catch (Exception e) {
-
-            return false;
+        if (request.courseId() != null) {
+            Course course = coursesRepository.findById(request.courseId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Курс", request.courseId()));
+            module.setCourse(course);
         }
+
+        moduleRepository.save(module);
     }
 
     @Transactional(readOnly = true)
