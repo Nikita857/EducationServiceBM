@@ -70,7 +70,9 @@ public class CoursesService {
      */
     public List<Course> getUserCourses(Long userId) {
         return userRepository.findById(userId).map(user -> {
-            if (user.getRoles().contains(Role.ROLE_ADMIN)) {
+            boolean isAdmin = user.getRoles().stream()
+                    .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+            if (isAdmin) {
 
                 return coursesRepository.findAll();
             }

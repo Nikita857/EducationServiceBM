@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long count();
 
     @Modifying
-    @Query(value = "DELETE FROM user_role WHERE user_id = :userId", nativeQuery = true)
+    @Query(value = "DELETE FROM users_roles WHERE user_id = :userId", nativeQuery = true)
     void deleteUserRolesByUserId(@Param("userId") Long userId);
 
     Page<User> findAllByRoles(Pageable pageable, Role role);

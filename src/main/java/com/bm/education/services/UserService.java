@@ -46,6 +46,7 @@ public class UserService {
     private final CoursesRepository coursesRepository;
     private final UserMapper userMapper;
     private final MinioService minioService;
+    private final RoleRepository roleRepository;
 
     /**
      * Enrolls a user in a course.
@@ -120,7 +121,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
-        user.getRoles().add(Role.ROLE_USER);
+
+        Role userRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        user.getRoles().add(userRole);
+
         user.setAvatar("avatar.png");
 
         userRepository.save(user);
@@ -222,7 +227,9 @@ public class UserService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<User> usersPage;
         if (!role.equals("ALL")) {
-            usersPage = userRepository.findAllByRoles(pageable, Role.valueOf("ROLE_".concat(role)));
+            Role roleEntity = roleRepository.findByName("ROLE_".concat(role))
+                    .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+            usersPage = userRepository.findAllByRoles(pageable, roleEntity);
         } else {
             usersPage = userRepository.findAll(pageable);
         }
@@ -258,15 +265,21 @@ public class UserService {
             user.setQualification(userUpdateRequestDTO.qualification());
 
             try {
-                Role newRole = null;
+                Role newRole;
                 if (userUpdateRequestDTO.role() == null || userUpdateRequestDTO.role().isEmpty()) {
-                    newRole = user.getRoles().stream().findFirst().orElse(Role.ROLE_USER);
+                    // Default to ROLE_USER if role not specified, or keep existing? Logic says
+                    // findFirst or default.
+                    // Assuming we want to set a default if none exists, but here we are UPDATEing.
+                    // Let's defer to looking up ROLE_USER if we really need a fallback.
+                    newRole = roleRepository.findByName("ROLE_USER")
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                 } else {
-                    newRole = Role.valueOf(userUpdateRequestDTO.role());
+                    newRole = roleRepository.findByName(userUpdateRequestDTO.role())
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                 }
                 user.setRoles(Set.of(newRole));
 
-            } catch (IllegalArgumentException e) {
+            } catch (Exception e) {
                 throw new ApiException("Неверно указана роль: " + userUpdateRequestDTO.role(), HttpStatus.BAD_REQUEST);
             }
 
@@ -338,7 +351,8 @@ public class UserService {
         if (user.getRoles() == null) {
             return false;
         }
-        return user.getRoles().contains(Role.ROLE_ADMIN);
+        return user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
     }
 
 }

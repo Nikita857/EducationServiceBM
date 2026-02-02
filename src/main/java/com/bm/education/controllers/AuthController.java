@@ -2,11 +2,9 @@ package com.bm.education.controllers;
 
 import com.bm.education.api.ApiResponse;
 import com.bm.education.dto.auth.*;
-import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.security.jwt.JwtService;
 import com.bm.education.services.ApplicationSettingService;
-import com.bm.education.services.LoginAttemptService;
 import com.bm.education.services.RefreshTokenService;
 import com.bm.education.services.UserService;
 import jakarta.servlet.http.Cookie;
@@ -44,7 +42,6 @@ public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
     private final ApplicationSettingService settingService;
 
@@ -82,8 +79,6 @@ public class AuthController {
         try {
             return performAuthenticationAndSetCookie(request.username(), request.password(), response);
         } catch (BadCredentialsException e) {
-            String ip = getClientIP(httpServletRequest);
-            loginAttemptService.loginFailed(ip);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ApiResponse.error("Неверный логин или пароль"));
         }
@@ -129,20 +124,12 @@ public class AuthController {
         response.addCookie(cookie);
     }
 
-    private String getClientIP(@NotNull HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty()) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0].trim();
-    }
-
     private @NotNull String determineRoleAndRouting(@NotNull UserDetails userDetails) {
         if (userDetails
                 .getAuthorities()
                 .stream()
                 .anyMatch(
-                        grantedAuthority -> grantedAuthority.getAuthority().equals(Role.ROLE_ADMIN.toString())))
+                        grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN")))
             return "/admin";
         else
             return "/";
@@ -188,12 +175,6 @@ public class AuthController {
         response.addCookie(rtCookie);
 
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/blocked")
-    public String blockedPage(Model model) {
-        model.addAttribute("banDuration", loginAttemptService.getBanDuration() * 60);
-        return "error/blocked";
     }
 
     @GetMapping("/maintenance")

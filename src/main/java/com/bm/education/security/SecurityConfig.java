@@ -1,6 +1,5 @@
 package com.bm.education.security;
 
-import com.bm.education.security.filters.IpBlockingFilter;
 import com.bm.education.security.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,7 +29,6 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
-    private final IpBlockingFilter ipBlockingFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,39 +36,34 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                )
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/css/**", "/js/**", "/webjars/**", "/images/**",
                                 "/videos/**", "/favicon.ico", "/avatars/**",
-                                "/img/**", "/static/**", "/error"
-                        ).permitAll()
+                                "/img/**", "/static/**", "/error")
+                        .permitAll()
                         .requestMatchers(
                                 "/login",
                                 "/api/auth/**",
                                 "/api/auth/refresh",
                                 "/register",
-                                "/logout", "/logout/cookie", "/blocked", "/maintenance"
-                        ).permitAll()
+                                "/logout", "/logout/cookie", "/blocked", "/maintenance")
+                        .permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
-                    // For API calls, return 401
-                    .defaultAuthenticationEntryPointFor(
-                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
-                        request -> request.getServletPath().startsWith("/api/")
-                    )
-                )
+                        // For API calls, return 401
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, authException) -> response
+                                        .sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
+                                request -> request.getServletPath().startsWith("/api/")))
                 .formLogin(form -> form
-                    .loginPage("/login") // For browser navigation, redirect to /login
+                        .loginPage("/login") // For browser navigation, redirect to /login
                 )
                 .requestCache(cache -> cache.requestCache(new NullRequestCache()))
-                .addFilterBefore(ipBlockingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -91,7 +83,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

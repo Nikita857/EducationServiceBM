@@ -23,15 +23,8 @@ import java.util.Set;
 public class Lesson {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "lesson_seq"
-    )
-    @SequenceGenerator(
-            name = "lesson_seq",
-            sequenceName = "lesson_seq",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lesson_seq")
+    @SequenceGenerator(name = "lesson_seq", sequenceName = "lesson_seq", allocationSize = 1)
     private Long id;
 
     @JsonBackReference
@@ -57,9 +50,9 @@ public class Lesson {
     @Column(name = "short_description", nullable = false, length = 50)
     private String shortDescription;
 
-    @Size(max = 5000)
-    @Column(name = "test_code", length = 5000)
-    private String testCode;
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "questions", columnDefinition = "jsonb")
+    private java.util.List<com.bm.education.models.quiz.Question> questions;
 
     @Column(name = "content_length")
     private Long contentLength;
