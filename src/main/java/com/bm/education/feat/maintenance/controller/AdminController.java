@@ -1,0 +1,207 @@
+package com.bm.education.feat.maintenance.controller;
+
+import com.bm.education.feat.course.service.CoursesService;
+import com.bm.education.feat.lesson.model.Lesson;
+import com.bm.education.feat.lesson.service.LessonService;
+import com.bm.education.feat.maintenance.service.ApplicationSettingService;
+import com.bm.education.feat.offer.model.Offer;
+import com.bm.education.feat.offer.model.OfferStatus;
+import com.bm.education.feat.module.service.ModuleService;
+import com.bm.education.feat.offer.service.OfferService;
+import com.bm.education.feat.user.model.User;
+import com.bm.education.feat.user.service.UserService;
+import com.bm.education.shared.common.ApiResponse;
+import com.bm.education.feat.offer.dto.OfferDto;
+import com.bm.education.feat.offer.dto.OfferResponseDto;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+/**
+ * Controller for handling admin-related requests.
+ */
+@Controller
+
+@RequiredArgsConstructor
+public class AdminController {
+
+    private final UserService userService;
+    private final CoursesService coursesService;
+    private final ModuleService moduleService;
+    private final LessonService lessonService;
+    private final OfferService offerService;
+    private final ApplicationSettingService settingService;
+
+    /**
+     * Displays the admin dashboard.
+     *
+     * @param auth  The authentication object for the current user.
+     * @param model The model to add attributes to.
+     * @return The name of the admin view, or a redirect to the index or login page.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin")
+    public String admin(Authentication auth, Model model) {
+        User user = userService.getUserByUsername(auth.getName());
+
+        model.addAttribute("admin", user);
+        model.addAttribute("users", userService.getUsersCount());
+        model.addAttribute("courses", coursesService.getCoursesCount());
+        model.addAttribute("modules", moduleService.getModulesCount());
+        model.addAttribute("lessons", lessonService.getLessonsCount());
+        model.addAttribute("offers", offerService.getPendingOffersCount());
+        model.addAttribute("offersTotal", offerService.getOffersCount());
+        model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
+
+        // Add settings to the model for the settings tab
+        model.addAttribute("settings", settingService.getAllSettings());
+        model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
+        model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+        model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+
+        return "admin";
+    }
+
+    /**
+     * Gets an offer by its ID.
+     *
+     * @param offerId The ID of the offer to get.
+     * @return A response entity containing the offer.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("admin/offers/{offerId}")
+    public ResponseEntity<ApiResponse<OfferDto>> getOfferById(@PathVariable Long offerId) {
+        try {
+            OfferDto offerRequestDTO = offerService.getOfferById(offerId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(offerRequestDTO));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Updates an offer.
+     *
+     * @param updateDto     The DTO containing the updated offer details.
+     * @param bindingResult The result of the validation.
+     * @return A response entity indicating that the offer was updated successfully.
+     */
+    // Обновление ответа и статуса
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("admin/updateOffer")
+    public ResponseEntity<ApiResponse<?>> updateOffer(
+            @Valid @RequestBody OfferResponseDto updateDto,
+            BindingResult bindingResult) {
+
+        // Проверка ошибок валидации
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            fieldError -> Objects.requireNonNull(fieldError.getDefaultMessage()).isEmpty()
+                                    ? fieldError.getDefaultMessage()
+                                    : ""));
+
+            return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
+        }
+
+        try {
+            // Обновляем заявку
+            Offer updatedOffer = offerService.updateAdminResponse(updateDto);
+
+            return ResponseEntity.ok(ApiResponse.success("Заявка успешно обновлена", Map.of(
+                    "id", updatedOffer.getId(),
+                    "status", updatedOffer.getStatus())));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(ApiResponse.error("Ошибка при обновлении заявки"));
+        }
+    }
+
+    /**
+     * Displays the add module page.
+     *
+     * @return The name of the add module view.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/modules/create")
+    public String addModule() {
+        return "admin/addModule";
+    }
+
+    /**
+     * Displays the video page.
+     *
+     * @param name  The name of the video.
+     * @param model The model to add attributes to.
+     * @return The name of the video view.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/video/{name}")
+    public String watchVideoUrl(@PathVariable String name, Model model) {
+        Lesson lesson = lessonService.getLessonByVideoName(name);
+        if (lesson == null) {
+            model.addAttribute("video", "Такого ведеоролика нет");
+            model.addAttribute("title", "Видео не найдено");
+        } else {
+            model.addAllAttributes(Map.of(
+                    "video", lesson.getVideo(),
+                    "title", lesson.getTitle()));
+        }
+        return "admin/video";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/settings")
+    public String getSettingsPage(Model model) {
+        model.addAttribute("settings", settingService.getAllSettings());
+        model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
+        model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+        model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+        return "admin/settings";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/settings/save")
+    public String saveSettings(@RequestParam Map<String, String> allParams) {
+        // The "enabled" checkboxes will only be present in the map if they are checked.
+        // We need to handle the unchecked case by explicitly setting them to "false".
+        boolean maintenanceMode = allParams.containsKey(ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        boolean registrationEnabled = allParams.containsKey(ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        boolean bannerEnabled = allParams.containsKey(ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+
+        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_MODE, String.valueOf(maintenanceMode));
+        settingService.saveSetting(ApplicationSettingService.KEY_REGISTRATION_ENABLED,
+                String.valueOf(registrationEnabled));
+        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_ENABLED, String.valueOf(bannerEnabled));
+        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_TEXT,
+                allParams.get(ApplicationSettingService.KEY_SITE_BANNER_TEXT));
+        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_END_TIME,
+                allParams.get(ApplicationSettingService.KEY_MAINTENANCE_END_TIME));
+
+        return "redirect:/admin";
+    }
+}
