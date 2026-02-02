@@ -1,5 +1,7 @@
 package com.bm.education.dto;
 
+import com.bm.education.models.quiz.Question;
+
 public record LessonResponseDTO(
         Long id,
         String moduleName,
@@ -7,5 +9,6 @@ public record LessonResponseDTO(
         String video,
         String description,
         String shortDescription,
-        String testCode) {
+
+        java.util.List<Question> questions) {
 }

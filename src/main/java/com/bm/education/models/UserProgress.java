@@ -45,9 +45,16 @@ public class UserProgress {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
-    @NotNull
-    @Column(name = "completed_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "completed_at", columnDefinition = "TIMESTAMP")
     private Instant completedAt;
+
+    @Column(name = "time_spent_seconds", nullable = false)
+    @Builder.Default
+    private Long timeSpentSeconds = 0L;
+
+    @Column(name = "is_completed", nullable = false)
+    @Builder.Default
+    private boolean isCompleted = false;
 
     @Override
     public final boolean equals(Object object) {

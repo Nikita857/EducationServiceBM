@@ -9,14 +9,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "courses",
-        indexes = {
+@Table(name = "courses", indexes = {
         @Index(name = "idx_course_slug", columnList = "slug"),
         @Index(name = "idx_course_title", columnList = "title")
 })
@@ -28,15 +26,8 @@ import java.util.Set;
 public class Course {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "course_seq"
-    )
-    @SequenceGenerator(
-            name = "course_seq",
-            sequenceName = "course_seq",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_seq")
+    @SequenceGenerator(name = "course_seq", sequenceName = "course_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "title", nullable = false, length = 100)
@@ -62,6 +53,10 @@ public class Course {
     @OneToMany(mappedBy = "course")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "questions", columnDefinition = "jsonb")
+    private java.util.List<com.bm.education.models.quiz.Question> questions;
+
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Documentation documentation;
 
@@ -77,18 +72,20 @@ public class Course {
     @Column(nullable = false)
     private Instant updatedAt;
 
-
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
         Class<?> oEffectiveClass = o instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
+        if (thisEffectiveClass != oEffectiveClass)
+            return false;
         Course course = (Course) o;
         return getId() != null && Objects.equals(getId(), course.getId());
     }

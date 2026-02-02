@@ -95,7 +95,7 @@ public class UploadLessonController {
                         uniqueFileName,
                         request.description(),
                         request.shortDescription(),
-                        request.testCode(),
+                        null,
                         request.moduleId(),
                         file.getSize());
 

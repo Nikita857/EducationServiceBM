@@ -3,9 +3,7 @@ package com.bm.education.models;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
@@ -26,15 +24,8 @@ import java.util.Set;
 public class Module {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "module_seq"
-    )
-    @SequenceGenerator(
-            name = "module_seq",
-            sequenceName = "module_seq",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "module_seq")
+    @SequenceGenerator(name = "module_seq", sequenceName = "module_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -63,6 +54,10 @@ public class Module {
     @Builder.Default
     @OneToMany(mappedBy = "module")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "questions", columnDefinition = "jsonb")
+    private java.util.List<com.bm.education.models.quiz.Question> questions;
 
     @PrePersist
     protected void onCreate() {

@@ -133,7 +133,7 @@ public class LessonService {
                 lesson.getVideo(),
                 lesson.getDescription(),
                 lesson.getShortDescription(),
-                lesson.getTestCode());
+                null); // testCode removed
     }
 
     /**
@@ -188,7 +188,7 @@ public class LessonService {
         lesson.setVideo(dto.video());
         lesson.setDescription(dto.description());
         lesson.setShortDescription(dto.shortDescription());
-        lesson.setTestCode(dto.testCode());
+        // lesson.setTestCode(dto.testCode()); // Removed
         lesson.setModule(module);
         lesson.setContentLength(dto.contentLength());
 
