@@ -29,14 +29,16 @@ public class NotificationController {
      * Gets all unread notifications for the authenticated user.
      *
      * @param userDetails The details of the authenticated user.
-     * @return A response entity containing a list of all unread notifications for the authenticated user.
+     * @return A response entity containing a list of all unread notifications for
+     *         the authenticated user.
      */
     @GetMapping
-    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(
+            @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getUserByUsername(userDetails.getUsername());
         List<NotificationDTO> notifications = notificationService.getUnreadNotifications(currentUser)
                 .stream()
-                .map(NotificationDTO::new)
+                .map(NotificationDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(notifications);
     }
@@ -45,7 +47,8 @@ public class NotificationController {
      * Marks a notification as read.
      *
      * @param id The ID of the notification to mark as read.
-     * @return A response entity indicating that the notification was marked as read successfully.
+     * @return A response entity indicating that the notification was marked as read
+     *         successfully.
      */
     @PostMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
@@ -57,7 +60,8 @@ public class NotificationController {
      * Marks all unread notifications for the authenticated user as read.
      *
      * @param userDetails The details of the authenticated user.
-     * @return A response entity indicating that all unread notifications for the authenticated user were marked as read successfully.
+     * @return A response entity indicating that all unread notifications for the
+     *         authenticated user were marked as read successfully.
      */
     @PostMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal UserDetails userDetails) {

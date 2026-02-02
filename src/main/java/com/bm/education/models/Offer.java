@@ -1,6 +1,7 @@
 package com.bm.education.models;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,13 +12,21 @@ import org.hibernate.annotations.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "offers")
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "offers", indexes = {
+        @Index(name = "idx_offer_user", columnList = "user_id"),
+        @Index(name = "idx_offer_status", columnList = "status")
+})
 public class Offer {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offer_seq")
+    @SequenceGenerator(name = "offer_seq", sequenceName = "offer_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -41,9 +50,10 @@ public class Offer {
     @Lob
     private String response;
 
+    @Builder.Default
     @NotNull
     @Enumerated(EnumType.STRING)
-    private OfferStatus status;
+    private OfferStatus status = OfferStatus.PENDING;
 
     @NotNull
     @CreationTimestamp
@@ -53,21 +63,28 @@ public class Offer {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Offer() {
-        this.status = OfferStatus.PENDING; // Значение по умолчанию
-        this.createdAt = LocalDateTime.now(); // Текущее время
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
+        Class<?> oEffectiveClass = o instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass)
+            return false;
+        Offer offer = (Offer) o;
+        return getId() != null && java.util.Objects.equals(getId(), offer.getId());
     }
 
-    // PrePersist - автоматически вызывается перед сохранением
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (status == null) {
-            status = OfferStatus.PENDING;
-        }
+    @Override
+    public final int hashCode() {
+        return this instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
+                : getClass().hashCode();
     }
-
-
 }

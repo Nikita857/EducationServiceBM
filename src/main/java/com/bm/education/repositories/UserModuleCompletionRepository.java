@@ -10,11 +10,12 @@ import java.util.List;
 
 @Repository
 public interface UserModuleCompletionRepository extends JpaRepository<UserModuleCompletion, Long> {
-    boolean existsByUser_IdAndModule_Id(Integer userId, Integer moduleId);
-    Integer countByUser_IdAndModule_Course_Id(Integer userId, Integer courseId);
+    boolean existsByUser_IdAndModule_Id(Long userId, Long moduleId);
+
+    Long countByUser_IdAndModule_Course_Id(Long userId, Long courseId);
 
     @Query("SELECT umc.module.id FROM UserModuleCompletion umc WHERE umc.user.id = :userId AND umc.module.course.id = :courseId")
-    List<Integer> findCompletedModuleIdsByCourse(@Param("userId") Integer userId, @Param("courseId") Integer courseId);
+    List<Long> findCompletedModuleIdsByCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
 
-    //List<UserModuleCompletion> findByModule(Long courseId);
+    // List<UserModuleCompletion> findByModule(Long courseId);
 }

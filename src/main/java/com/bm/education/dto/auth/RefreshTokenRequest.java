@@ -1,8 +1,4 @@
 package com.bm.education.dto.auth;
 
-import lombok.Data;
-
-@Data
-public class RefreshTokenRequest {
-    private String refreshToken;
+public record RefreshTokenRequest(String refreshToken) {
 }

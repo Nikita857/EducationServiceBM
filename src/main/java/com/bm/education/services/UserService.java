@@ -5,6 +5,7 @@ import com.bm.education.dto.CourseSelectionDTO;
 import com.bm.education.dto.UserResponseDTO;
 import com.bm.education.dto.UserUpdateRequestDTO;
 import com.bm.education.dto.auth.RegisterRequest;
+import com.bm.education.mappers.UserMapper;
 import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.models.UserCourses;
@@ -25,10 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -47,34 +44,35 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserCourseRepository userCourseRepository;
     private final CoursesRepository coursesRepository;
-    private final NotificationRepository notificationRepository;
-    private final OfferRepository offerRepository;
-    private final UserProgressRepository userProgressRepository;
+    private final UserMapper userMapper;
+    private final MinioService minioService;
 
     /**
      * Enrolls a user in a course.
      *
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @param courseId The ID of the course.
      * @return true if the user was enrolled successfully, false otherwise.
      * @throws EntityNotFoundException if the user or course is not found.
      */
     @Transactional
-    public boolean enrollUserInCourse(Integer userId, Integer courseId) {
-        if (userCourseRepository.existsByUserAndCourse(userRepository.findById(userId).get(), coursesRepository.findById(courseId).get())) {
-            
+    public boolean enrollUserInCourse(Long userId, Long courseId) {
+        if (userCourseRepository.existsByUserAndCourse(userRepository.findById(userId).get(),
+                coursesRepository.findById(courseId).get())) {
+
             return false;
         }
 
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        Course course = coursesRepository.findById(courseId).orElseThrow(() -> new EntityNotFoundException("Course not found"));
+        Course course = coursesRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found"));
 
         UserCourses enrollment = new UserCourses();
         enrollment.setUser(user);
         enrollment.setCourse(course);
 
         userCourseRepository.save(enrollment);
-        
+
         return true;
     }
 
@@ -86,7 +84,7 @@ public class UserService {
      * @throws EntityNotFoundException if the user is not found.
      */
     @Transactional
-    public User findById(Integer userId) {
+    public User findById(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
@@ -97,7 +95,7 @@ public class UserService {
      * @return true if the user was deleted successfully, false otherwise.
      * @throws EntityNotFoundException if the user is not found.
      */
-    public boolean deleteUser(Integer id) {
+    public boolean deleteUser(Long id) {
         userRepository.deleteById(id);
         return !userRepository.existsById(id);
     }
@@ -138,17 +136,15 @@ public class UserService {
         return userRepository.findByUsername(username).orElse(null);
     }
 
-    private static final String UPLOAD_DIR = "uploads/avatars/";
-
     /**
      * Updates the avatar of a user.
      *
-     * @param userId The ID of the user.
+     * @param userId     The ID of the user.
      * @param avatarPath The path to the new avatar.
      * @throws FileNotFoundException if the avatar file is not found.
      */
     @Transactional
-    public void updateUserAvatar(Integer userId, String avatarPath) throws FileNotFoundException {
+    public void updateUserAvatar(Long userId, String avatarPath) throws FileNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -169,31 +165,25 @@ public class UserService {
      * @throws FileNotFoundException if the avatar file is not found.
      */
     @Transactional
-    protected void deleteOldAvatar(String avatarPath) throws FileNotFoundException {
-        try {
-            String filename = avatarPath.substring(avatarPath.lastIndexOf("/") + 1);
-            Path oldAvatarPath = Paths.get(UPLOAD_DIR).resolve(filename);
-
-            if (Files.exists(oldAvatarPath)) {
-                Files.delete(oldAvatarPath);
-            }
-        } catch (IOException e) {
-            throw new FileNotFoundException(String.format("Ошибка удаления файла: %s",e.getMessage()));
-        }
+    protected void deleteOldAvatar(String avatarPath) {
+        minioService.deleteFile(avatarPath);
     }
 
     /**
      * Changes the password of a user.
      *
-     * @param username The username of the user.
+     * @param username        The username of the user.
      * @param currentPassword The current password of the user.
-     * @param newPassword The new password of the user.
+     * @param newPassword     The new password of the user.
      * @param confirmPassword The confirmation of the new password.
-     * @throws RuntimeException if the user is not found, the current password is incorrect, the new password and confirmation do not match, or the new password is the same as the old password.
+     * @throws RuntimeException if the user is not found, the current password is
+     *                          incorrect, the new password and confirmation do not
+     *                          match, or the new password is the same as the old
+     *                          password.
      */
     @Transactional
     public void changePassword(String username, String currentPassword,
-                               String newPassword, String confirmPassword) {
+            String newPassword, String confirmPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
@@ -220,27 +210,6 @@ public class UserService {
     }
 
     /**
-     * Converts a user to a UserResponseDTO.
-     *
-     * @param user The user to convert.
-     * @return The converted UserResponseDTO.
-     */
-    private UserResponseDTO convertToUserDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getDepartment(),
-                user.getJobTitle(),
-                user.getQualification(),
-                user.getUsername(),
-                user.getAvatar(),
-                user.getCreatedAt().toString(),
-                user.getRoles().toString()
-        );
-    }
-
-    /**
      * Gets a paginated list of all users as DTOs.
      *
      * @param page The page number.
@@ -249,15 +218,15 @@ public class UserService {
      * @return A paginated list of all users as DTOs.
      */
     @Transactional(readOnly = true)
-    public Page<UserResponseDTO> getAllUsersByDTO(Integer page, Integer size, String role) {
+    public Page<UserResponseDTO> getAllUsersByDTO(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<User> usersPage;
-        if(!role.equals("ALL")) {
+        if (!role.equals("ALL")) {
             usersPage = userRepository.findAllByRoles(pageable, Role.valueOf("ROLE_".concat(role)));
-        }else{
+        } else {
             usersPage = userRepository.findAll(pageable);
         }
-        return usersPage.map(this::convertToUserDTO);
+        return usersPage.map(userMapper::toResponseDTO);
     }
 
     /**
@@ -266,14 +235,15 @@ public class UserService {
      * @param userId The ID of the user.
      * @return The user with the specified ID as a DTO.
      */
-    public UserResponseDTO getUserById(Integer userId) {
-        return convertToUserDTO(userRepository.findById(userId).isPresent() ? userRepository.findById(userId).get() : new User());
+    public UserResponseDTO getUserById(Long userId) {
+        return userMapper.toResponseDTO(userRepository.findById(userId).orElse(new User()));
     }
 
     /**
      * Updates a user by their ID.
      *
-     * @param userUpdateRequestDTO The request object containing the updated user details.
+     * @param userUpdateRequestDTO The request object containing the updated user
+     *                             details.
      * @return true if the user was updated successfully, false otherwise.
      * @throws ApiException if the role is invalid.
      */
@@ -281,29 +251,28 @@ public class UserService {
     @Transactional
     public boolean updateUserById(UserUpdateRequestDTO userUpdateRequestDTO) {
         try {
-            User user = userRepository.findById(userUpdateRequestDTO.getUserId()).orElse(null);
+            User user = userRepository.findById(userUpdateRequestDTO.userId()).orElse(null);
 
-            Objects.requireNonNull(user).setDepartment(userUpdateRequestDTO.getDepartment());
-            user.setJobTitle(userUpdateRequestDTO.getJobTitle());
-            user.setQualification(userUpdateRequestDTO.getQualification());
+            Objects.requireNonNull(user).setDepartment(userUpdateRequestDTO.department());
+            user.setJobTitle(userUpdateRequestDTO.jobTitle());
+            user.setQualification(userUpdateRequestDTO.qualification());
 
             try {
                 Role newRole = null;
-                if (userUpdateRequestDTO.getRole().isEmpty()) {
-                    newRole = user.getRoles().stream().findFirst().get();
-                }else {
-                    Role.valueOf(userUpdateRequestDTO.getRole());
+                if (userUpdateRequestDTO.role() == null || userUpdateRequestDTO.role().isEmpty()) {
+                    newRole = user.getRoles().stream().findFirst().orElse(Role.ROLE_USER);
+                } else {
+                    newRole = Role.valueOf(userUpdateRequestDTO.role());
                 }
-                user.setRoles(Set.of(Objects.requireNonNull(newRole)));
-                
+                user.setRoles(Set.of(newRole));
+
             } catch (IllegalArgumentException e) {
-                
-                throw new ApiException("Неверно указана роль: " + userUpdateRequestDTO.getRole(), HttpStatus.BAD_REQUEST);
+                throw new ApiException("Неверно указана роль: " + userUpdateRequestDTO.role(), HttpStatus.BAD_REQUEST);
             }
 
             return true;
         } catch (Exception e) {
-            
+
             return false;
         }
     }
@@ -316,51 +285,51 @@ public class UserService {
      * @throws EntityNotFoundException if the user is not found.
      */
     @Transactional
-    public List<CourseSelectionDTO> getUserCourses(Integer userId) {
+    public List<CourseSelectionDTO> getUserCourses(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException("User not found");
         }
-            List<UserCourses> enrollments = userCourseRepository.findByUser(userRepository.findById(userId).get());
+        List<UserCourses> enrollments = userCourseRepository.findByUser(userRepository.findById(userId).get());
 
-            return enrollments.stream()
-                    .map(UserCourses::getCourse)
-                    .map(course -> new CourseSelectionDTO(course.getId(), course.getTitle()))
-                    .collect(Collectors.toList());
+        return enrollments.stream()
+                .map(UserCourses::getCourse)
+                .map(course -> new CourseSelectionDTO(course.getId(), course.getTitle()))
+                .collect(Collectors.toList());
     }
 
     /**
      * Unenrolls a user from a course.
      *
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @param courseId The ID of the course.
      * @return true if the user was unenrolled successfully, false otherwise.
      * @throws EntityNotFoundException if the user or course is not found.
      */
     @Transactional
-    public boolean unenrollUserFromCourse(Integer userId, Integer courseId) {
+    public boolean unenrollUserFromCourse(Long userId, Long courseId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Course course = coursesRepository.findById(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + courseId));
 
         if (!userCourseRepository.existsByUserAndCourse(user, course)) {
-            
+
             return false; // Или выбросить исключение
         }
 
         userCourseRepository.deleteByUserAndCourse(user, course);
-        
+
         return true;
     }
 
     public User registerDtoToUser(@NotNull RegisterRequest registerRequest) {
         User user = new User();
-        user.setFirstName(registerRequest.getFirstName());
-        user.setLastName(registerRequest.getLastName());
-        user.setDepartment(registerRequest.getDepartment());
-        user.setJobTitle(registerRequest.getJobTitle());
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(registerRequest.getPassword());
+        user.setFirstName(registerRequest.firstName());
+        user.setLastName(registerRequest.lastName());
+        user.setDepartment(registerRequest.department());
+        user.setJobTitle(registerRequest.jobTitle());
+        user.setUsername(registerRequest.username());
+        user.setPassword(registerRequest.password());
 
         return user;
     }

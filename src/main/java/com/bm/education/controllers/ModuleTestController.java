@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.util.List;
 
 @Controller
@@ -31,13 +29,15 @@ public class ModuleTestController {
     private final UserService userService;
 
     @GetMapping("/course/{course}/module/{moduleSlug}/test")
-    public String showModuleTestPage(@PathVariable String course, @PathVariable String moduleSlug, Model model, Authentication auth, RedirectAttributes redirectAttributes) {
+    public String showModuleTestPage(@PathVariable String course, @PathVariable String moduleSlug, Model model,
+            Authentication auth, RedirectAttributes redirectAttributes) {
         Module module = moduleService.getModuleBySlug(moduleSlug);
         User user = userService.getUserByUsername(auth.getName());
 
         // Backend check to ensure all lessons are completed
         if (!moduleService.isModuleCompleted(module, user.getId())) {
-            redirectAttributes.addFlashAttribute("error", "Вы должны пройти все уроки в модуле, прежде чем начинать тест.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Вы должны пройти все уроки в модуле, прежде чем начинать тест.");
             return "redirect:/course/" + course;
         }
 
@@ -53,7 +53,8 @@ public class ModuleTestController {
 
     @PostMapping("/api/module/{moduleId}/check-test")
     @ResponseBody
-    public TestResultDTO checkTest(@PathVariable Integer moduleId, @RequestBody TestSubmissionDTO submission, Authentication authentication) {
+    public TestResultDTO checkTest(@PathVariable Long moduleId, @RequestBody TestSubmissionDTO submission,
+            Authentication authentication) {
         return moduleTestService.checkAnswers(moduleId, submission, authentication);
     }
 }

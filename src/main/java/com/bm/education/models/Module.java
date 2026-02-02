@@ -15,15 +15,20 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "modules")
+@Table(name = "modules", indexes = {
+        @Index(name = "idx_module_slug", columnList = "slug"),
+        @Index(name = "idx_module_title", columnList = "title")
+})
 public class Module {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "module_seq")
+    @SequenceGenerator(name = "module_seq", sequenceName = "module_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -46,11 +51,13 @@ public class Module {
     @Enumerated(EnumType.STRING)
     private ModuleStatus status;
 
+    @Builder.Default
     @JsonManagedReference
     @ToString.Exclude
     @OneToMany(mappedBy = "module")
     private Set<Lesson> lessons = new LinkedHashSet<>();
 
+    @Builder.Default
     @ToString.Exclude
     @OneToMany(mappedBy = "module")
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();
@@ -60,4 +67,28 @@ public class Module {
         this.status = ModuleStatus.INACTIVE;
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
+        Class<?> oEffectiveClass = o instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass)
+            return false;
+        Module module = (Module) o;
+        return getId() != null && java.util.Objects.equals(getId(), module.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof org.hibernate.proxy.HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
+                : getClass().hashCode();
+    }
 }

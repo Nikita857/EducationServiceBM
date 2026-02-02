@@ -1,0 +1,192 @@
+// Глобальные переменные
+let currentCourse = null;
+let courseModules = [];
+
+// Функция открытия модального окна с модулями курса
+async function openCourseModulesModal(courseId) {
+    try {
+        // Загружаем модули курса
+        const response = await fetch(`/admin/courses/${courseId}/modules`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                showAlert('В этом модуле нет курсов', 'info');
+            } else {
+                showAlert('Ошибка загрузки модулей курса', 'error');
+            }
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success || !Array.isArray(data.data)) { // Проверяем, что data.data - это массив
+            showAlert(data.message || 'Модулей нет', 'info');
+            courseModules = []; // Устанавливаем пустой массив, если данные неверны
+            currentCourse = { id: courseId, name: "Неизвестный курс" }; // Устанавливаем дефолтное имя
+            return; // Выходим из функции, так как нет данных
+        }
+
+        courseModules = data.data || []; // Теперь data.data - это сам массив модулей
+        // Проверяем, что courseModules не пустой, прежде чем обращаться к первому элементу
+        currentCourse = { id: courseId, name: courseModules.length > 0 ? courseModules[0]["courseName"] : "Неизвестный курс" };
+
+        // Рендерим модальное окно
+        renderCourseModulesModal();
+
+        // Показываем модальное окно
+        const modalElement = document.getElementById('courseModulesModal');
+        if (!modalElement) {
+            return null;
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+        // noinspection JSUnresolvedReference
+        modal.show();
+
+    } catch (error) {
+    }
+}
+
+// Функция рендеринга модального окна
+function renderCourseModulesModal() {
+    const modalContainer = document.getElementById('courseModulesModal');
+
+    if (!modalContainer) {
+        // Создаем модальное окно если его нет
+        createModulesModalElement();
+        return;
+    }
+
+    // Заполняем заголовок
+    const modalTitle = modalContainer.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.textContent = `Модули курса: ${currentCourse.name}`;
+    }
+
+    if(courseModules.length > 0) {
+        document.getElementById('modulesCount').innerText = `Модулей: ${courseModules.length}`
+    }
+
+    // Заполняем список модулей
+    const modulesList = modalContainer.querySelector('#modulesList');
+    if (modulesList) {
+        modulesList.innerHTML = courseModules.length > 0 ?
+            renderModulesList() :
+            '<div class="text-center py-4 text-muted">Модули не найдены</div>';
+    }
+}
+
+// Функция рендеринга списка модулей
+function renderModulesList() {
+    return courseModules.map((module, index) => `
+        <div class="module-item" data-module-id="${module.moduleId}">
+            <div class="module-header d-flex justify-content-between align-items-center">
+                <div class="module-info">
+                    <h6 class="module-title mb-1">${module.order || index + 1}. ${escapeHtml(module["moduleTitle"] || 'Без названия')}</h6>
+                    <small class="text-muted">ID: ${module.moduleId} </small>
+                </div>
+                <div class="module-actions">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editModule(${module.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <a class="btn btn-sm btn-outline-danger" href="/admin/modules">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            <hr class="my-2">
+        </div>
+    `).join('');
+}
+
+// Функция создания элемента модального окна
+function createModulesModalElement() {
+    const modalHTML = `
+        <div class="modal fade" id="courseModulesModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Модули курса</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted" id="modulesCount">Модулей: 0</span>
+                        </div>
+                        
+                        <div id="modulesList" class="modules-list">
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                Загрузка модулей...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="button" class="btn btn-primary" onclick="manageCourse(${currentCourse?.id})">
+                            Управление курсом
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Добавляем модальное окно в body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    renderCourseModulesModal();
+}
+
+// Вспомогательные функции
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Не указано';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU');
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// Функции действий (заглушки)
+function addNewModule() {
+    alert(`Добавление модуля для курса: ${currentCourse?.name}`);
+}
+
+function editModule(moduleId) {
+    showAlert(`Редактирование модуля: ${moduleId}`, 'info');
+}
+
+function manageCourse(courseId) {
+    // Переход на страницу управления курсом
+    window.location.href = `/admin/courses/${courseId}/edit`;
+}
+
+// Обновляем функцию в основном скрипте для вызова модального окна
+function showCourseModules(courseId, courseName) {
+    void openCourseModulesModal(courseId, courseName);
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик для закрытия модального окна
+    document.addEventListener('hidden.bs.modal', function(event) {
+        if (event.target.id === 'courseModulesModal') {
+            // Очищаем данные при закрытии
+            currentCourse = null;
+            courseModules = [];
+        }
+    });
+});
+
+window.addNewModule = addNewModule;
+window.editModule = editModule;
+window.manageCourse = manageCourse;
+window.showCourseModules = showCourseModules;

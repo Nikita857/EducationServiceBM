@@ -30,71 +30,63 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/offer")
 public class OfferController {
 
-    private final OfferService offerService;
-    private final UserRepository userRepository;
+        private final OfferService offerService;
+        private final UserRepository userRepository;
 
-    /**
-     * Submits a new offer.
-     *
-     * @param offerDto The DTO containing the offer details.
-     * @param result The result of the validation.
-     * @return A response entity indicating that the offer was submitted successfully.
-     */
-    @PostMapping
-    public ResponseEntity<Map<String, Object>> submitOffer(
-            @Valid @RequestBody OfferDto offerDto,
-            BindingResult result) {
+        /**
+         * Submits a new offer.
+         *
+         * @param offerDto The DTO containing the offer details.
+         * @param result   The result of the validation.
+         * @return A response entity indicating that the offer was submitted
+         *         successfully.
+         */
+        @PostMapping
+        public ResponseEntity<Map<String, Object>> submitOffer(
+                        @Valid @RequestBody OfferDto offerDto,
+                        BindingResult result) {
 
-        
+                if (result.hasErrors()) {
+                        Map<String, String> errors = result.getFieldErrors().stream()
+                                        .collect(Collectors.toMap(
+                                                        FieldError::getField,
+                                                        fieldError -> fieldError.getDefaultMessage() != null
+                                                                        ? fieldError.getDefaultMessage()
+                                                                        : "Validation error"));
 
-        if (result.hasErrors()) {
-            Map<String, String> errors = result.getFieldErrors().stream()
-                    .collect(Collectors.toMap(
-                            FieldError::getField,
-                            fieldError -> fieldError.getDefaultMessage() != null
-                                    ? fieldError.getDefaultMessage()
-                                    : "Validation error"
-                    ));
+                        return ResponseEntity.badRequest()
+                                        .body(Map.of(
+                                                        "success", false,
+                                                        "message", "Ошибка валидации",
+                                                        "errors", errors));
+                }
 
-            
+                try {
+                        User user = userRepository.findById(offerDto.userId())
+                                        .orElseThrow(() -> new ResponseStatusException(
+                                                        HttpStatus.BAD_REQUEST,
+                                                        "Пользователь не найден"));
 
-            return ResponseEntity.badRequest()
-                    .body(Map.of(
-                            "success", false,
-                            "message", "Ошибка валидации",
-                            "errors", errors
-                    ));
+                        Offer offer = new Offer();
+                        offer.setUser(user);
+                        offer.setTopic(offerDto.topic());
+                        offer.setDescription(offerDto.description());
+
+                        Offer savedOffer = offerService.saveOffer(offer);
+
+                        return ResponseEntity.ok(Map.of(
+                                        "success", true,
+                                        "message", "Форма успешно отправлена!",
+                                        "data", Map.of(
+                                                        "id", savedOffer.getId(),
+                                                        "topic", savedOffer.getTopic())));
+
+                } catch (Exception e) {
+
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body(Map.of(
+                                                        "success", false,
+                                                        "message", "Внутренняя ошибка сервера"));
+                }
         }
-
-        try {
-            User user = userRepository.findById(offerDto.getUserId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Пользователь не найден"));
-
-            Offer offer = new Offer();
-            offer.setUser(user);
-            offer.setTopic(offerDto.getTopic());
-            offer.setDescription(offerDto.getDescription());
-
-            Offer savedOffer = offerService.saveOffer(offer);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Форма успешно отправлена!",
-                    "data", Map.of(
-                            "id", savedOffer.getId(),
-                            "topic", savedOffer.getTopic()
-                    )
-            ));
-
-        } catch (Exception e) {
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "success", false,
-                            "message", "Внутренняя ошибка сервера"
-                    ));
-        }
-    }
 }

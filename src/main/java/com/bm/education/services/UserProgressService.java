@@ -1,6 +1,5 @@
 package com.bm.education.services;
 
-import com.bm.education.dto.ModuleResponseDTO;
 import com.bm.education.models.Module;
 import com.bm.education.models.*;
 import com.bm.education.repositories.*;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,21 +30,21 @@ public class UserProgressService {
     private final LessonRepository lessonRepository;
     private final UserModuleCompletionRepository userModuleCompletionRepository;
     private final ModuleService moduleService;
-    private final LessonService lessonService;
-    private final CoursesService coursesService;
 
     /**
      * Saves the progress of a user for a lesson.
      *
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @param courseId The ID of the course.
      * @param moduleId The ID of the module.
      * @param lessonId The ID of the lesson.
-     * @throws EntityNotFoundException if the user, course, module, or lesson is not found.
-     * @throws RuntimeException if there is an error while saving the progress.
+     * @throws EntityNotFoundException if the user, course, module, or lesson is not
+     *                                 found.
+     * @throws RuntimeException        if there is an error while saving the
+     *                                 progress.
      */
     @Transactional
-    public void saveProgress(Integer userId, Integer courseId, Integer moduleId, Integer lessonId) {
+    public void saveProgress(Long userId, Long courseId, Long moduleId, Long lessonId) {
         try {
             // Проверяем существование сущностей
             User user = userRepository.findById(userId)
@@ -75,25 +73,24 @@ public class UserProgressService {
             progress.setCompletedAt(Instant.now());
 
             userProgressRepository.save(progress);
-            
 
         } catch (Exception e) {
-            
+
             throw new RuntimeException("Error in saveProgress: ", e);
         }
     }
 
     @Transactional
-    public Integer numberOfCompletedLessonsOfModule(Integer userId, Integer moduleId) {
-        return userProgressRepository.countByModuleIdAndUserId(moduleId, userId);
+    public Long numberOfCompletedLessonsOfModule(Long userId, Long moduleId) {
+        return userProgressRepository.countByModuleIdAndUserId(userId, moduleId);
     }
 
     @Transactional(readOnly = true)
-    public Map<String, String> getCourseProgress(Integer userId, Integer courseId) {
+    public Map<String, String> getCourseProgress(Long userId, Long courseId) {
         Map<String, String> progress = new HashMap<>();
-        Integer courseModules = moduleService.getModulesByCourseId(courseId).size();
+        Long courseModules = (long) moduleService.getModulesByCourseId(courseId).size();
 
-        Integer completedModules = userModuleCompletionRepository.countByUser_IdAndModule_Course_Id(userId, courseId);
+        Long completedModules = userModuleCompletionRepository.countByUser_IdAndModule_Course_Id(userId, courseId);
         progress.put("courseModules", String.format("%d/%d", completedModules, courseModules));
         return progress;
     }

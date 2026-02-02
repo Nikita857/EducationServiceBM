@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,9 +26,9 @@ public class NotificationService {
     /**
      * Creates a new notification.
      *
-     * @param user The user to create the notification for.
+     * @param user    The user to create the notification for.
      * @param message The message of the notification.
-     * @param link The link for the notification.
+     * @param link    The link for the notification.
      * @return The created notification.
      */
     @Transactional
@@ -63,7 +62,7 @@ public class NotificationService {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             notification.setIsRead(true);
             notificationRepository.save(notification);
-            scheduler.schedule(()->{
+            scheduler.schedule(() -> {
                 deleteNotification(notificationId);
             }, 24, TimeUnit.HOURS);
         });

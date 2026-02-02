@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -16,13 +14,19 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-@Table(name = "lessons")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "lessons", indexes = {
+        @Index(name = "idx_lesson_title", columnList = "title")
+})
 public class Lesson {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lesson_seq")
+    @SequenceGenerator(name = "lesson_seq", sequenceName = "lesson_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @JsonBackReference
     @NotNull
@@ -57,6 +61,7 @@ public class Lesson {
     @Column(name = "content_length")
     private Long contentLength;
 
+    @Builder.Default
     @OneToMany(mappedBy = "lesson")
     @ToString.Exclude
     private Set<UserProgress> userProgresses = new LinkedHashSet<>();

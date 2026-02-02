@@ -37,7 +37,7 @@ public class CoursesController {
      * Displays the index page with a list of courses for the authenticated user.
      *
      * @param model The model to add attributes to.
-     * @param auth The authentication object for the current user.
+     * @param auth  The authentication object for the current user.
      * @return The name of the index view.
      */
     @GetMapping("/")
@@ -45,8 +45,7 @@ public class CoursesController {
         User user = userService.getUserByUsername(auth.getName());
         model.addAttribute("user", user);
         model.addAttribute("courses", coursesService.getCoursesWithProgress(
-                user.getId()
-        ));
+                user.getId()));
         model.addAttribute("isAdmin", userService.isAdmin(user));
         return "index";
     }
@@ -54,14 +53,15 @@ public class CoursesController {
     /**
      * Displays the selected course page.
      *
-     * @param name The slug of the course to display.
+     * @param name  The slug of the course to display.
      * @param model The model to add attributes to.
-     * @param auth The authentication object for the current user.
-     * @return The name of the selected course view, or "404" if the course is not found.
+     * @param auth  The authentication object for the current user.
+     * @return The name of the selected course view, or "404" if the course is not
+     *         found.
      */
     @GetMapping("/course/{name}")
     public String getSelectedCourse(@PathVariable String name, Model model, Authentication auth) {
-        if(coursesService.getSelectedCourseBySlug(name) != null) {
+        if (coursesService.getSelectedCourseBySlug(name) != null) {
             User user = userService.getUserByUsername(auth.getName());
             Course course = coursesService.getSelectedCourseBySlug(name);
             model.addAttribute("user", user);
@@ -70,19 +70,19 @@ public class CoursesController {
             model.addAttribute("totalLessons", moduleService.totalLessons(course.getId()));
             model.addAttribute("completedLessons", moduleService.completedLessons(
                     course.getId(),
-                    user.getId()
-                    )
-            );
-            Integer totalLessons = moduleService.totalLessons(coursesService.getSelectedCourseBySlug(name).getId());
-            Integer completedLessons = moduleService.completedLessons(coursesService.getSelectedCourseBySlug(name).getId(),
+                    user.getId()));
+            Long totalLessons = moduleService.totalLessons(coursesService.getSelectedCourseBySlug(name).getId());
+            Long completedLessons = moduleService.completedLessons(coursesService.getSelectedCourseBySlug(name).getId(),
                     userService.getUserByUsername(auth.getName()).getId());
-            model.addAttribute("percentageOfLearning", moduleService.countPercentOfLearning(completedLessons, totalLessons));
+            model.addAttribute("percentageOfLearning",
+                    moduleService.countPercentOfLearning(completedLessons, totalLessons));
             model.addAttribute("progressMap", userProgressService.getCourseProgress(user.getId(), course.getId()));
             model.addAttribute("isAdmin", userService.isAdmin(user));
-            model.addAttribute("completedModulesOfCourse", moduleService.getCompletedModulesOfCourse(course.getId(), user.getId()));
+            model.addAttribute("completedModulesOfCourse",
+                    moduleService.getCompletedModulesOfCourse(course.getId(), user.getId()));
 
             return "selectedCourse";
-        }else{
+        } else {
             return "404";
         }
     }
@@ -90,15 +90,17 @@ public class CoursesController {
     /**
      * Displays the selected module page.
      *
-     * @param name The slug of the course.
+     * @param name       The slug of the course.
      * @param moduleSlug The slug of the module.
-     * @param model The model to add attributes to.
-     * @param auth The authentication object for the current user.
-     * @return The name of the tasklist view, or "404" if the course or module is not found.
+     * @param model      The model to add attributes to.
+     * @param auth       The authentication object for the current user.
+     * @return The name of the tasklist view, or "404" if the course or module is
+     *         not found.
      */
     @GetMapping("course/{name}/module/{moduleSlug}")
-    public String getSelectedModule(@PathVariable String name, @PathVariable String moduleSlug, Model model, Authentication auth) {
-        if(coursesService.getSelectedCourseBySlug(name) == null || moduleService.getModuleBySlug(moduleSlug) == null) {
+    public String getSelectedModule(@PathVariable String name, @PathVariable String moduleSlug, Model model,
+            Authentication auth) {
+        if (coursesService.getSelectedCourseBySlug(name) == null || moduleService.getModuleBySlug(moduleSlug) == null) {
             return "404";
         }
         User user = userService.getUserByUsername(auth.getName());
@@ -114,18 +116,18 @@ public class CoursesController {
     /**
      * Displays the selected lesson page.
      *
-     * @param name The slug of the course.
+     * @param name       The slug of the course.
      * @param moduleSlug The slug of the module.
-     * @param lessonId The ID of the lesson.
-     * @param model The model to add attributes to.
-     * @param auth The authentication object for the current user.
-     * @return The name of the lesson view, or "error/404" if the course, module, or lesson is not found.
+     * @param lessonId   The ID of the lesson.
+     * @param model      The model to add attributes to.
+     * @param auth       The authentication object for the current user.
+     * @return The name of the lesson view, or "error/404" if the course, module, or
+     *         lesson is not found.
      */
     @GetMapping("course/{name}/module/{moduleSlug}/lesson/{lessonId}")
     public String getSelectedLesson(@PathVariable String name, @PathVariable String moduleSlug,
-                                    @PathVariable Integer lessonId, Model model, Authentication auth
-    ) {
-        if(coursesService.getSelectedCourseBySlug(name) == null
+            @PathVariable Long lessonId, Model model, Authentication auth) {
+        if (coursesService.getSelectedCourseBySlug(name) == null
                 || moduleService.getModuleBySlug(moduleSlug) == null
                 || lessonService.getLesson(lessonId, moduleService.getModuleBySlug(moduleSlug).getId()) == null) {
             return "error/404";
@@ -134,7 +136,8 @@ public class CoursesController {
         model.addAttribute("user", user);
         model.addAttribute("selectedCourseSlug", coursesService.getSelectedCourseBySlug(name));
         model.addAttribute("moduleData", moduleService.getModuleBySlug(moduleSlug));
-        model.addAttribute("lessonData", lessonService.getLesson(lessonId, moduleService.getModuleBySlug(moduleSlug).getId()));
+        model.addAttribute("lessonData",
+                lessonService.getLesson(lessonId, moduleService.getModuleBySlug(moduleSlug).getId()));
         model.addAttribute("lessonIds", lessonService.getLessonIds(moduleService.getModuleBySlug(moduleSlug).getId()));
         model.addAttribute("courseData", coursesService.getSelectedCourseBySlug(name));
         model.addAttribute("isAdmin", userService.isAdmin(user));
@@ -146,13 +149,13 @@ public class CoursesController {
      * Displays the user's cabinet page.
      *
      * @param model The model to add attributes to.
-     * @param auth The authentication object for the current user.
+     * @param auth  The authentication object for the current user.
      * @return The name of the cabinet view.
      */
     @GetMapping("cabinet/")
     public String getUserCabinet(Model model, Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
-        Integer userId = user.getId();
+        Long userId = user.getId();
 
         model.addAttribute("user", userService.getUserByUsername(auth.getName()));
         model.addAttribute("userOffers", offerService.getUserOffers(userId));
@@ -165,21 +168,21 @@ public class CoursesController {
     /**
      * Saves a new offer.
      *
-     * @param offer The offer to save.
+     * @param offer         The offer to save.
      * @param bindingResult The result of the validation.
-     * @param model The model to add attributes to.
+     * @param model         The model to add attributes to.
      * @return The name of the selected course view.
      */
     @PostMapping("/course/offer/")
     public String saveOffer(@Valid Offer offer, BindingResult bindingResult, Model model) {
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             List<String> errorMessages = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.toList());
             model.addAttribute("errors", errorMessages);
             model.addAttribute("showModal", true);
             return "selectedCourse";
-        }else{
+        } else {
             offerService.saveOffer(offer);
             return "selectedCourse";
         }

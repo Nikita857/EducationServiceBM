@@ -25,7 +25,7 @@ public class AdminOfferController {
     /**
      * Constructs a new AdminOfferController object.
      *
-     * @param offerService The offer service.
+     * @param offerService    The offer service.
      * @param offerRepository The offer repository.
      */
     public AdminOfferController(OfferService offerService, OfferRepository offerRepository) {
@@ -36,15 +36,15 @@ public class AdminOfferController {
     /**
      * Gets a paginated list of offers.
      *
-     * @param page The page number.
-     * @param size The page size.
+     * @param page   The page number.
+     * @param size   The page size.
      * @param status The status to filter by, or "all" to retrieve all offers.
      * @return A response entity containing the paginated list of offers.
      */
     @GetMapping("/admin/offers")
     public ResponseEntity<?> getOffersJson(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "10") int size,
-                                           @RequestParam(defaultValue = "all") String status) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "all") String status) {
         try {
             Map<String, Object> response = new HashMap<>();
             Page<OfferRequestDTO> offerRequestDTOS;
@@ -54,8 +54,7 @@ public class AdminOfferController {
                     "rejected", OfferStatus.REJECTED,
                     "pending", OfferStatus.PENDING,
                     "completed", OfferStatus.COMPLETED,
-                    "approved", OfferStatus.APPROVED
-            );
+                    "approved", OfferStatus.APPROVED);
 
             if (!"all".equalsIgnoreCase(status)) {
                 OfferStatus offerStatus = statusMap.get(status.toLowerCase());
@@ -64,8 +63,7 @@ public class AdminOfferController {
                 } else {
                     // Если статус не найден, возвращаем ошибку
                     return ResponseEntity.badRequest().body(
-                            Map.of("error", "Invalid status: " + status)
-                    );
+                            Map.of("error", "Invalid status: " + status));
                 }
             } else {
                 offerRequestDTOS = offerService.getAllOfferJson(page, size);
@@ -84,8 +82,7 @@ public class AdminOfferController {
         } catch (Exception e) {
 
             return ResponseEntity.internalServerError().body(
-                    Map.of("error", "Internal server error")
-            );
+                    Map.of("error", "Internal server error"));
         }
     }
 
@@ -93,15 +90,16 @@ public class AdminOfferController {
      * Deletes an offer by its ID.
      *
      * @param id The ID of the offer to delete.
-     * @return A response entity indicating that the offer was deleted successfully, or an error if the offer was not found or could not be deleted.
+     * @return A response entity indicating that the offer was deleted successfully,
+     *         or an error if the offer was not found or could not be deleted.
      */
     @PostMapping("/admin/offers/delete/{id}")
-    ResponseEntity<?> deleteOffer(@PathVariable("id") int id) {
+    ResponseEntity<?> deleteOffer(@PathVariable("id") Long id) {
         try {
             Map<String, Object> response = new HashMap<>();
             Offer offer = offerRepository.findById(id).orElse(null);
-            if(offer != null) {
-                if(offer.getStatus().equals(OfferStatus.REJECTED) || offer.getStatus().equals(OfferStatus.COMPLETED)) {
+            if (offer != null) {
+                if (offer.getStatus().equals(OfferStatus.REJECTED) || offer.getStatus().equals(OfferStatus.COMPLETED)) {
                     offerRepository.delete(offer);
                     response.put("success", true);
                     return ResponseEntity.ok().body(response);
@@ -116,8 +114,7 @@ public class AdminOfferController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
-                    "error", e.getMessage()
-            ));
+                    "error", e.getMessage()));
         }
     }
 }

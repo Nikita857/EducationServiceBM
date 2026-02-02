@@ -13,16 +13,21 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByRefreshToken(String refreshToken);
+
     boolean existsByUsername(String username);
-    @NotNull List<User> findAll();
+
+    @NotNull
+    List<User> findAll();
+
     long count();
 
     @Modifying
     @Query(value = "DELETE FROM user_role WHERE user_id = :userId", nativeQuery = true)
-    void deleteUserRolesByUserId(@Param("userId") Integer userId);
+    void deleteUserRolesByUserId(@Param("userId") Long userId);
+
     Page<User> findAllByRoles(Pageable pageable, Role role);
 }

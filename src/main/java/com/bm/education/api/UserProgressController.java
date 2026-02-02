@@ -23,17 +23,17 @@ public class UserProgressController {
      * Saves the progress of a user for a lesson.
      *
      * @param request The request object containing the user progress details.
-     * @return A response entity indicating that the progress was saved successfully.
+     * @return A response entity indicating that the progress was saved
+     *         successfully.
      */
     @PostMapping
     public ResponseEntity<?> saveUserProgress(@RequestBody UserProgressRequestDto request) {
         try {
             userProgressService.saveProgress(
-                    request.getUserId(),
-                    request.getCourseId(),
-                    request.getModuleId(),
-                    request.getLessonId()
-            );
+                    request.userId(),
+                    request.courseId(),
+                    request.moduleId(),
+                    request.lessonId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error saving progress");

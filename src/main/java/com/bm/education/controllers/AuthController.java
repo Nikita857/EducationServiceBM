@@ -6,7 +6,6 @@ import com.bm.education.models.Role;
 import com.bm.education.models.User;
 import com.bm.education.security.jwt.JwtService;
 import com.bm.education.services.ApplicationSettingService;
-import com.bm.education.services.ApplicationSettingService;
 import com.bm.education.services.LoginAttemptService;
 import com.bm.education.services.RefreshTokenService;
 import com.bm.education.services.UserService;
@@ -52,48 +51,48 @@ public class AuthController {
     @PostMapping("/api/auth/register")
     @ResponseBody
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,
-                                                 HttpServletResponse response,
-                                                 BindingResult bindingResult) {
+            HttpServletResponse response,
+            BindingResult bindingResult) {
 
         if (!settingService.isRegistrationEnabled()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Регистрация в данный момент отключена."));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Регистрация в данный момент отключена."));
         }
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             bindingResult
                     .getAllErrors()
                     .forEach(error -> errors.put(
                             error.getObjectName(),
-                            error.getDefaultMessage())
-                    );
+                            error.getDefaultMessage()));
             return ResponseEntity.badRequest().body(errors);
         }
 
         User newUser = userService.registerDtoToUser(request);
         userService.createUser(newUser);
 
-        return performAuthenticationAndSetCookie(newUser.getUsername(), request.getPassword(), response);
+        return performAuthenticationAndSetCookie(newUser.getUsername(), request.password(), response);
     }
 
     @PostMapping("/api/auth/login")
     @ResponseBody
-    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request, HttpServletRequest httpServletRequest, HttpServletResponse response) {
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request, HttpServletRequest httpServletRequest,
+            HttpServletResponse response) {
         try {
-            return performAuthenticationAndSetCookie(request.getUsername(), request.getPassword(), response);
+            return performAuthenticationAndSetCookie(request.username(), request.password(), response);
         } catch (BadCredentialsException e) {
             String ip = getClientIP(httpServletRequest);
             loginAttemptService.loginFailed(ip);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    ApiResponse.error("Неверный логин или пароль")
-            );
+                    ApiResponse.error("Неверный логин или пароль"));
         }
     }
 
     @PostMapping("/api/auth/refresh")
     @ResponseBody
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request, HttpServletResponse response) {
-        String requestRefreshToken = request.getRefreshToken();
+        String requestRefreshToken = request.refreshToken();
 
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
@@ -107,11 +106,10 @@ public class AuthController {
                 .orElse(null);
     }
 
-
-    private @NotNull ResponseEntity<AuthResponse> performAuthenticationAndSetCookie(String username, String password, HttpServletResponse response) {
+    private @NotNull ResponseEntity<AuthResponse> performAuthenticationAndSetCookie(String username, String password,
+            HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
+                new UsernamePasswordAuthenticationToken(username, password));
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = (User) userDetails;
 
@@ -121,7 +119,8 @@ public class AuthController {
         setCookie("jwt", jwtToken, response);
         setCookie("refresh_token", refreshToken.getRefreshToken(), response);
 
-        return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).redirect(determineRoleAndRouting(userDetails)).build());
+        return ResponseEntity
+                .ok(AuthResponse.builder().token(jwtToken).redirect(determineRoleAndRouting(userDetails)).build());
     }
 
     private void setCookie(String name, String value, @NotNull HttpServletResponse response) {
@@ -139,12 +138,11 @@ public class AuthController {
     }
 
     private @NotNull String determineRoleAndRouting(@NotNull UserDetails userDetails) {
-        if(userDetails
+        if (userDetails
                 .getAuthorities()
                 .stream()
                 .anyMatch(
-                        grantedAuthority ->
-                                grantedAuthority.getAuthority().equals(Role.ROLE_ADMIN.toString())))
+                        grantedAuthority -> grantedAuthority.getAuthority().equals(Role.ROLE_ADMIN.toString())))
             return "/admin";
         else
             return "/";

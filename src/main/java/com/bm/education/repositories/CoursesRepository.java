@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CoursesRepository extends JpaRepository<Course, Integer> {
+public interface CoursesRepository extends JpaRepository<Course, Long> {
 
     Course findBySlugAndStatus(String courseName, CourseStatus status);
 
@@ -21,9 +21,12 @@ public interface CoursesRepository extends JpaRepository<Course, Integer> {
 
     @Query("SELECT c FROM Course c WHERE c.id IN " +
             "(SELECT uc.course.id FROM UserCourses uc WHERE uc.user.id = :userId AND uc.course.status = :status)")
-    List<Course> getAvailableUserCourses(@Param("userId") Integer userId, @Param("status") CourseStatus status);
+    List<Course> getAvailableUserCourses(@Param("userId") Long userId, @Param("status") CourseStatus status);
+
     boolean existsBySlug(String slug);
-    Page<Course> findById(Integer id, Pageable pageable);
+
+    Page<Course> findById(Long id, Pageable pageable);
+
     long count();
-    
+
 }

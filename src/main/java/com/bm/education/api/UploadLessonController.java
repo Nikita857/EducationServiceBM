@@ -40,27 +40,27 @@ public class UploadLessonController {
     /**
      * Creates a new lesson.
      *
-     * @param request The request object containing the lesson details.
+     * @param request       The request object containing the lesson details.
      * @param bindingResult The result of the validation.
-     * @return A response entity indicating that the lesson was created successfully.
+     * @return A response entity indicating that the lesson was created
+     *         successfully.
      */
     @PostMapping(value = "/admin/lesson/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createLesson(@Valid @ModelAttribute LessonUploadRequest request,
-                                          BindingResult bindingResult) {
+            BindingResult bindingResult) {
 
-        if(lessonService.validation(bindingResult) != null) {
+        if (lessonService.validation(bindingResult) != null) {
             return ResponseEntity.badRequest().body(lessonService.validation(bindingResult));
         }
         // Проверка на пустой файл
-        if (request.getFile().isEmpty()) {
+        if (request.file().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "Файл не должен быть пустым"
-            ));
+                    "message", "Файл не должен быть пустым"));
         }
 
         try {
-            MultipartFile file = request.getFile();
+            MultipartFile file = request.file();
 
             // Создаем абсолютный путь к директории для сохранения
             Path uploadPath = Paths.get(this.uploadPath, "videos").toAbsolutePath().normalize();
@@ -82,19 +82,22 @@ public class UploadLessonController {
             Path filePath = uploadPath.resolve(uniqueFileName);
             Files.write(filePath, file.getBytes());
 
-            /*Гемини ебанулся и начал весь сайт ломать,
-            * надо будет проверить всю ебаторию что он натворил, если что скачать с гита проект и добавить отсюда механизм редактирования курсов*/
+            /*
+             * Гемини ебанулся и начал весь сайт ломать,
+             * надо будет проверить всю ебаторию что он натворил, если что скачать с гита
+             * проект и добавить отсюда механизм редактирования курсов
+             */
 
             // Проверяем что файл действительно сохранился
             if (Files.exists(filePath) && Files.size(filePath) > 0) {
-                CreateLessonDTO dto = new CreateLessonDTO();
-                dto.setTitle(request.getTitle());
-                dto.setVideo(uniqueFileName);
-                dto.setDescription(request.getDescription());
-                dto.setShortDescription(request.getShortDescription());
-                dto.setTestCode(request.getTestCode());
-                dto.setModuleId(request.getModuleId());
-                dto.setContentLength(file.getSize());
+                CreateLessonDTO dto = new CreateLessonDTO(
+                        request.title(),
+                        uniqueFileName,
+                        request.description(),
+                        request.shortDescription(),
+                        request.testCode(),
+                        request.moduleId(),
+                        file.getSize());
 
                 Lesson savedLesson = lessonService.saveLesson(dto);
 
@@ -102,25 +105,21 @@ public class UploadLessonController {
                         "success", true,
                         "message", "Урок успешно создан",
                         "lessonId", savedLesson.getId(),
-                        "fileName", uniqueFileName
-                ));
+                        "fileName", uniqueFileName));
             } else {
                 return ResponseEntity.internalServerError().body(Map.of(
                         "success", false,
-                        "message", "Видеофайл не был сохранен"
-                ));
+                        "message", "Видеофайл не был сохранен"));
             }
 
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
-                    "message", "Ошибка сохранения файла: " + e.getMessage()
-            ));
+                    "message", "Ошибка сохранения файла: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "Ошибка обработки запроса: " + e.getMessage()
-            ));
+                    "message", "Ошибка обработки запроса: " + e.getMessage()));
         }
     }
 }

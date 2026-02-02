@@ -24,24 +24,23 @@ public class AdminLessonController {
     /**
      * Gets a paginated list of lessons.
      *
-     * @param page The page number.
-     * @param size The page size.
-     * @param moduleId The ID of the module to filter by, or 0 to retrieve all lessons.
+     * @param page     The page number.
+     * @param size     The page size.
+     * @param moduleId The ID of the module to filter by, or 0 to retrieve all
+     *                 lessons.
      * @return A response entity containing the paginated list of lessons.
      */
     @GetMapping("/admin/lessons")
     public ResponseEntity<?> getLessonsWithPagination(@RequestParam(defaultValue = "1") int page,
-                                                      @RequestParam(defaultValue = "10") int size,
-                                                      @RequestParam(defaultValue = "0") int moduleId){
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") Long moduleId) {
         try {
             Page<LessonResponseDTO> lessons = lessonService.putLessonsInDTO(page, size, moduleId);
             return ResponseEntity.ok(
-                    ApiResponse.paginated(lessons)
-            );
-        }catch (Exception e){
+                    ApiResponse.paginated(lessons));
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage()))
-            );
+                    ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage())));
         }
     }
 
@@ -49,28 +48,26 @@ public class AdminLessonController {
      * Deletes a lesson by its ID.
      *
      * @param id The ID of the lesson to delete.
-     * @return A response entity indicating that the lesson was deleted successfully, or an error if the lesson was not found.
+     * @return A response entity indicating that the lesson was deleted
+     *         successfully, or an error if the lesson was not found.
      */
     @DeleteMapping("/admin/lessons/{id}/delete")
-    public ResponseEntity<?> deleteLesson(@PathVariable int id){
-        if(!lessonRepository.existsById(id))
+    public ResponseEntity<?> deleteLesson(@PathVariable Long id) {
+        if (!lessonRepository.existsById(id))
             return ResponseEntity.notFound().build();
         try {
             lessonRepository.deleteById(id);
             boolean isDelete = lessonRepository.existsById(id);
-            if(!isDelete) {
+            if (!isDelete) {
                 return ResponseEntity.ok().body(
-                        ApiResponse.success(null)
-                );
+                        ApiResponse.success(null));
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ApiResponse.error(
-                            String.format("Урок с ID: %d не найден", id))
-            );
-        }catch (Exception e){
+                            String.format("Урок с ID: %d не найден", id)));
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage()))
-            );
+                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage())));
         }
     }
 
@@ -81,16 +78,16 @@ public class AdminLessonController {
      * @return A response entity containing the lesson to edit.
      */
     @GetMapping("/api/admin/lessons/{id}")
-    public ResponseEntity<?> getLessonForEdit(@PathVariable int id) {
+    public ResponseEntity<?> getLessonForEdit(@PathVariable Long id) {
         try {
             Lesson lesson = lessonRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException(
                             String.format("Урок с ID: %d не найден", id)));
 
-            LessonDto lessonDto = new LessonDto();
-            lessonDto.setTitle(lesson.getTitle());
-            lessonDto.setTextContent(lesson.getDescription());
-            lessonDto.setVideoUrl(lesson.getVideo());
+            LessonDto lessonDto = new LessonDto(
+                    lesson.getTitle(),
+                    lesson.getDescription(),
+                    lesson.getVideo());
 
             return ResponseEntity.ok(
                     ApiResponse.success(lessonDto));
@@ -103,21 +100,20 @@ public class AdminLessonController {
     /**
      * Updates a lesson.
      *
-     * @param id The ID of the lesson to update.
+     * @param id        The ID of the lesson to update.
      * @param lessonDto The DTO containing the updated lesson details.
-     * @return A response entity indicating that the lesson was updated successfully.
+     * @return A response entity indicating that the lesson was updated
+     *         successfully.
      */
     @PutMapping("/api/admin/lessons/{id}")
-    public ResponseEntity<?> updateLesson(@PathVariable int id, @RequestBody LessonDto lessonDto) {
+    public ResponseEntity<?> updateLesson(@PathVariable Long id, @RequestBody LessonDto lessonDto) {
         try {
             lessonService.updateLesson(id, lessonDto);
             return ResponseEntity.ok(
-                    ApiResponse.success(String.format("Урок: %d успешно обновлен", id))
-            );
+                    ApiResponse.success(String.format("Урок: %d успешно обновлен", id)));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage()))
-            );
+                    ApiResponse.error(String.format("Internal server error: %s", e.getMessage())));
         }
     }
 }

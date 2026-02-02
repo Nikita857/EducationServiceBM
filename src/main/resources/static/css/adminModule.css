@@ -1,0 +1,52 @@
+/* adminModule.css */
+
+/*
+ * Стили для таблицы модулей, использующие уникальный класс .modules-table
+ * для избежания конфликтов с другими таблицами.
+ */
+
+/* Контейнер таблицы модулей */
+.modules-table .table-content {
+    display: block;
+}
+
+/* Стили для строк таблицы модулей */
+.modules-table .table-row {
+    display: grid;
+    /* Распределение колонок: ID, Название, Курс, Статус, Действия */
+    grid-template-columns: 60px 2fr 1.5fr 1fr 120px;
+    gap: 1rem; /* Пространство между колонками */
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%; /* Занимает всю ширину контейнера */
+    box-sizing: border-box; /* Учитывает padding и border в ширине */
+}
+
+/* Убираем нижнюю границу у последней строки */
+.modules-table .table-row:last-child {
+    border-bottom: none;
+}
+
+/* Заголовок таблицы */
+.modules-table .header-row {
+    font-weight: 600;
+    color: #94a3b8; /* Светло-серый текст для заголовков */
+    background-color: rgba(148, 163, 184, 0.05); /* Легкий фон для заголовка */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Стили для ячеек */
+.modules-table .table-cell {
+    display: flex;
+    align-items: center;
+    overflow: hidden; /* Обрезает текст, который не помещается */
+    text-overflow: ellipsis; /* Добавляет многоточие */
+    white-space: nowrap; /* Запрещает перенос текста */
+}
+
+/* Кнопки действий */
+.modules-table .action-buttons {
+    justify-content: flex-end; /* Выравнивание кнопок по правому краю */
+    gap: 0.5rem;
+}

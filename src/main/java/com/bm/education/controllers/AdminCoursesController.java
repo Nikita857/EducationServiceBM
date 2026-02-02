@@ -36,20 +36,21 @@ public class AdminCoursesController {
     /**
      * Gets a paginated list of courses.
      *
-     * @param page The page number.
-     * @param size The page size.
-     * @param courseId The ID of the course to filter by, or 0 to retrieve all courses.
+     * @param page     The page number.
+     * @param size     The page size.
+     * @param courseId The ID of the course to filter by, or 0 to retrieve all
+     *                 courses.
      * @return A response entity containing the paginated list of courses.
      */
     @GetMapping("/admin/courses")
     public ResponseEntity<ApiResponse<?>> sendUsersJson(@RequestParam(defaultValue = "1") int page,
-                                                        @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(defaultValue = "0") int courseId) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") Long courseId) {
         try {
             Page<CourseResponseDTO> courseResponseDTOS = coursesService.getCoursesForDTO(page, size, courseId);
             return ResponseEntity.ok(ApiResponse.paginated(courseResponseDTOS));
         } catch (Exception e) {
-            
+
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error(String.format("Internal Server Error: %s", e.getMessage())));
         }
@@ -62,22 +63,20 @@ public class AdminCoursesController {
      * @return A response entity containing a list of all modules for the course.
      */
     @GetMapping("/admin/courses/{id}/modules")
-    public ResponseEntity<?> getCourseModules(@PathVariable int id) {
+    public ResponseEntity<?> getCourseModules(@PathVariable Long id) {
         try {
             List<ModuleResponseDTO> modules = coursesService.getModulesOfCourse(id);
-            if(modules != null && !modules.isEmpty()) {
+            if (modules != null && !modules.isEmpty()) {
                 return ResponseEntity.ok(
                         ApiResponse.success(modules));
-            }else{
+            } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ApiResponse.error("Modules not found")
-                );
+                        ApiResponse.error("Modules not found"));
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
                     ApiResponse.error(
-                            String.format("Internal server error: %s", e.getMessage()))
-            );
+                            String.format("Internal server error: %s", e.getMessage())));
         }
     }
 
@@ -90,18 +89,16 @@ public class AdminCoursesController {
     public ResponseEntity<?> getCourses() {
         try {
             List<CourseResponseDTO> courses = coursesService.findCoursesAndWriteDTO();
-            if(courses != null && !courses.isEmpty()) {
+            if (courses != null && !courses.isEmpty()) {
                 return ResponseEntity.ok(
                         ApiResponse.success(courses));
-            }else {
+            } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ApiResponse.error("Courses not found")
-                );
+                        ApiResponse.error("Courses not found"));
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
-                    ApiResponse.error(String.format("Error: %s", e.getMessage()))
-            );
+                    ApiResponse.error(String.format("Error: %s", e.getMessage())));
         }
     }
 
@@ -109,19 +106,21 @@ public class AdminCoursesController {
      * Deletes a course by its ID.
      *
      * @param id The ID of the course to delete.
-     * @return A response entity indicating that the course was deleted successfully, or an error if the course was not found.
+     * @return A response entity indicating that the course was deleted
+     *         successfully, or an error if the course was not found.
      */
     @DeleteMapping("/admin/courses/{id}/delete")
-    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable Long id) {
         try {
             boolean success = coursesService.deleteCourseById(id);
-            if(success) {
+            if (success) {
                 return ResponseEntity.ok(ApiResponse.success("Курс успешно удален"));
-            }else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Курс с id " + id + " не найден"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Курс с id " + id + " не найден"));
             }
-        }catch (Exception e) {
-            
+        } catch (Exception e) {
+
             return ResponseEntity.internalServerError().body(ApiResponse.error("An internal server error occurred."));
         }
     }
@@ -131,32 +130,31 @@ public class AdminCoursesController {
      *
      * @param courseRequest The request object containing the course details.
      * @param bindingResult The result of the validation.
-     * @param imageFile The image file for the course.
+     * @param imageFile     The image file for the course.
      * @return A response entity containing the created course.
      */
     @PostMapping("/admin/course/create")
     public ResponseEntity<ApiResponse<?>> createCourse(@Valid @ModelAttribute CourseCreateRequest courseRequest,
-                                                       BindingResult bindingResult,
-                                                       @RequestParam("image") MultipartFile imageFile) {
+            BindingResult bindingResult,
+            @RequestParam("image") MultipartFile imageFile) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
                             FieldError::getField,
                             fieldError -> Objects.requireNonNullElse(
                                     fieldError.getDefaultMessage(),
-                                    "сообщение об ошибке не указано"
-                            )
-                    ));
+                                    "сообщение об ошибке не указано")));
             return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
         }
 
         try {
             Course savedCourse = coursesService.createCourse(courseRequest, imageFile);
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Курс успешно создан", savedCourse));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Курс успешно создан", savedCourse));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         } catch (IOException e) {
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Ошибка при загрузке файла."));
         }
@@ -165,35 +163,35 @@ public class AdminCoursesController {
     /**
      * Updates a course.
      *
-     * @param courseUpdateRequest The request object containing the updated course details.
-     * @return A response entity indicating that the course was updated successfully.
+     * @param courseUpdateRequest The request object containing the updated course
+     *                            details.
+     * @return A response entity indicating that the course was updated
+     *         successfully.
      */
     @PostMapping("/admin/courses/update")
     public ResponseEntity<ApiResponse<?>> updateCourse(@Valid @ModelAttribute CourseUpdateRequest courseUpdateRequest,
-                                                       BindingResult bindingResult,
-                                                       @RequestParam(value = "image", required = false) MultipartFile imageFile) {
+            BindingResult bindingResult,
+            @RequestParam(value = "image", required = false) MultipartFile imageFile) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
                             FieldError::getField,
                             fieldError -> Objects.requireNonNullElse(
                                     fieldError.getDefaultMessage(),
-                                    "сообщение об ошибке не указано"
-                            )
-                    ));
+                                    "сообщение об ошибке не указано")));
             return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
         }
 
         try {
-            courseUpdateRequest.setImage(imageFile);
             Course updatedCourse = coursesService.updateCourse(courseUpdateRequest);
-            return ResponseEntity.ok(ApiResponse.success("Курс успешно обновлен", Map.of("courseId", updatedCourse.getId())));
+            return ResponseEntity
+                    .ok(ApiResponse.success("Курс успешно обновлен", Map.of("courseId", updatedCourse.getId())));
         } catch (IOException e) {
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Ошибка при загрузке файла."));
         } catch (IllegalArgumentException e) {
-            
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
@@ -205,9 +203,10 @@ public class AdminCoursesController {
     /**
      * Updates the status of a course.
      *
-     * @param dto The DTO containing the updated course status.
+     * @param dto           The DTO containing the updated course status.
      * @param bindingResult The result of the validation.
-     * @return A response entity indicating that the course status was updated successfully.
+     * @return A response entity indicating that the course status was updated
+     *         successfully.
      */
     @PostMapping("/admin/courses/update/status")
     public ResponseEntity<ApiResponse<?>> updateCourseStatus(
@@ -220,41 +219,39 @@ public class AdminCoursesController {
                             FieldError::getField,
                             error -> Objects.requireNonNullElse(
                                     error.getDefaultMessage(),
-                                    "Validation error"
-                            )
-                    ));
+                                    "Validation error")));
             return ResponseEntity.badRequest()
                     .body(ApiResponse.validationError(errors));
         }
 
         try {
             // Проверка валидности статуса
-            CourseStatus.valueOf(dto.getStatus());
+            CourseStatus.valueOf(dto.status());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Такого статуса не существует"));
         }
 
         try {
-            boolean isUpdated = coursesService.updateCourseStatus(dto.getStatus(), dto.getCourseId());
+            boolean isUpdated = coursesService.updateCourseStatus(dto.status(), dto.courseId());
 
             if (isUpdated) {
                 return ResponseEntity.ok()
                         .body(ApiResponse.success("Статус успешно обновлен",
-                                Map.of("status", dto.getStatus())));
+                                Map.of("status", dto.status())));
             } else {
-                
+
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ApiResponse.error("Статус не был изменен"));
             }
 
         } catch (EntityNotFoundException e) {
-            
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Курс не найден"));
 
         } catch (Exception e) {
-            
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Внутренняя ошибка сервера"));
         }

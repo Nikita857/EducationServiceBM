@@ -44,7 +44,7 @@ public class OfferService {
      * @param offer The offer to save.
      * @return The saved offer.
      * @throws ValidationException if there is a validation error.
-     * @throws ServiceException if there is an error while saving the offer.
+     * @throws ServiceException    if there is an error while saving the offer.
      */
     @Transactional
     public Offer saveOffer(Offer offer) {
@@ -61,13 +61,13 @@ public class OfferService {
             return offerRepository.save(offer);
 
         } catch (ConstraintViolationException e) {
-            
+
             throw new ValidationException("Ошибка валидации: " +
                     e.getConstraintViolations().stream()
                             .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                             .collect(Collectors.joining(", ")));
         } catch (Exception e) {
-            
+
             throw new ServiceException("Ошибка при сохранении заявки");
         }
     }
@@ -79,7 +79,7 @@ public class OfferService {
      * @return A list of offers for the user.
      */
     @Transactional(readOnly = true)
-    public List<Offer> getUserOffers(Integer userId) {
+    public List<Offer> getUserOffers(Long userId) {
         return offerRepository.findByUserId(userId);
     }
 
@@ -91,7 +91,8 @@ public class OfferService {
      */
     @Transactional(readOnly = true)
     public List<Offer> getOffersWithStatus(String status) {
-        return offerRepository.findByStatus(status).isEmpty()? Collections.emptyList() : offerRepository.findByStatus(status);
+        return offerRepository.findByStatus(status).isEmpty() ? Collections.emptyList()
+                : offerRepository.findByStatus(status);
     }
 
     /**
@@ -102,7 +103,7 @@ public class OfferService {
      * @throws EntityNotFoundException if the offer is not found.
      */
     @Transactional(readOnly = true)
-    public OfferDto getOfferById(Integer id) {
+    public OfferDto getOfferById(Long id) {
         Offer offer = offerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Offer not found with id: " + id));
 
@@ -116,11 +117,10 @@ public class OfferService {
      * @return The converted OfferDto.
      */
     public OfferDto convertToDto(@NotNull Offer offer) {
-        OfferDto dto = new OfferDto();
-        dto.setUserId(offer.getUser().getId());
-        dto.setTopic(offer.getTopic());
-        dto.setDescription(offer.getDescription());
-        return dto;
+        return new OfferDto(
+                offer.getUser().getId(),
+                offer.getTopic(),
+                offer.getDescription());
     }
 
     /**
@@ -132,16 +132,15 @@ public class OfferService {
     public OfferRequestDTO convertToRequestDTO(@NotNull Offer offer) {
         UserResponseDTO user = userService.getUserById(offer.getUser().getId());
         return new OfferRequestDTO(
-                    offer.getId(),
-                    user.getId(),
-                user.getFirstName()+" "+user.getLastName(),
-                    offer.getTopic(),
-                    offer.getDescription(),
-                    offer.getResponse(),
-                    offer.getStatus().toString(),
-                    offer.getCreatedAt(),
-                    offer.getUpdatedAt()
-        );
+                offer.getId(),
+                user.id(),
+                user.firstName() + " " + user.lastName(),
+                offer.getTopic(),
+                offer.getDescription(),
+                offer.getResponse(),
+                offer.getStatus().toString(),
+                offer.getCreatedAt(),
+                offer.getUpdatedAt());
     }
 
     /**
@@ -150,7 +149,9 @@ public class OfferService {
      * @return The total number of offers.
      */
     @Transactional(readOnly = true)
-    public long getOffersCount() {return offerRepository.count();}
+    public long getOffersCount() {
+        return offerRepository.count();
+    }
 
     /**
      * Gets the number of pending offers.
@@ -158,41 +159,42 @@ public class OfferService {
      * @return The number of pending offers.
      */
     @Transactional(readOnly = true)
-    public long getPendingOffersCount() {return offerRepository.countByStatus(OfferStatus.PENDING);}
+    public long getPendingOffersCount() {
+        return offerRepository.countByStatus(OfferStatus.PENDING);
+    }
 
     /**
      * Updates the admin response for an offer.
      *
      * @param updateDto The DTO containing the updated information.
      * @return The updated offer.
-     * @throws IllegalArgumentException if the offer is not found or the status transition is invalid.
-     * @throws ServiceException if there is an error while updating the offer.
+     * @throws IllegalArgumentException if the offer is not found or the status
+     *                                  transition is invalid.
+     * @throws ServiceException         if there is an error while updating the
+     *                                  offer.
      */
     @Transactional
     public Offer updateAdminResponse(OfferResponseDto updateDto) {
         try {
-            
 
-            Offer offer = offerRepository.findById(updateDto.getOfferId())
+            Offer offer = offerRepository.findById(updateDto.offerId())
                     .orElseThrow(() -> new IllegalArgumentException("Заявка не найдена"));
 
-
-            if (!offer.getStatus().canTransitionTo(updateDto.getStatus())) {
+            if (!offer.getStatus().canTransitionTo(updateDto.status())) {
                 throw new IllegalArgumentException(
                         String.format("Невозможно изменить статус с %s на %s",
-                                offer.getStatus(), updateDto.getStatus())
-                );
+                                offer.getStatus(), updateDto.status()));
             }
 
             // Обновляем статус и ответ
-            offer.setStatus(updateDto.getStatus());
-            offer.setResponse(updateDto.getResponse());
+            offer.setStatus(updateDto.status());
+            offer.setResponse(updateDto.response());
             offer.setUpdatedAt(LocalDateTime.now());
 
             return offerRepository.save(offer);
 
         } catch (Exception e) {
-            
+
             throw new ServiceException(String.format("Ошибка при обновлении заявки: %s", e.getMessage()));
         }
     }
@@ -204,7 +206,7 @@ public class OfferService {
      * @param size The page size.
      * @return A paginated list of all offers.
      */
-    public Page<OfferRequestDTO> getAllOfferJson(Integer page, Integer size) {
+    public Page<OfferRequestDTO> getAllOfferJson(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Offer> offers = offerRepository.findAll(pageable);
         return offers.map(this::convertToRequestDTO);
@@ -213,12 +215,12 @@ public class OfferService {
     /**
      * Gets a paginated list of all offers sorted by status.
      *
-     * @param page The page number.
-     * @param size The page size.
+     * @param page   The page number.
+     * @param size   The page size.
      * @param status The status to sort by.
      * @return A paginated list of all offers sorted by status.
      */
-    public Page<OfferRequestDTO> getAllOfferJsonSortByStatus(Integer page, Integer size, OfferStatus status) {
+    public Page<OfferRequestDTO> getAllOfferJsonSortByStatus(int page, int size, OfferStatus status) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Offer> offers = offerRepository.findByStatus(status, pageable);
         return offers.map(this::convertToRequestDTO);

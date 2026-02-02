@@ -2,36 +2,13 @@ package com.bm.education.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
-/**
- * Data transfer object for a module update request.
- */
-@Data
-public class ModuleUpdateRequest {
-    /**
-     * The ID of the module.
-     */
-    @NotNull
-    private Integer moduleId;
+public record ModuleUpdateRequest(
+        @NotNull Long moduleId,
 
-    /**
-     * The name of the module.
-     */
-    @NotNull
-    @Size(min = 3, max = 100)
-    private String name;
+        @NotNull @Size(min = 3, max = 100) String name,
 
-    /**
-     * The slug of the module.
-     */
-    @NotNull
-    @Size(min = 3, max = 50)
-    private String slug;
+        @NotNull @Size(min = 3, max = 50) String slug,
 
-    /**
-     * The ID of the course the module belongs to.
-     */
-    @NotNull
-    private Integer courseId;
+        @NotNull Long courseId) {
 }

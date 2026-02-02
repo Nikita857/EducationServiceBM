@@ -36,12 +36,12 @@ public class LessonService {
     /**
      * Gets a lesson by its ID and module ID.
      *
-     * @param id The ID of the lesson.
+     * @param id       The ID of the lesson.
      * @param moduleId The ID of the module.
      * @return The lesson with the specified ID and module ID, or null if not found.
      */
     @Transactional
-    public Lesson getLesson(int id, int moduleId) {
+    public Lesson getLesson(Long id, Long moduleId) {
         return lessonRepository.findLessonByIdAndModuleId(id, moduleId).orElse(null);
     }
 
@@ -52,7 +52,7 @@ public class LessonService {
      * @return A list of lessons for the module.
      */
     @Transactional
-    public List<Lesson> getLessonIds(int moduleId) {
+    public List<Lesson> getLessonIds(Long moduleId) {
         return lessonRepository.findLessonsByModuleId(moduleId);
     }
 
@@ -62,7 +62,9 @@ public class LessonService {
      * @return The total number of lessons.
      */
     @Transactional
-    public long getLessonsCount() {return lessonRepository.count();}
+    public long getLessonsCount() {
+        return lessonRepository.count();
+    }
 
     /**
      * Converts a lesson to a LessonRequestDTO.
@@ -71,14 +73,12 @@ public class LessonService {
      * @return The converted LessonRequestDTO.
      */
     public LessonRequestDTO convertToDTO(Lesson lesson) {
-        LessonRequestDTO lessonDTO = new LessonRequestDTO();
-        lessonDTO.setId(lesson.getId());
-        lessonDTO.setTitle(lesson.getTitle());
-        lessonDTO.setModuleName(lesson.getModule().getTitle());
-        lessonDTO.setModuleSlug(lesson.getModule().getSlug());
-        lessonDTO.setCourseSlug(lesson.getModule().getCourse().getSlug());
-
-        return lessonDTO;
+        return new LessonRequestDTO(
+                lesson.getId(),
+                lesson.getTitle(),
+                lesson.getModule().getTitle(),
+                lesson.getModule().getSlug(),
+                lesson.getModule().getCourse().getSlug());
     }
 
     /**
@@ -88,9 +88,10 @@ public class LessonService {
      * @return A list of all lessons for the module as DTOs.
      */
     @Transactional
-    public List<LessonRequestDTO> getModuleLessons(Integer moduleId) {
+    public List<LessonRequestDTO> getModuleLessons(Long moduleId) {
         List<Lesson> lessons = lessonRepository.findLessonsByModuleId(moduleId);
-//        Пробегаемся по листу уроков конвертируем каждый обьект lesson в ДТО и собираем кучу дтошек в лист
+        // Пробегаемся по листу уроков конвертируем каждый обьект lesson в ДТО и
+        // собираем кучу дтошек в лист
         return lessons.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -103,7 +104,7 @@ public class LessonService {
      * @return The number of lessons in the course.
      */
     @Transactional(readOnly = true)
-    public Integer countByModuleCourseId(Integer courseId) {
+    public Long countByModuleCourseId(Long courseId) {
         return lessonRepository.countByModuleCourseId(courseId);
     }
 
@@ -111,10 +112,10 @@ public class LessonService {
      * Counts the number of completed lessons in a course for a user.
      *
      * @param courseId The ID of the course.
-     * @param userId The ID of the user.
+     * @param userId   The ID of the user.
      * @return The number of completed lessons in the course for the user.
      */
-    public Integer countCompletedLessons(Integer courseId, Integer userId) {
+    public Long countCompletedLessons(Long courseId, Long userId) {
         return lessonRepository.countCompletedLessons(courseId, userId);
     }
 
@@ -125,30 +126,31 @@ public class LessonService {
      * @return The converted LessonResponseDTO.
      */
     public LessonResponseDTO convertToLessonResponseDTO(Lesson lesson) {
-        LessonResponseDTO lessonResponseDTO = new LessonResponseDTO();
-        lessonResponseDTO.setId(lesson.getId());
-        lessonResponseDTO.setTitle(lesson.getTitle());
-        lessonResponseDTO.setModuleName(lesson.getModule().getTitle());
-        lessonResponseDTO.setDescription(lesson.getDescription());
-        lessonResponseDTO.setVideo(lesson.getVideo());
-        lessonResponseDTO.setTestCode(lesson.getTestCode());
-        return lessonResponseDTO;
+        return new LessonResponseDTO(
+                lesson.getId(),
+                lesson.getModule().getTitle(),
+                lesson.getTitle(),
+                lesson.getVideo(),
+                lesson.getDescription(),
+                lesson.getShortDescription(),
+                lesson.getTestCode());
     }
 
     /**
      * Gets a paginated list of lessons as DTOs.
      *
-     * @param page The page number.
-     * @param size The page size.
-     * @param moduleId The ID of the module to filter by, or 0 to retrieve all lessons.
+     * @param page     The page number.
+     * @param size     The page size.
+     * @param moduleId The ID of the module to filter by, or 0 to retrieve all
+     *                 lessons.
      * @return A paginated list of lessons as DTOs.
      */
-    public Page<LessonResponseDTO> putLessonsInDTO(Integer page, Integer size, Integer moduleId) {
+    public Page<LessonResponseDTO> putLessonsInDTO(Integer page, Integer size, Long moduleId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Lesson> lessons;
-        if(moduleId == 0) {
+        if (moduleId == 0L) {
             lessons = lessonRepository.findAllWithModule(pageable);
-        }else{
+        } else {
             lessons = lessonRepository.findByModuleIdWithModule(moduleId, pageable);
         }
         return lessons.map(this::convertToLessonResponseDTO);
@@ -158,19 +160,17 @@ public class LessonService {
      * Validates the binding result.
      *
      * @param bindingResult The binding result to validate.
-     * @return A response entity with the validation errors, or null if there are no errors.
+     * @return A response entity with the validation errors, or null if there are no
+     *         errors.
      */
     public ResponseEntity<?> validation(BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error ->
-                    errors.put(error.getField(), error.getDefaultMessage())
-            );
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "Ошибки валидации",
-                    "errors", errors
-            ));
+                    "errors", errors));
         }
         return null;
     }
@@ -182,15 +182,15 @@ public class LessonService {
      * @return The saved lesson.
      */
     public Lesson saveLesson(CreateLessonDTO dto) {
-        Module module = moduleRepository.findById(dto.getModuleId()).orElse(null);
+        Module module = moduleRepository.findById(dto.moduleId()).orElse(null);
         Lesson lesson = new Lesson();
-        lesson.setTitle(dto.getTitle());
-        lesson.setVideo(dto.getVideo());
-        lesson.setDescription(dto.getDescription());
-        lesson.setShortDescription(dto.getShortDescription());
-        lesson.setTestCode(dto.getTestCode());
+        lesson.setTitle(dto.title());
+        lesson.setVideo(dto.video());
+        lesson.setDescription(dto.description());
+        lesson.setShortDescription(dto.shortDescription());
+        lesson.setTestCode(dto.testCode());
         lesson.setModule(module);
-        lesson.setContentLength(dto.getContentLength());
+        lesson.setContentLength(dto.contentLength());
 
         return lessonRepository.save(lesson);
     }
@@ -198,19 +198,20 @@ public class LessonService {
     /**
      * Updates a lesson.
      *
-     * @param lessonId The ID of the lesson to update.
+     * @param lessonId  The ID of the lesson to update.
      * @param lessonDto The DTO containing the updated lesson details.
      * @return The updated lesson.
      * @throws RuntimeException if the lesson is not found.
      */
     @Transactional
-    public Lesson updateLesson(Integer lessonId, LessonDto lessonDto) {
+    public Lesson updateLesson(Long lessonId, LessonDto lessonDto) {
         Lesson lessonToUpdate = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId)); // Or a more specific exception
+                .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId)); // Or a more specific
+                                                                                                   // exception
 
-        lessonToUpdate.setTitle(lessonDto.getTitle());
-        lessonToUpdate.setDescription(lessonDto.getTextContent());
-        lessonToUpdate.setVideo(lessonDto.getVideoUrl());
+        lessonToUpdate.setTitle(lessonDto.title());
+        lessonToUpdate.setDescription(lessonDto.textContent());
+        lessonToUpdate.setVideo(lessonDto.videoUrl());
 
         return lessonRepository.save(lessonToUpdate);
     }
@@ -223,20 +224,20 @@ public class LessonService {
      */
     @Transactional(readOnly = true)
     public Lesson getLessonByVideoName(String videoName) {
-       return lessonRepository.findLessonByVideo(videoName).orElse(null);
+        return lessonRepository.findLessonByVideo(videoName).orElse(null);
     }
 
     /**
      * Gets all lessons with progress for a user in a module.
      *
-     * @param userName The username of the user.
+     * @param userName   The username of the user.
      * @param moduleSlug The slug of the module.
      * @return A list of all lessons with progress for the user in the module.
      */
     @Transactional(readOnly = true)
     public List<ViewModuleDto> getLessonsWithProgress(String userName, String moduleSlug) {
-        Integer userId = userService.getUserByUsername(userName).getId();
-        Integer moduleId = moduleService.getModuleBySlug(moduleSlug).getId();
+        Long userId = userService.getUserByUsername(userName).getId();
+        Long moduleId = moduleService.getModuleBySlug(moduleSlug).getId();
         List<Object[]> results = lessonRepository.findLessonsByModuleAndUserId(userId, moduleId);
         return results.stream()
                 .map(this::mapToDTO)
@@ -251,13 +252,12 @@ public class LessonService {
      */
     private ViewModuleDto mapToDTO(Object[] result) {
         return new ViewModuleDto(
-                ((Integer) result[0]),
+                ((Long) result[0]),
                 (String) result[1],
                 (String) result[2],
                 (String) result[3],
                 (String) result[4],
-                ((Integer) result[5]),
-                result[6] != null ? ( (java.sql.Timestamp) result[6]).toLocalDateTime(): null
-        );
+                ((Long) result[5]),
+                result[6] != null ? ((java.sql.Timestamp) result[6]).toLocalDateTime() : null);
     }
 }

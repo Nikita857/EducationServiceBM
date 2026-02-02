@@ -40,7 +40,7 @@ public class AdminController {
     /**
      * Displays the admin dashboard.
      *
-     * @param auth The authentication object for the current user.
+     * @param auth  The authentication object for the current user.
      * @param model The model to add attributes to.
      * @return The name of the admin view, or a redirect to the index or login page.
      */
@@ -49,24 +49,24 @@ public class AdminController {
     public String admin(Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
 
-                model.addAttribute("admin", user);
-                model.addAttribute("users", userService.getUsersCount());
-                model.addAttribute("courses", coursesService.getCoursesCount());
-                model.addAttribute("modules", moduleService.getModulesCount());
-                model.addAttribute("lessons", lessonService.getLessonsCount());
-                model.addAttribute("offers", offerService.getPendingOffersCount());
-                model.addAttribute("offersTotal", offerService.getOffersCount());
-                model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
+        model.addAttribute("admin", user);
+        model.addAttribute("users", userService.getUsersCount());
+        model.addAttribute("courses", coursesService.getCoursesCount());
+        model.addAttribute("modules", moduleService.getModulesCount());
+        model.addAttribute("lessons", lessonService.getLessonsCount());
+        model.addAttribute("offers", offerService.getPendingOffersCount());
+        model.addAttribute("offersTotal", offerService.getOffersCount());
+        model.addAttribute("uncheckedOffers", offerService.getOffersWithStatus(OfferStatus.PENDING.toString()));
 
-                // Add settings to the model for the settings tab
-                model.addAttribute("settings", settingService.getAllSettings());
-                model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
-                model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
-                model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
-                model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
-                model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
+        // Add settings to the model for the settings tab
+        model.addAttribute("settings", settingService.getAllSettings());
+        model.addAttribute("KEY_MAINTENANCE_MODE", ApplicationSettingService.KEY_MAINTENANCE_MODE);
+        model.addAttribute("KEY_REGISTRATION_ENABLED", ApplicationSettingService.KEY_REGISTRATION_ENABLED);
+        model.addAttribute("KEY_SITE_BANNER_TEXT", ApplicationSettingService.KEY_SITE_BANNER_TEXT);
+        model.addAttribute("KEY_SITE_BANNER_ENABLED", ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
+        model.addAttribute("KEY_MAINTENANCE_END_TIME", ApplicationSettingService.KEY_MAINTENANCE_END_TIME);
 
-                return "admin";
+        return "admin";
     }
 
     /**
@@ -77,7 +77,7 @@ public class AdminController {
      */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("admin/offers/{offerId}")
-    public ResponseEntity<ApiResponse<OfferDto>> getOfferById(@PathVariable Integer offerId) {
+    public ResponseEntity<ApiResponse<OfferDto>> getOfferById(@PathVariable Long offerId) {
         try {
             OfferDto offerRequestDTO = offerService.getOfferById(offerId);
             return ResponseEntity.ok(
@@ -92,7 +92,7 @@ public class AdminController {
     /**
      * Updates an offer.
      *
-     * @param updateDto The DTO containing the updated offer details.
+     * @param updateDto     The DTO containing the updated offer details.
      * @param bindingResult The result of the validation.
      * @return A response entity indicating that the offer was updated successfully.
      */
@@ -108,8 +108,9 @@ public class AdminController {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
                             FieldError::getField,
-                            fieldError -> Objects.requireNonNull(fieldError.getDefaultMessage()).isEmpty()?fieldError.getDefaultMessage() : ""
-                    ));
+                            fieldError -> Objects.requireNonNull(fieldError.getDefaultMessage()).isEmpty()
+                                    ? fieldError.getDefaultMessage()
+                                    : ""));
 
             return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
         }
@@ -120,8 +121,7 @@ public class AdminController {
 
             return ResponseEntity.ok(ApiResponse.success("Заявка успешно обновлена", Map.of(
                     "id", updatedOffer.getId(),
-                    "status", updatedOffer.getStatus()
-            )));
+                    "status", updatedOffer.getStatus())));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -145,13 +145,13 @@ public class AdminController {
     /**
      * Displays the video page.
      *
-     * @param name The name of the video.
+     * @param name  The name of the video.
      * @param model The model to add attributes to.
      * @return The name of the video view.
      */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/video/{name}")
-    public String watchVideoUrl (@PathVariable String name, Model model) {
+    public String watchVideoUrl(@PathVariable String name, Model model) {
         Lesson lesson = lessonService.getLessonByVideoName(name);
         if (lesson == null) {
             model.addAttribute("video", "Такого ведеоролика нет");
@@ -159,8 +159,7 @@ public class AdminController {
         } else {
             model.addAllAttributes(Map.of(
                     "video", lesson.getVideo(),
-                    "title", lesson.getTitle()
-            ));
+                    "title", lesson.getTitle()));
         }
         return "admin/video";
     }
@@ -187,10 +186,13 @@ public class AdminController {
         boolean bannerEnabled = allParams.containsKey(ApplicationSettingService.KEY_SITE_BANNER_ENABLED);
 
         settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_MODE, String.valueOf(maintenanceMode));
-        settingService.saveSetting(ApplicationSettingService.KEY_REGISTRATION_ENABLED, String.valueOf(registrationEnabled));
+        settingService.saveSetting(ApplicationSettingService.KEY_REGISTRATION_ENABLED,
+                String.valueOf(registrationEnabled));
         settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_ENABLED, String.valueOf(bannerEnabled));
-        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_TEXT, allParams.get(ApplicationSettingService.KEY_SITE_BANNER_TEXT));
-        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_END_TIME, allParams.get(ApplicationSettingService.KEY_MAINTENANCE_END_TIME));
+        settingService.saveSetting(ApplicationSettingService.KEY_SITE_BANNER_TEXT,
+                allParams.get(ApplicationSettingService.KEY_SITE_BANNER_TEXT));
+        settingService.saveSetting(ApplicationSettingService.KEY_MAINTENANCE_END_TIME,
+                allParams.get(ApplicationSettingService.KEY_MAINTENANCE_END_TIME));
 
         return "redirect:/admin";
     }

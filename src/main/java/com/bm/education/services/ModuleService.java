@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +41,7 @@ public class ModuleService {
      * @return A list of modules for the course.
      */
     @Transactional(readOnly = true)
-    public List<Module> getModulesByCourseId(Integer courseId) {
+    public List<Module> getModulesByCourseId(Long courseId) {
         return moduleRepository.getModulesByCourseId(courseId);
     }
 
@@ -65,8 +63,8 @@ public class ModuleService {
      * @return The total number of lessons in the course.
      */
     @Transactional(readOnly = true)
-    public int totalLessons(Integer courseId) {
-        return lessonRepository.countByModuleCourseId(courseId);
+    public Long totalLessons(Long courseId) {
+        return (long) lessonRepository.countByModuleCourseId(courseId);
     }
 
     /**
@@ -77,7 +75,7 @@ public class ModuleService {
      * @return The number of completed lessons in the course for the user.
      */
     @Transactional(readOnly = true)
-    public int completedLessons(Integer courseId, Integer userId) {
+    public Long completedLessons(Long courseId, Long userId) {
         return userProgressRepository.totalCompletedLessonByUserId(userId, courseId);
     }
 
@@ -88,9 +86,10 @@ public class ModuleService {
      * @param totalLessons     The total number of lessons.
      * @return The percentage of completed lessons.
      */
-    public int countPercentOfLearning(Integer completedLessons, Integer totalLessons) {
-        if (totalLessons == 0) return 0;
-        return (completedLessons * 100) / totalLessons;
+    public int countPercentOfLearning(Long completedLessons, Long totalLessons) {
+        if (totalLessons == 0)
+            return 0;
+        return (int) ((completedLessons * 100) / totalLessons);
     }
 
     /**
@@ -109,7 +108,7 @@ public class ModuleService {
      * @param moduleId The ID of the module to delete.
      */
     @Transactional
-    public void deleteModule(Integer moduleId) {
+    public void deleteModule(Long moduleId) {
         if (moduleRepository.findById(moduleId).isPresent()) {
             moduleRepository.deleteById(moduleId);
         }
@@ -123,7 +122,7 @@ public class ModuleService {
      * @return true if the module status was updated successfully, false otherwise.
      */
     @Transactional
-    public boolean updateModuleStatus(Integer moduleId, ModuleStatus moduleStatus) {
+    public boolean updateModuleStatus(Long moduleId, ModuleStatus moduleStatus) {
         if (moduleRepository.findById(moduleId).isEmpty()) {
             return false;
         }
@@ -136,24 +135,27 @@ public class ModuleService {
      *
      * @param moduleCreateRequest The request object containing the module details.
      * @return The created module as a DTO.
-     * @throws IllegalStateException                       if the module with the same slug already exists.
-     * @throws jakarta.persistence.EntityNotFoundException if the course is not found.
+     * @throws IllegalStateException                       if the module with the
+     *                                                     same slug already exists.
+     * @throws jakarta.persistence.EntityNotFoundException if the course is not
+     *                                                     found.
      */
     @Transactional
     public ModuleResponseDTO createModule(ModuleCreateRequest moduleCreateRequest) {
         // 1. Check for slug uniqueness
-        if (moduleRepository.findBySlug(moduleCreateRequest.getSlug()).isPresent()) {
-            throw new IllegalStateException("Модуль с таким URI (slug) уже существует: " + moduleCreateRequest.getSlug());
+        if (moduleRepository.findBySlug(moduleCreateRequest.slug()).isPresent()) {
+            throw new IllegalStateException("Модуль с таким URI (slug) уже существует: " + moduleCreateRequest.slug());
         }
 
         // 2. Find the associated course
-        Course course = coursesRepository.findById(moduleCreateRequest.getCourseId())
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Курс с ID " + moduleCreateRequest.getCourseId() + " не найден"));
+        Course course = coursesRepository.findById(moduleCreateRequest.courseId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                        "Курс с ID " + moduleCreateRequest.courseId() + " не найден"));
 
         // 3. Create and map the entity
         Module module = new Module();
-        module.setTitle(moduleCreateRequest.getTitle());
-        module.setSlug(moduleCreateRequest.getSlug());
+        module.setTitle(moduleCreateRequest.title());
+        module.setSlug(moduleCreateRequest.slug());
         module.setCourse(course);
 
         // 4. Save and return DTO
@@ -176,8 +178,7 @@ public class ModuleService {
                 module.getSlug(),
                 module.getStatus().toString(),
                 false,
-                false
-        );
+                false);
     }
 
     /**
@@ -197,11 +198,12 @@ public class ModuleService {
      *
      * @param page     The page number.
      * @param size     The page size.
-     * @param courseId The ID of the course to filter by, or null to retrieve all modules.
+     * @param courseId The ID of the course to filter by, or null to retrieve all
+     *                 modules.
      * @return A paginated list of modules as DTOs.
      */
     @Transactional
-    public Page<ModuleResponseDTO> putModulesInDTO(Integer page, Integer size, Integer courseId) {
+    public Page<ModuleResponseDTO> putModulesInDTO(int page, int size, Long courseId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<Module> modules;
 
@@ -221,7 +223,7 @@ public class ModuleService {
      * @return The module with the specified ID as a DTO, or null if not found.
      */
     @Transactional(readOnly = true)
-    public ModuleResponseDTO findModuleById(Integer id) {
+    public ModuleResponseDTO findModuleById(Long id) {
         Module module = moduleRepository.findById(id).orElse(null);
         return module != null ? convertToModuleResponseDTO(module) : null;
     }
@@ -234,17 +236,15 @@ public class ModuleService {
      */
     public boolean updateModule(com.bm.education.dto.ModuleUpdateRequest request) {
         try {
-            Module module = moduleRepository.findById(request.getModuleId()).orElseThrow(
-                    () -> new RuntimeException("Could not find module with id: " + request.getModuleId())
-            );
+            Module module = moduleRepository.findById(request.moduleId()).orElseThrow(
+                    () -> new RuntimeException("Could not find module with id: " + request.moduleId()));
 
-            module.setTitle(request.getName());
-            module.setSlug(request.getSlug());
+            module.setTitle(request.name());
+            module.setSlug(request.slug());
 
-            if (request.getCourseId() != null) {
-                Course course = coursesRepository.findById(request.getCourseId()).orElseThrow(
-                        () -> new RuntimeException("Could not find course with id: " + request.getCourseId())
-                );
+            if (request.courseId() != null) {
+                Course course = coursesRepository.findById(request.courseId()).orElseThrow(
+                        () -> new RuntimeException("Could not find course with id: " + request.courseId()));
                 module.setCourse(course);
             }
 
@@ -257,26 +257,27 @@ public class ModuleService {
     }
 
     @Transactional(readOnly = true)
-    public Module getModuleById(Integer id) {
+    public Module getModuleById(Long id) {
         return moduleRepository.findById(id).orElse(null);
     }
 
     @Transactional(readOnly = true)
-    public boolean isModuleCompleted(Module module, Integer userId) {
+    public boolean isModuleCompleted(Module module, Long userId) {
         if (module == null || userId == null) {
             return false;
         }
-        Integer totalLessons = lessonRepository.findLessonsByModuleId(module.getId()).size();
+        Long totalLessons = (long) lessonRepository.findLessonsByModuleId(module.getId()).size();
         if (totalLessons == 0) {
             return true; // An empty module is considered complete.
         }
-        Integer completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
+        Long completedLessons = userProgressRepository.countByModuleIdAndUserId(userId, module.getId());
         return totalLessons.equals(completedLessons);
     }
 
     @Transactional(readOnly = true)
-    public Map<Integer, Boolean> getCompletedModulesOfCourse(Integer courseId, Integer userId) {
-        List<Integer> completedModuleIds = userModuleCompletionRepository.findCompletedModuleIdsByCourse(userId, courseId);
+    public Map<Long, Boolean> getCompletedModulesOfCourse(Long courseId, Long userId) {
+        List<Long> completedModuleIds = userModuleCompletionRepository.findCompletedModuleIdsByCourse(userId,
+                courseId);
         return completedModuleIds.stream()
                 .collect(Collectors.toMap(
                         moduleId -> moduleId,
@@ -284,6 +285,5 @@ public class ModuleService {
                         (existing, replacement) -> existing // In case of duplicates, keep the existing entry
                 ));
     }
-
 
 }

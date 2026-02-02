@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class ModuleTestService {
 
-
     private final LessonRepository lessonRepository;
     private final ModuleTestResultRepository moduleTestResultRepository;
     private final UserModuleCompletionRepository userModuleCompletionRepository;
@@ -43,7 +42,7 @@ public class ModuleTestService {
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
-    public List<QuestionDTO> getAllQuestionsForModule(Integer moduleId, boolean isForCheckAnswers) {
+    public List<QuestionDTO> getAllQuestionsForModule(Long moduleId, boolean isForCheckAnswers) {
         List<String> testCodes = lessonRepository.findTestCodesByModuleId(moduleId);
 
         List<QuestionDTO> allQuestions = testCodes.stream()
@@ -58,41 +57,46 @@ public class ModuleTestService {
                         }
 
                         ObjectMapper localMapper = new ObjectMapper();
-                        localMapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+                        localMapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,
+                                true);
                         localMapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_TRAILING_COMMA, true);
 
-                        List<QuestionDTO> questions = localMapper.readValue(jsonContent, new TypeReference<List<QuestionDTO>>() {});
+                        List<QuestionDTO> questions = localMapper.readValue(jsonContent,
+                                new TypeReference<List<QuestionDTO>>() {
+                                });
                         return questions != null ? questions.stream() : Stream.empty();
                     } catch (JsonProcessingException e) {
-                        log.error("Failed to parse testCode JSON for moduleID {}: {}. Content: {}", moduleId, e.getMessage(), testCode);
+                        log.error("Failed to parse testCode JSON for moduleID {}: {}. Content: {}", moduleId,
+                                e.getMessage(), testCode);
                         return Stream.empty();
                     }
                 })
                 .collect(Collectors.toList());
 
-        if(isForCheckAnswers) {
+        if (isForCheckAnswers) {
             return allQuestions;
-        }else{
-           Collections.shuffle(allQuestions);
+        } else {
+            Collections.shuffle(allQuestions);
             return allQuestions.subList(0, (int) Math.round(allQuestions.size() * 0.4));
         }
 
     }
 
     @Transactional
-    public TestResultDTO checkAnswers(Integer moduleId, @NotNull @org.jetbrains.annotations.NotNull TestSubmissionDTO submission, Authentication authentication) {
+    public TestResultDTO checkAnswers(Long moduleId,
+            @NotNull @org.jetbrains.annotations.NotNull TestSubmissionDTO submission, Authentication authentication) {
         List<QuestionDTO> allQuestions = getAllQuestionsForModule(moduleId, true);
         int score = 0;
 
         Map<String, QuestionDTO> questionMap = allQuestions.stream()
                 .collect(Collectors.toMap(
-                        QuestionDTO::getQuestion, q -> q, (q1, q2) -> q1));
+                        QuestionDTO::question, q -> q, (q1, q2) -> q1));
 
-        for (UserAnswerDTO userAnswer : submission.getAnswers()) {
-            QuestionDTO question = questionMap.get(userAnswer.getQuestion());
+        for (UserAnswerDTO userAnswer : submission.answers()) {
+            QuestionDTO question = questionMap.get(userAnswer.question());
             if (question != null) {
-                for (AnswerDTO answer : question.getAnswers()) {
-                    if (answer.getCorrect() && answer.getText().equals(userAnswer.getAnswer())) {
+                for (AnswerDTO answer : question.answers()) {
+                    if (answer.correct() && answer.text().equals(userAnswer.answer())) {
                         score++;
                         break;
                     }
@@ -100,7 +104,7 @@ public class ModuleTestService {
             }
         }
 
-        int totalQuestionsInTest = submission.getAnswers().size();
+        int totalQuestionsInTest = submission.answers().size();
         double percentage = totalQuestionsInTest > 0 ? ((double) score / totalQuestionsInTest) * 100 : 0;
 
         User user = userService.getUserByUsername(authentication.getName());
@@ -116,7 +120,8 @@ public class ModuleTestService {
 
         // If the user passed, mark the module as completed
         if (percentage >= MINIMAL_PERCENTAGE_OF_CORRECT_ANSWERS) {
-            boolean alreadyCompleted = userModuleCompletionRepository.existsByUser_IdAndModule_Id(user.getId(), module.getId());
+            boolean alreadyCompleted = userModuleCompletionRepository.existsByUser_IdAndModule_Id(user.getId(),
+                    module.getId());
             if (!alreadyCompleted) {
                 UserModuleCompletion completion = new UserModuleCompletion(user, module, percentage);
                 userModuleCompletionRepository.save(completion);
@@ -128,19 +133,20 @@ public class ModuleTestService {
 
                 // Check if the whole course is now completed
                 Course course = module.getCourse();
-                Integer totalModulesInCourse = moduleService.getModulesByCourseId(course.getId()).size();
-                Integer completedModulesInCourse = userModuleCompletionRepository.countByUser_IdAndModule_Course_Id(user.getId(), course.getId());
+                int totalModulesInCourse = moduleService.getModulesByCourseId(course.getId()).size();
+                long completedModulesInCourse = userModuleCompletionRepository
+                        .countByUser_IdAndModule_Course_Id(user.getId(), course.getId());
 
-                if (totalModulesInCourse.equals(completedModulesInCourse)) {
-                    boolean courseAlreadyMarked = userCourseCompletionRepository.existsByUser_IdAndCourse_Id(user.getId(), course.getId());
+                if (totalModulesInCourse == (int) completedModulesInCourse) {
+                    boolean courseAlreadyMarked = userCourseCompletionRepository
+                            .existsByUser_IdAndCourse_Id(user.getId(), course.getId());
                     if (!courseAlreadyMarked) {
                         UserCourseCompletion courseCompletion = new UserCourseCompletion(user, course);
                         userCourseCompletionRepository.save(courseCompletion);
                         notificationService.createNotification(
                                 userService.getUserByUsername(authentication.getName()),
                                 "Поздравляем! Вы прошли курс Инженер технолог БриНТ",
-                                ""
-                        );
+                                "");
                     }
                 }
             }
@@ -149,7 +155,7 @@ public class ModuleTestService {
         return new TestResultDTO(score, totalQuestionsInTest, percentage);
     }
 
-    public Integer getNumberOfCompletedModules(Integer userId) {
+    public Long getNumberOfCompletedModules(Long userId) {
         return moduleTestResultRepository.countByUserId(userId);
     }
 }
