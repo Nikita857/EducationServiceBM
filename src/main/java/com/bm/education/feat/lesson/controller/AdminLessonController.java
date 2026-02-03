@@ -5,19 +5,23 @@ import com.bm.education.feat.lesson.dto.LessonShortResponse;
 import com.bm.education.feat.lesson.dto.LessonUpdateRequest;
 import com.bm.education.feat.lesson.service.LessonService;
 import com.bm.education.shared.common.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import com.bm.education.shared.validation.ValidationService;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller for handling admin-related lesson requests.
+ * Admin REST API controller for lesson management.
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/lessons")
+@RequestMapping("api/v1/admin/lessons")
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Lessons", description = "Admin lesson management endpoints")
 public class AdminLessonController {
 
     private final LessonService lessonService;

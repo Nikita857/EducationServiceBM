@@ -1,60 +1,76 @@
 package com.bm.education.feat.module.controller;
 
 import com.bm.education.feat.quiz.dto.QuestionDTO;
-import com.bm.education.feat.module.model.Module;
-import com.bm.education.feat.user.model.User;
-import com.bm.education.feat.module.service.ModuleService;
-import com.bm.education.feat.module.service.ModuleTestService;
-import com.bm.education.feat.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import com.bm.education.feat.quiz.dto.TestResultDTO;
 import com.bm.education.feat.quiz.dto.TestSubmissionDTO;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import com.bm.education.feat.module.model.Module;
+import com.bm.education.feat.module.service.ModuleService;
+import com.bm.education.feat.module.service.ModuleTestService;
+import com.bm.education.feat.user.model.User;
+import com.bm.education.feat.user.service.UserService;
+import com.bm.education.shared.common.ApiResponse;
+import com.bm.education.shared.exception.ApiException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-@Controller
+/**
+ * REST API controller for module tests.
+ */
+@RestController
+@RequestMapping("/api/v1/modules")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Module Tests", description = "Module test management")
 public class ModuleTestController {
 
     private final ModuleTestService moduleTestService;
     private final ModuleService moduleService;
     private final UserService userService;
 
-    @GetMapping("/course/{course}/module/{moduleSlug}/test")
-    public String showModuleTestPage(@PathVariable String course, @PathVariable String moduleSlug, Model model,
-            Authentication auth, RedirectAttributes redirectAttributes) {
+    /**
+     * Get questions for a module test.
+     */
+    @GetMapping("/{moduleSlug}/test/questions")
+    @Operation(summary = "Get test questions", description = "Returns all questions for module test")
+    public ApiResponse<List<QuestionDTO>> getTestQuestions(
+            @PathVariable String moduleSlug,
+            Authentication auth) {
+
         Module module = moduleService.getModuleBySlug(moduleSlug);
+        if (module == null) {
+            throw new ApiException("Модуль не найден", HttpStatus.NOT_FOUND);
+        }
+
         User user = userService.getUserByUsername(auth.getName());
 
-        // Backend check to ensure all lessons are completed
+        // Check if all lessons are completed
         if (!moduleService.isModuleCompleted(module, user.getId())) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Вы должны пройти все уроки в модуле, прежде чем начинать тест.");
-            return "redirect:/course/" + course;
+            throw new ApiException("Вы должны пройти все уроки в модуле, прежде чем начинать тест.",
+                    HttpStatus.FORBIDDEN);
         }
 
         List<QuestionDTO> questions = moduleTestService.getAllQuestionsForModule(module.getId(), false);
-
-        model.addAttribute("questions", questions);
-        model.addAttribute("moduleId", module.getId());
-        model.addAttribute("user", user);
-        model.addAttribute("moduleName", module.getTitle());
-        model.addAttribute("isAdmin", userService.isAdmin(user));
-        return "module_test";
+        return ApiResponse.success(questions);
     }
 
-    @PostMapping("/api/module/{moduleId}/check-test")
-    @ResponseBody
-    public TestResultDTO checkTest(@PathVariable Long moduleId, @RequestBody TestSubmissionDTO submission,
+    /**
+     * Submit test answers and get results.
+     */
+    @PostMapping("/{moduleId}/test/submit")
+    @Operation(summary = "Submit test", description = "Submits test answers and returns results")
+    public ApiResponse<TestResultDTO> submitTest(
+            @PathVariable Long moduleId,
+            @RequestBody TestSubmissionDTO submission,
             Authentication authentication) {
-        return moduleTestService.checkAnswers(moduleId, submission, authentication);
+
+        TestResultDTO result = moduleTestService.checkAnswers(moduleId, submission, authentication);
+        return ApiResponse.success(result);
     }
 }

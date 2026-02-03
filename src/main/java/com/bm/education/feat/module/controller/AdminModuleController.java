@@ -9,23 +9,25 @@ import com.bm.education.feat.module.model.ModuleStatus;
 import com.bm.education.feat.lesson.service.LessonService;
 import com.bm.education.feat.module.service.ModuleService;
 import com.bm.education.shared.validation.ValidationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
- * Controller for handling admin-related module requests.
+ * Admin REST API controller for module management.
  */
-@Slf4j
 @RestController
-
+@RequestMapping("/admin/modules")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Modules", description = "Admin module management endpoints")
 public class AdminModuleController {
 
     private final ModuleService moduleService;
@@ -33,16 +35,11 @@ public class AdminModuleController {
     private final ValidationService validationService;
 
     /**
-     * Gets a paginated list of modules.
-     *
-     * @param page     The page number.
-     * @param size     The page size.
-     * @param courseId The ID of the course to filter by, or 0 to retrieve all
-     *                 modules.
-     * @return A response entity containing the paginated list of modules.
+     * Get paginated list of modules.
      */
-    @GetMapping("/admin/modules")
-    public ApiResponse<ApiResponse.PaginatedPayload<ModuleResponse>> getModulesWithPagination(
+    @GetMapping
+    @Operation(summary = "Get modules paginated", description = "Returns paginated list of modules")
+    public ApiResponse<ApiResponse.PaginatedPayload<ModuleResponse>> getModulesPaginated(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "0") Long courseId) {
@@ -51,97 +48,81 @@ public class AdminModuleController {
     }
 
     /**
-     * Gets all modules as a JSON response.
-     *
-     * @return A response entity containing a list of all modules.
+     * Get all modules.
      */
-    @GetMapping("/admin/modules/json")
-    public ApiResponse<List<ModuleResponse>> sendModulesJson() {
+    @GetMapping("/all")
+    @Operation(summary = "Get all modules", description = "Returns all modules as list")
+    public ApiResponse<List<ModuleResponse>> getAllModules() {
         List<ModuleResponse> modules = moduleService.getAllModulesByDTO();
         return ApiResponse.success(modules);
     }
 
     /**
-     * Gets a module by its ID.
-     *
-     * @param id The ID of the module to get.
-     * @return A response entity containing the module.
+     * Get module by ID.
      */
-    @GetMapping("/admin/module/{id}")
-    public ApiResponse<ModuleResponse> getModuleById(@PathVariable("id") Long id) {
+    @GetMapping("/{id}")
+    @Operation(summary = "Get module by ID", description = "Returns module details")
+    public ApiResponse<ModuleResponse> getModuleById(@PathVariable Long id) {
         ModuleResponse module = moduleService.findModuleById(id);
         return ApiResponse.success(module);
     }
 
     /**
-     * Updates the status of a module.
-     *
-     * @param id     The ID of the module to update.
-     * @param status The new status of the module.
-     * @return A response entity indicating that the module status was updated
-     *         successfully.
+     * Get lessons for a module.
      */
-    @PostMapping("/admin/modules/updateStatus/{id}/{status}")
-    public ApiResponse<Void> updateModuleStatus(@PathVariable Long id, @PathVariable ModuleStatus status) {
-        moduleService.updateModuleStatus(id, status);
-        return ApiResponse.success(String.format("Статус модуля %d обновлен на %s", id, status));
+    @GetMapping("/{id}/lessons")
+    @Operation(summary = "Get module lessons", description = "Returns all lessons for a module")
+    public ApiResponse<List<LessonListResponse>> getModuleLessons(@PathVariable Long id) {
+        List<LessonListResponse> lessons = lessonService.getModuleLessons(id);
+        return ApiResponse.success(lessons);
     }
 
     /**
-     * Deletes a module by its ID.
-     *
-     * @param id The ID of the module to delete.
-     * @return A response entity indicating that the module was deleted
-     *         successfully.
+     * Create a new module.
      */
-    @PostMapping("/admin/module/{id}/delete")
-    public ApiResponse<Void> deleteModule(@PathVariable Long id) {
-        moduleService.deleteModule(id);
-        return ApiResponse.success(String.format("Модуль %d успешно удален", id));
-    }
-
-    /**
-     * Adds a new module.
-     *
-     * @param mcr           The request object containing the module details.
-     * @param bindingResult The result of the validation.
-     * @return A response entity containing the created module.
-     */
-    @PostMapping("/admin/modules/create")
-    public ApiResponse<ModuleResponse> addModule(@Valid @RequestBody ModuleCreateRequest mcr,
+    @PostMapping
+    @Operation(summary = "Create module", description = "Creates a new module")
+    public ApiResponse<ModuleResponse> createModule(
+            @Valid @RequestBody ModuleCreateRequest request,
             BindingResult bindingResult) {
         validationService.validate(bindingResult);
-        ModuleResponse createdModule = moduleService.createModule(mcr);
-        return ApiResponse.success(createdModule);
+        ModuleResponse createdModule = moduleService.createModule(request);
+        return ApiResponse.success("Модуль успешно создан", createdModule);
     }
 
     /**
-     * Gets all lessons for a module.
-     *
-     * @param id The ID of the module.
-     * @return A response entity containing a list of all lessons for the module.
+     * Update a module.
      */
-    @GetMapping("/admin/modules/{id}/lessons")
-    public ApiResponse<List<LessonListResponse>> getModuleLessons(@PathVariable Long id) {
-        List<LessonListResponse> moduleLessons = lessonService.getModuleLessons(id);
-        log.debug("Module lessons {}", moduleLessons);
-        return ApiResponse.success(moduleLessons);
-    }
-
-    /**
-     * Updates a module.
-     *
-     * @param request       The request object containing the updated module
-     *                      details.
-     * @param bindingResult The result of the validation.
-     * @return A response entity indicating that the module was updated
-     *         successfully.
-     */
-    @PostMapping("/admin/modules/update")
-    public ApiResponse<Void> updateModule(@Valid @RequestBody ModuleUpdateRequest request,
+    @PutMapping("/{id}")
+    @Operation(summary = "Update module", description = "Updates an existing module")
+    public ApiResponse<Void> updateModule(
+            @PathVariable Long id,
+            @Valid @RequestBody ModuleUpdateRequest request,
             BindingResult bindingResult) {
         validationService.validate(bindingResult);
         moduleService.updateModule(request);
         return ApiResponse.success("Модуль успешно обновлен");
+    }
+
+    /**
+     * Update module status.
+     */
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update module status", description = "Updates the status of a module")
+    public ApiResponse<Void> updateModuleStatus(
+            @PathVariable Long id,
+            @RequestParam ModuleStatus status) {
+        moduleService.updateModuleStatus(id, status);
+        return ApiResponse.success("Статус модуля обновлен");
+    }
+
+    /**
+     * Delete a module.
+     */
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete module", description = "Deletes a module by ID")
+    public ApiResponse<Void> deleteModule(@PathVariable Long id) {
+        moduleService.deleteModule(id);
+        return ApiResponse.success("Модуль успешно удален");
     }
 }

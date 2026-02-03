@@ -1,6 +1,7 @@
 package com.bm.education.feat.course.service;
 
 import com.bm.education.feat.course.dto.CourseCreateRequest;
+import com.bm.education.feat.course.dto.CourseDetailsResponse;
 import com.bm.education.feat.course.dto.CourseResponse;
 import com.bm.education.feat.course.dto.CourseUpdateRequest;
 import com.bm.education.feat.course.dto.CourseWithProgress;
@@ -13,6 +14,7 @@ import com.bm.education.feat.course.mapper.CourseMapper;
 import com.bm.education.feat.module.dto.ModuleResponse;
 import com.bm.education.feat.module.mapper.ModuleMapper;
 import com.bm.education.feat.module.model.Module;
+import com.bm.education.feat.module.repository.ModuleRepository;
 import com.bm.education.feat.user.repository.UserProgressRepository;
 import com.bm.education.feat.user.repository.UserRepository;
 import com.bm.education.feat.lesson.service.LessonService;
@@ -45,6 +47,7 @@ public class CoursesService {
     private final CoursesRepository coursesRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ModuleRepository moduleRepository;
     private final ModuleService moduleService;
     private final LessonService lessonService;
     private final UserProgressRepository userProgressRepository;
@@ -257,5 +260,74 @@ public class CoursesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Курс", courseId));
         course.setStatus(CourseStatus.valueOf(status));
         coursesRepository.save(course);
+    }
+
+    /**
+     * Get full course details with modules and progress for a user.
+     * Uses a single optimized query to fetch all module stats.
+     *
+     * @param slug   The slug of the course.
+     * @param userId The ID of the user.
+     * @return CourseDetailsResponse with full course information.
+     */
+    @Transactional(readOnly = true)
+    public CourseDetailsResponse getCourseDetails(String slug, Long userId) {
+        Course course = getSelectedCourseBySlug(slug);
+        if (course == null) {
+            throw new ResourceNotFoundException("Курс " + slug);
+        }
+
+        List<Object[]> moduleStats = moduleRepository.findModulesWithProgress(course.getId(), userId);
+        long totalLessons = 0;
+        long completedLessons = 0;
+        Map<Long, Boolean> completedModules = new java.util.HashMap<>();
+
+        List<ModuleResponse> modules = moduleStats.stream()
+                .map(row -> {
+                    Long moduleId = ((Number) row[0]).longValue();
+                    String title = (String) row[1];
+                    String moduleSlug = (String) row[2];
+                    long moduleTotalLessons = ((Number) row[5]).longValue();
+                    long moduleCompletedLessons = ((Number) row[6]).longValue();
+                    boolean testPassed = (Boolean) row[7];
+
+                    boolean lessonsCompleted = moduleTotalLessons == 0 || moduleTotalLessons == moduleCompletedLessons;
+
+                    if (testPassed) {
+                        completedModules.put(moduleId, true);
+                    }
+
+                    return new ModuleResponse(
+                            moduleId,
+                            course.getTitle(),
+                            moduleSlug,
+                            title,
+                            "ACTIVE",
+                            lessonsCompleted,
+                            testPassed);
+                })
+                .collect(Collectors.toList());
+
+        // Calculate totals from module stats
+        for (Object[] row : moduleStats) {
+            totalLessons += ((Number) row[5]).longValue();
+            completedLessons += ((Number) row[6]).longValue();
+        }
+
+        int progressPercent = totalLessons > 0
+                ? (int) ((completedLessons * 100) / totalLessons)
+                : 0;
+
+        return new CourseDetailsResponse(
+                course.getId(),
+                course.getTitle(),
+                course.getSlug(),
+                course.getShortDescription(),
+                course.getImage(),
+                modules,
+                totalLessons,
+                completedLessons,
+                progressPercent,
+                completedModules);
     }
 }

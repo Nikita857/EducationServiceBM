@@ -2,19 +2,22 @@ package com.bm.education.feat.user.controller;
 
 import com.bm.education.feat.user.dto.UserProgressRequestDto;
 import com.bm.education.feat.user.service.UserProgressService;
+import com.bm.education.shared.common.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller for handling user progress requests.
+ * REST controller for handling user progress requests.
  */
 @RestController
-@RequestMapping("/api/progress")
+@RequestMapping("/api/v1/progress")
 @RequiredArgsConstructor
+@Tag(name = "Progress", description = "User learning progress management")
 public class UserProgressController {
 
     private final UserProgressService userProgressService;
@@ -23,20 +26,16 @@ public class UserProgressController {
      * Saves the progress of a user for a lesson.
      *
      * @param request The request object containing the user progress details.
-     * @return A response entity indicating that the progress was saved
-     *         successfully.
+     * @return ApiResponse indicating success.
      */
     @PostMapping
-    public ResponseEntity<?> saveUserProgress(@RequestBody UserProgressRequestDto request) {
-        try {
-            userProgressService.saveProgress(
-                    request.userId(),
-                    request.courseId(),
-                    request.moduleId(),
-                    request.lessonId());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error saving progress");
-        }
+    @Operation(summary = "Save progress", description = "Marks a lesson as completed for the user")
+    public ApiResponse<Void> saveUserProgress(@RequestBody UserProgressRequestDto request) {
+        userProgressService.saveProgress(
+                request.userId(),
+                request.courseId(),
+                request.moduleId(),
+                request.lessonId());
+        return ApiResponse.success("Прогресс сохранён");
     }
 }

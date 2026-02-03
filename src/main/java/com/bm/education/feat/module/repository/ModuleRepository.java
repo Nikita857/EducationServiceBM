@@ -42,4 +42,36 @@ public interface ModuleRepository extends JpaRepository<Module, Long> {
     Page<Module> findAllByCourse_Id(Long courseId, org.springframework.data.domain.Pageable pageable);
 
     long count();
+
+    /**
+     * Optimized query to get modules with progress stats in a single query.
+     * Returns module data with total lessons, completed lessons, and test status.
+     */
+    @Query(value = """
+            SELECT
+                m.id as moduleId,
+                m.title as title,
+                m.slug as slug,
+                m.short_description as shortDescription,
+                m.display_order as displayOrder,
+                COALESCE(lesson_counts.total, 0) as totalLessons,
+                COALESCE(progress_counts.completed, 0) as completedLessons,
+                CASE WHEN umc.id IS NOT NULL THEN true ELSE false END as testPassed
+            FROM modules m
+            LEFT JOIN (
+                SELECT l.module_id, COUNT(*) as total
+                FROM lessons l
+                GROUP BY l.module_id
+            ) lesson_counts ON lesson_counts.module_id = m.id
+            LEFT JOIN (
+                SELECT up.module_id, COUNT(*) as completed
+                FROM user_progress up
+                WHERE up.user_id = :userId
+                GROUP BY up.module_id
+            ) progress_counts ON progress_counts.module_id = m.id
+            LEFT JOIN user_module_completions umc ON umc.module_id = m.id AND umc.user_id = :userId
+            WHERE m.course_id = :courseId AND m.status = 'ACTIVE'
+            ORDER BY m.display_order ASC
+            """, nativeQuery = true)
+    List<Object[]> findModulesWithProgress(@Param("courseId") Long courseId, @Param("userId") Long userId);
 }

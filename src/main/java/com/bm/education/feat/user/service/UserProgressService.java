@@ -102,4 +102,21 @@ public class UserProgressService {
         progress.put("courseModules", String.format("%d/%d", completedModules, courseModules));
         return progress;
     }
+
+    /**
+     * Saves progress for a lesson, deriving course and module from the lesson.
+     *
+     * @param userId   The ID of the user.
+     * @param lessonId The ID of the lesson.
+     */
+    @Transactional
+    public void saveProgressByLessonId(Long userId, Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new EntityNotFoundException("Lesson not found"));
+
+        Module module = lesson.getModule();
+        Course course = module.getCourse();
+
+        saveProgress(userId, course.getId(), module.getId(), lessonId);
+    }
 }

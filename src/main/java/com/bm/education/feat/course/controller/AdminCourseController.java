@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin/courses")
-public class AdminCoursesController {
+public class AdminCourseController {
 
     private final CoursesService coursesService;
     private final ValidationService validationService;
